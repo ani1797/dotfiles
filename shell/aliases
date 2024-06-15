@@ -1,3 +1,19 @@
+#!/usr/bin/env sh
+
+# Get the current shell
 active_shell=$(ps -p $$ -o comm=)
 
+# System aliases
+alias c="clear"
+alias e="exit"
+alias h="history"
+alias j="jobs"
+
+
+# Quick reload of the shell
 alias reload="$(which $active_shell)"
+
+if has eza; then
+    alias la="eza --icons=auto --color=auto -a"
+    alias ll="eza --icons=auto --color=auto -alh"
+fi

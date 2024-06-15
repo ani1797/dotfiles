@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+#
+# has: check if a command exists
+#
+# Usage:
+# if has "git"; then
+#   # do something
+# fi
+#
+
+has() {
+  command -v "$1" 1>/dev/null 2>&1
+}
+
+
+has "$@"
+# Path: shell/bin/has

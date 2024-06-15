@@ -3,3 +3,6 @@ brew 'starship'
 
 # fzf for fuzzy finding in terminal
 brew 'fzf'
+
+# eza for ls replacement
+brew 'eza'

@@ -43,7 +43,7 @@ path_add "/home/linuxbrew/.linuxbrew/bin"
 for dir in "$HOME" "${XDG_CONFIG_HOME:-$HOME/.config}" "/workspaces" "/workspaces/.codespaces/.persistedshare"; do
     if [ -d "$dir/dotfiles" ]; then
         set_env "DOTFILES" "$dir/dotfiles"
-        path_add "$DOTFILES/bin"
+        path_add "$DOTFILES/shell/bin"
         break
     fi
     if [ -d "$dir/.dotfiles" ]; then

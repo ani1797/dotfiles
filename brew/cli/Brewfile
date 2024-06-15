@@ -4,3 +4,6 @@ brew 'yq'
 
 # cheatsheet
 brew 'navi'
+
+# gum
+brew 'gum'

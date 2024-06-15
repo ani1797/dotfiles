@@ -26,7 +26,6 @@ ensure_homebrew() {
 link() {
     source=$1
     destination=$2
-
     if [ -f "$destination" ] || [ -d "$destination" ]; then
         # if the destination file or directory exists and is not a symlink, create a backup
         if [ ! -L "$destination" ]; then
@@ -55,9 +54,6 @@ required "gcc"
 
 # Ensure homebrew is installed
 ensure_homebrew
-
-# Install other homebrew common pacakges
-ibrew
 
 # Adding homebrew bin directory to PATH
 path_add "/opt/homebrew/bin"

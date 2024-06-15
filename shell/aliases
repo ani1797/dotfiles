@@ -1,5 +1,3 @@
-#!/usr/bin/env sh
-
 active_shell=$(ps -p $$ -o comm=)
 
 alias reload="$(which $active_shell)"

@@ -2,7 +2,7 @@
 
 # Loading all the custom aliases and their completions
 if [ -x "$DOTFILES/shell/aliases" ]; then
-    source "$DOTFILES/shell/aliases"
+    . "$DOTFILES/shell/aliases"
 fi
 
 # Load the plugins if they exist

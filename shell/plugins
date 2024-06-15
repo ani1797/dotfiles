@@ -4,9 +4,44 @@ has() {
     type "$1" > /dev/null 2>&1
 }
 
+# get the active shell used by the user
 active_shell=$(ps -p $$ -o comm=)
 
+# region: Brew Activation and Completion
+if has brew; then
+    HOMEBREW_PREFIX="$(brew --prefix)"
+    # For Zsh Shell
+    if [ $active_shell = "zsh" ]; then
+        FPATH="$HOMEBREW_PREFIX/share/zsh/site-functions:${FPATH}"
+        autoload -Uz compinit
+        compinit
+    fi
+    # For Bash Shell
+    if [ $active_shell = "bash" ]; then
+        if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]
+        then
+            source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
+        else
+            for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*
+            do
+            [[ -r "${COMPLETION}" ]] && source "${COMPLETION}"
+            done
+        fi
+    fi
+fi
+# endregion
+
+# region: fzf plugin load
+if has fzf; then
+   source <(fzf --$active_shell)
+fi
+# endregion
+
+# region: starship prompt load
 if has starship; then 
     eval "$(starship init $active_shell)"
     eval "$(starship completions $active_shell)"
 fi
+# endregion
+
+

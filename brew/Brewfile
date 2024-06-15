@@ -1,0 +1,5 @@
+# Starship for terminal prompt
+brew 'starship'
+
+# fzf for fuzzy finding in terminal
+brew 'fzf'

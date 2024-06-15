@@ -36,7 +36,7 @@ link() {
         rm -rv "$dest"
     fi
     ln -s "$src" "$dest"
-    echo "[INFO] $dest linked."
+    echo "[INFO] $src <-> $dest linked."
 }
 
 required "git"

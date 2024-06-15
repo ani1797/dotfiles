@@ -1,0 +1,12 @@
+# Casks
+tap "homebrew/cask-fonts"
+
+# Firacode font
+cask "font-fira-code"
+
+# Databricks CLI
+tap "databricks/tap"
+brew "databricks"
+
+# Allacritty (Terminal)
+cask "alacritty"

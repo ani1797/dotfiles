@@ -44,3 +44,5 @@ experimental = true # enable experimental features
 status = { missing_tools = "if_other_versions_installed", show_env = false, show_tools = false }
 
 python_compile = true # set to true to compile python from source, see `MISE_PYTHON_COMPILE`
+
+python_default_packages_file = ""

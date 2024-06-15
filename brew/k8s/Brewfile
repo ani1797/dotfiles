@@ -1,0 +1,15 @@
+# kubectl
+brew 'kubectl'
+
+# kind
+brew 'kind'
+
+# helm
+brew 'helm'
+
+# k8s context switcher
+brew 'k9s'
+brew 'kubie'
+
+# tilt
+brew 'tilt'

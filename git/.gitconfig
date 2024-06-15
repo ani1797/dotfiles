@@ -1,0 +1,64 @@
+[init]
+defaultBranch = main
+
+[core]
+excludesFile = ~/.config/git/.gitignore
+
+[user]
+name = "Anirudh Aggarwal"
+email = "ani.aggarwal@mail.utoronto.ca"
+signingkey = 48678B0D4B4A8A18
+
+[core]
+editor = "$EDITOR"
+autocrlf = input
+
+[push]
+autoSetupRemote = true
+
+[commit]
+template = ~/.config/git/commit-template.txt
+gpgsign = true
+
+[color]
+ui = auto
+
+[color "status"]
+added = green bold
+changed = yellow bold
+untracked = red bold
+
+[alias]
+a = add
+d = diff
+s = status
+f = fetch
+st = status -sb
+co = checkout
+cob = checkout -b
+br = branch
+ll = log --oneline
+lol = log --graph --decorate --pretty=oneline --abbrev-commit --all
+last = log -1 HEAD --stat
+p = push
+pf = push --force
+pfl= push --force-with-lease
+can = commit --amend --no-edit
+cam = commit --amend -m
+cm = commit -m
+unstage = restore --staged
+rv = remote -v
+cfg = config --list --global
+rh = reset HEAD
+rhh = reset --hard HEAD
+rsh = reset --soft HEAD
+sa = stash apply
+sc = stash clear
+sd = stash drop
+sl = stash list
+sp = stash pop
+clean = git-lfs clean -- %f
+prune = remote prune origin
+
+[safe]
+directory = [ "~/projects/personal", "~/projects/work", "/workspaces/" ]

@@ -12,3 +12,6 @@ brew 'direnv'
 
 # mise for managing software packages
 brew 'mise'
+
+# better find
+brew 'fd'

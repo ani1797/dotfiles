@@ -1,5 +1,5 @@
 [global]
-disable_stdin = true
+disable_stdin = false
 load_dotenv = true
 warn_timeout = 0
 

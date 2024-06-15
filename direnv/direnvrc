@@ -1,1 +1,7 @@
 #!/usr/bin/env bash
+
+if has mise; then
+    use_mise() {
+        direnv_load mise direnv exec
+    }
+fi

@@ -70,3 +70,17 @@ link "$PWD/shell/zsh/.zshrc" "$HOME/.zshrc"
 # Adding direnv configuration to $XDG_CONFIG_HOME/direnv/direnv.toml
 link "$PWD/direnv/direnv.toml" "${XDG_CONFIG_HOME:-"$HOME/.config"}/direnv/direnv.toml"
 link "$PWD/direnv/direnvrc" "${XDG_CONFIG_HOME:-"$HOME/.config"}/direnv/direnvrc"
+
+# Adding git configuration to $XDG_CONFIG_HOME/git
+link "$PWD/git/.gitignore" "${XDG_CONFIG_HOME:-"$HOME/.config"}/git/.gitignore"
+link "$PWD/git/commit-template.txt" "${XDG_CONFIG_HOME:-"$HOME/.config"}/git/commit-template.txt"
+
+# Adding ssh configuration to $HOME/ssh
+link "$PWD/ssh/config" "$HOME/.ssh/config"
+link "$PWD/ssh/allowed_signers" "$HOME/.ssh/allowed_signers"
+
+# Adding alacritty configuration to $XDG_CONFIG_HOME/alacritty
+link "$PWD/alacritty/alacritty.toml" "${XDG_CONFIG_HOME:-"$HOME/.config"}/alacritty/alacritty.toml"
+
+# Adding tmux configuration to $XDG_CONFIG_HOME/tmux
+link "$PWD/tmux/tmux.conf" "${XDG_CONFIG_HOME:-"$HOME/.config"}/tmux/tmux.conf"

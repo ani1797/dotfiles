@@ -61,3 +61,7 @@ set_env "PERSONAL_DIR" "$PROJECTS/personal"
 ## Configurations for specific tools
 set_loc "STARSHIP_CONFIG" "$DOTFILES/starship/starship.toml"
 set_loc "MISE_CONFIG_DIR" "$DOTFILES/mise"
+set_loc "CONDARC" "$DOTFILES/conda/.condarc"
+set_loc "PIP_CONFIG_FILE" "$DOTFILES/pip/pip.conf"
+set_loc "GIT_CONFIG_GLOBAL" "$DOTFILES/git/.gitconfig"
+set_loc "NPM_CONFIG_USERCONFIG" "$DOTFILES/npm/.npmrc"

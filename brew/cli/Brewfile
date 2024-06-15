@@ -1,0 +1,3 @@
+# Text parsers for JSON and YAML
+brew 'jq'
+brew 'yq'

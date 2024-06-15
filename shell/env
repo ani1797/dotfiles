@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+path_add() {
+    f_path=$1
+    if [ -d "$f_path" ] && [[ ":$PATH:" != *":$f_path:"* ]]; then
+        export PATH="${PATH:+"$PATH:"}$f_path"
+    fi
+}
+
+set_env(){
+    name=$1
+    value=$2
+    if [ -n "$name" ]; then
+        export "$name"="$value"
+    fi
+}
+
+# Adding local "bin" directories to PATH
+path_add "/usr/local/bin"
+path_add "$HOME/.local/bin"
+path_add "$HOME/bin"
+
+# Adding homebrew bin directory to PATH
+path_add "/opt/homebrew/bin"
+path_add "/home/linuxbrew/.linuxbrew/bin"
+
+
+# Check and find the first visible directory called "dotfiles" or ".dotfiles" in the following directories
+# 1. $HOME (the default location for dotfiles)
+# 2. $HOME/.config (for dotfiles in the XDG_CONFIG_HOME directory)
+# 3. /workspaces (devcontainer + codespace workspace for quick edits on the go)
+# 4. /workspaces/.codespaces/.persistedshare (see: https://docs.github.com/en/codespaces/setting-your-user-preferences/personalizing-github-codespaces-for-your-account#dotfiles)
+# if found, set the DOTFILES environment variable to the path of the directory and add the bin directory to PATH
+for dir in "$HOME" "${XDG_CONFIG_HOME:-$HOME/.config}" "/workspaces" "/workspaces/.codespaces/.persistedshare"; do
+    if [ -d "$dir/dotfiles" ]; then
+        set_env "DOTFILES" "$dir/dotfiles"
+        path_add "$DOTFILES/bin"
+        break
+    fi
+    if [ -d "$dir/.dotfiles" ]; then
+        set_env "DOTFILES" "$dir/.dotfiles"
+        path_add "$DOTFILES/bin"
+        break
+    fi
+done

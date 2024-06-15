@@ -1,0 +1,58 @@
+% brew, update, upgrade, manage
+
+# update brew
+brew update
+
+# upgrade brew
+brew upgrade
+
+# auto cleanup
+brew cleanup
+
+# health check
+brew doctor
+
+
+
+% brew, package
+
+# get info for a package
+brew info <package>
+
+# Install brew package
+brew install <package>
+
+# Uninstall brew package
+brew uninstall <installed_package>
+
+# reinstall a package
+brew reinstall <installed_package>
+
+$ installed_package: brew list -1
+
+
+
+% brew, services
+
+# list all services installed by brew for the current user
+brew services list
+
+# run the service formula without registering to launch at login
+brew services run <brewservice>
+
+# start the service formula immediately and register it to launch at login
+brew services start <brewservice>
+
+# stop the service formula immediately and unregister it from launching at login
+brew services stop <brewservice>
+
+# stop (if necessary) and start the service formula immediately and register it to launch at login
+brew services restart <brewservice>
+
+# remove all unused services
+brew services cleanup
+
+# link formula
+brew link <installed>
+
+$ installed: brew list

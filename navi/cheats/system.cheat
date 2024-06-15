@@ -1,0 +1,45 @@
+% system, compression
+
+# Compress a tar with files
+tar cf <name>.tar <files>
+
+# Decompress the files from a tar
+tar xf <tar_file>
+
+# Compress a tar.gz with files
+tar czf <name>.tar.gz <files>
+
+# Decompress the files from a tar.gz
+tar xzf <targz_file>
+
+# Compress file with .gz
+gzip <path>
+
+# Decompress the files from .gz
+gzip -d <gz_file>
+
+$ path: ls
+$ tar_file: ls *.tar
+$ targz_file: ls *.tar.gz
+$ gz_file: ls *.gz
+
+
+
+% system, keybindings, keymaps
+
+# List all keybindings
+bindkey -L
+
+# List all keymaps
+bindkey -lL
+
+# Create a new keymap
+bindkey -N <keymap>
+
+# Create a new keymap and inherit from another keymap
+bindkey -N <keymap> <parent>
+
+# Create an alias for a keymap
+bindkey -A <alias> <parent>
+
+$ parent: bindkey -l

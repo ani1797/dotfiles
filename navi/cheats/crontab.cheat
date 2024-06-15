@@ -1,0 +1,49 @@
+% crontab, system
+
+# Edit crontab
+crontab -e
+
+# List crontab
+crontab -l
+
+# Open crontab guru
+navi fn url::open https://crontab.guru/
+
+# Open crontab sh
+navi fn url::open https://crontab.sh/
+
+# Run something every 5 minutes
+echo "*/5 * * * * <script>"
+
+# Run something every day
+echo "0 0 * * * <script>"
+
+# Run something every week
+echo "0 0 * * 0 <script>"
+
+# Run something every hour
+echo "0 * * * * <script>"
+
+# Run something every 5 minutes (No output)
+echo "*/5 * * * * <script> >/dev/null 2>&1"
+
+# Run something every day (No output)
+echo "0 0 * * * <script> >/dev/null 2>&1"
+
+# Run something every week (No output)
+echo "0 0 * * 0 <script> >/dev/null 2>&1"
+
+# Run something every hour (No output)
+echo "*/60 * * * * <script> >/dev/null 2>&1"
+
+# Run something every 5 minutes (No output, with log, with timestamp, with pid)
+echo "*/5 * * * * <script> >/dev/null 2>&1 | tee -a /var/log/<script>.log; date >> /var/log/<script>.log; echo \$\$ >> /var/log/<script>.log"
+
+# Run something every day (No output, with log, with timestamp, with pid)
+echo "0 0 * * * <script> >/dev/null 2>&1 | tee -a /var/log/<script>.log; date >> /var/log/<script>.log; echo \$\$ >> /var/log/<script>.log"
+
+# Run something every week (No output, with log, with timestamp, with pid)
+echo "0 0 * * 0 <script> >/dev/null 2>&1 | tee -a /var/log/<script>.log; date >> /var/log/<script>.log; echo \$\$ >> /var/log/<script>.log"
+
+# Run something every hour (No output, with log, with timestamp, with pid)
+echo "*/60 * * * * <script> >/dev/null 2>&1 | tee -a /var/log/<script>.log; date >> /var/log/<script>.log; echo \$\$ >> /var/log/<script>.log"

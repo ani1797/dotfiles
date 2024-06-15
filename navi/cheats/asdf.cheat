@@ -1,0 +1,104 @@
+% asdf, plugin
+
+# Add a new plugin
+asdf plugin add <plugin_name>
+
+# Add a new plugin with urls
+asdf plugin add <name> <git-url>
+
+# List all available plugins
+asdf plugin list all
+
+# List installed plugins
+asdf plugin list
+
+# List installed plugins with urls and refs
+asdf plugin list --urls --refs
+
+# Remove the installed plugin
+asdf plugin remove <installed_plugins>
+
+# Update all plugins to latest commit on default branch
+asdf plugin update --all
+
+$ plugin_name: asdf plugin-list-all --- --header 1 --column 1
+$ installed_plugins: asdf plugin-list --- --header 1 --column 1
+
+
+
+% asdf, current
+
+# Show the current versions of all packages set
+asdf current
+
+# List current version of package
+asdf current <name>
+
+
+%asdf, global
+
+# Set global version of package to specified version
+asdf global <name> <version>
+
+# Set latest version of package to global
+asdf global <name> latest
+
+
+
+%asdf, install
+
+# Install the tools listed in .tool-versions
+asdf install
+
+# Install one tool at the version specified in the .tool-versions file
+asdf install <name>
+
+# Install one tool at specific verions of package
+asdf install <name> <version>
+
+# Install the tool at latest version
+asdf install <name> latest
+
+
+% asdf, install, latest
+
+# Show latest stable version of package
+asdf latest <name>
+
+# Show latest stable version of all packages and if they are installed
+asdf latest --all
+
+
+
+% asdf, install, local
+# Set package verion to local
+asdf local <name> <version>
+
+# Set package version to latest on local
+asdf local <name> latest
+
+
+
+% asdf, locate
+
+# Display install path for current version
+asdf where <name>
+
+# Display install path for specific version
+asdf where <name> <version>
+
+# Display executable for the command
+asdf which <command>
+
+
+
+% asdf, utils
+
+# Show ASDF Info
+asdf info
+
+# Update ASDF to latest stable release
+asdf update
+
+# Update asdf to the latest on the master branch
+asdf update --head

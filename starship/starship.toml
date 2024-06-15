@@ -1,0 +1,35 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = "$all"
+
+[battery]
+disabled = false
+full_symbol = "🔋"
+charging_symbol = "⚡️"
+discharging_symbol = "💀"
+
+[character]
+success_symbol = '[➜ ](bold green)'
+error_symbol = '[➜ ](bold red)'
+
+[directory]
+read_only = "🔒"
+home_symbol = "🏠"
+style = "green bold"
+truncation_length = 1
+read_only_style = "red"
+
+[git_branch]
+symbol = '🌱 '
+
+[python]
+symbol = "🐍 "
+version_format = 'v${major}.${minor}.${patch} '
+format = "via [${symbol}${version}]($style) "
+
+[ruby]
+disabled = true
+
+[terraform]
+symbol = "💠 "
+format = "via [${symbol}${version}]($style) "

@@ -15,6 +15,15 @@ set_env(){
     fi
 }
 
+set_loc(){
+    name=$1
+    value=$2
+    # if name is not already set and if value is a file or a directory
+    if [ -n "$name" ] && [ -e "$value" ]; then
+        export "$name"="$value"
+    fi
+}
+
 # Adding local "bin" directories to PATH
 path_add "/usr/local/bin"
 path_add "$HOME/.local/bin"
@@ -43,3 +52,6 @@ for dir in "$HOME" "${XDG_CONFIG_HOME:-$HOME/.config}" "/workspaces" "/workspace
         break
     fi
 done
+
+## Configurations for specific tools
+set_loc "STARSHIP_CONFIG" "$DOTFILES/starship/starship.toml"

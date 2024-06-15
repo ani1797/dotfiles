@@ -19,3 +19,13 @@ shopt -s checkwinsize
 ## Load the $HOME/.zshenv if executable and exists (for automatic loading BASH_ENV could be set in ~/.profile)
 # shellcheck source=/dev/null
 [ -x "$HOME/.bashenv" ] && source "$HOME/.bashenv"
+
+# Loading all the custom aliases and their completions
+if [ -x "$DOTFILES/shell/aliases" ]; then
+    source "$DOTFILES/shell/aliases"
+fi
+
+## Load the Plugins installed
+if [ -x "$DOTFILES/shell/plugins" ]; then
+    source "$DOTFILES/shell/plugins"
+fi

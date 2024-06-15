@@ -85,3 +85,10 @@ default_editor() {
     fi
 }
 default_editor
+
+# source $HOME/env.local if it exists and is executable
+if [ -f "$HOME/.env.local" ] && [ -x "$HOME/.env.local" ]; then
+    source "$HOME/.env.local"
+else
+    touch "$HOME/.env.local" && chmod +x "$HOME/.env.local" # create the file if it doesn't exist (for easy local only configurations)
+fi

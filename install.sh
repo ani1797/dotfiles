@@ -59,6 +59,11 @@ path_add "/usr/local/bin"
 path_add "$HOME/.local/bin"
 path_add "$HOME/bin"
 
+# Install starship prompt
+if  has brew && ! has starship; then
+    brew install starship
+fi
+
 # Adding both bashenv and zshenv to the home directory
 link "$PWD/shell/env" "$HOME/.bashenv"
 link "$PWD/shell/env" "$HOME/.zshenv"

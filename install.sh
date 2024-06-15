@@ -99,3 +99,7 @@ link "$PWD/alacritty/alacritty.toml" "$CONFIG_DIR/alacritty/alacritty.toml"
 
 # Adding tmux configuration to $XDG_CONFIG_HOME/tmux
 link "$PWD/tmux/tmux.conf" "$CONFIG_DIR/tmux/tmux.conf"
+
+# Adding navi configuration to $XDG_CONFIG_HOME/navi
+link "$PWD/navi/config.yml" "$CONFIG_DIR/navi/config.yml"
+link "$PWD/navi/cheats" "$CONFIG_DIR/navi/cheats"

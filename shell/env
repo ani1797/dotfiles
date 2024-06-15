@@ -69,6 +69,7 @@ set_loc "PIP_CONFIG_FILE" "$DOTFILES/pip/pip.conf"
 set_loc "GIT_CONFIG_GLOBAL" "$DOTFILES/git/.gitconfig"
 set_loc "NPM_CONFIG_USERCONFIG" "$DOTFILES/npm/.npmrc"
 set_loc "WHALEBREW_CONFIG" "$DOTFILES/whalebrew/config.yml"
+set_loc "HTTPIE_CONFIG_DIR" "$DOTFILES/httpie"
 
 default_editor() {
     if command -v nvim > /dev/null; then

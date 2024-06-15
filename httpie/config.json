@@ -1,0 +1,10 @@
+{
+    "default_options": [
+        "--style=fruity",
+        "--verify=no",
+        "--follow",
+        "--all",
+        "--sorted"
+    ],
+    "plugins_dir": "~/.config/httpie/plugins",
+}

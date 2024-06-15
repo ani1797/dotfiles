@@ -67,3 +67,8 @@ fi
 # endregion
 
 
+# region: navi
+if has navi; then
+    eval "$(navi widget $active_shell)"
+fi
+# endregion

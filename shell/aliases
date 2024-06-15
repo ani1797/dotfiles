@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # Get the current shell
 active_shell=$(ps -p $$ -o comm=)
@@ -9,21 +9,21 @@ alias e="exit"
 alias h="history"
 alias j="jobs"
 
-# Load hash directories
-hash -d dot=$DOTFILES
-hash -d projects=$PROJECTS
-hash -d work=$PROJECTS/work
-hash -d personal=$PROJECTS/personal
+# # Load hash directories
+hash -d dot="$DOTFILES"
+hash -d projects="$PROJECTS"
+hash -d work="$PROJECTS/work"
+hash -d personal="$PROJECTS/personal"
 
-# Quick access editor
-alias edit=$EDITOR
+# # Quick access editor
+alias edit='$EDITOR' 
 alias mkpv="mkdir -pv"
 
 # Quick reload of the shell
-alias reload="$(which $active_shell)"
+alias reload='$(which $active_shell)'
 alias time_zsh="time zsh -i -c exit"
 
-alias eenv="$EDITOR $DOTFILES/shell/env"
+alias eenv='$EDITOR $DOTFILES/shell/env'
 
 if has asdf; then
     # shorthand for asdf
@@ -57,13 +57,12 @@ if has asdf; then
 fi
 
 if has curl; then
-    alias curl="curl -K $DOTFILES/curl/.curlrc"
+    alias curl='curl -K $DOTFILES/curl/.curlrc'
 fi
 
 if has docker; then
-    source <(docker completion zsh)
+    eval "$(docker completion "$active_shell")"
     alias d=docker
-    compdef _docker d
 
     alias dcup="docker-compose up -d"
     alias dcdown="docker-compose down"
@@ -83,33 +82,26 @@ if has eza; then
     alias llt="eza --icons=auto --color=auto -alh -T"
 fi
 
-if has git; then
-    alias g=git
-    compdef _git g
-fi
-
 if has helm; then
-    # load helm completions
-    source <(helm completion zsh)
+    # shellcheck source=/dev/null
+    source <(helm completion "$active_shell")
 fi
 
 if has kind; then
-    # load kind completions
-    source <(kind completion zsh)
+    # shellcheck source=/dev/null
+    source <(kind completion "$active_shell")
 fi
 
 if has kubectl; then
-    # load kubectl completions
-    source <(kubectl completion zsh)
+    # shellcheck source=/dev/null
+    source <(kubectl completion "$active_shell")
     # set k as alias for kubectl
     alias k="kubectl --insecure-skip-tls-verify"
-    # load completion for kubectl aliases
-    compdef _kubectl k
 fi
 
 if has kube-linter; then
-    # load kube-linter completions
-    source <(kube-linter completion zsh)
+    # shellcheck source=/dev/null
+    source <(kube-linter completion "$active_shell")
 fi
 
 if has navi; then
@@ -118,30 +110,15 @@ if has navi; then
 fi
 
 if has op; then
-    eval "$(op completion zsh)"
+    eval "$(op completion "$active_shell")"
     alias oplogin='eval $(op signin)'
 fi
 
-if has terraform; then
-    alias tf="terraform"
-    alias tfplan="tf plan -out=/tmp/out.plan"
-    alias tfapply="tf apply /tmp/out.plan"
-    alias tfdestroy="tf destroy"
-    alias tfdnr="tf destroy -auto-approve"
-    alias tfaa="tf apply -auto-approve"
-
-    complete -o nospace -C $(which terraform) terraform
-    complete -o nospace -C tf terraform
-fi
-
 if has tilt; then
-    eval "$(tilt completion zsh)"
+    eval "$(tilt completion "$active_shell")"
 fi
 
 if has thefuck; then 
 	eval "$(thefuck --alias ffs)"
 fi
 
-if has whalebrew; then
-    export WHALEBREW_INSTALL_PATH="$HOME/.local/bin"
-fi

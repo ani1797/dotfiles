@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+#
+# required: check if a command is available in the system
+# usage: required <command>
+#
+
+required() {
+    cmd=$1
+    ec=${2:-1}
+    if ! has "$cmd"; then
+        error "$cmd is required." $ec
+    fi
+}
+
+required "$@"

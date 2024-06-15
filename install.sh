@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-has() {
-    command -v "$1" 1>/dev/null 2>&1
-}
+set -e
 
 path_add() {
     f_path=$1
@@ -11,21 +9,17 @@ path_add() {
     fi
 }
 
-required() {
-    cmd=$1
-    if ! has "$cmd"; then
-        echo "[ERROR] $cmd is required."
-        exit 1
-    fi
-}
+# Adding ./shell/bin to PATH (required for functions)
+path_add "$PWD/shell/bin"
 
 ensure_homebrew() {
     if ! has brew; then
+        info "Installing Homebrew..."
         if ! NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" < /dev/null; 
         then
-            echo "[ERROR] Homebrew installation failed."
-            exit 1
+            error "Homebrew installation failed."
         fi
+        success "Homebrew installed successfully."
     fi
 }
 
@@ -40,19 +34,19 @@ link() {
             dest_base=$(basename "$destination")
             # Backup file or directory name
             dest_bak="$HOME/.cache/dotfiles/$dest_base.bak"
-            echo "[INFO] backup $destination"
+            info "backup $destination"
             mkdir -p "$HOME/.cache/dotfiles"
             mv "$destination" "$dest_bak"
         else
             # if the destination is a symlink, remove the symlink
-            echo "[INFO] unlink $destination"
+            info "unlink $destination"
             rm "$destination"
         fi
     fi
     parent_dir=$(dirname "$destination")
     mkdir -p "$parent_dir"
     ln -sfn "$source" "$destination"
-    echo "[OK] linked $source <-> $destination"
+    success "linked $source <-> $destination"
 }
 
 required "git"
@@ -73,7 +67,9 @@ path_add "$HOME/bin"
 
 # Install starship prompt
 if  has brew && ! has starship; then
+    info "Installing starship prompt..."
     brew install starship
+    success "starship prompt installed successfully."
 fi
 
 # Adding both bashenv and zshenv to the home directory

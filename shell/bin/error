@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# error: Print an error message and exit with an error code.
+#
+# Usage: error <message> [exit_code]
+# Example: error "File not found" 2
+#
+
+error() {
+    error_code=${2:-1}
+    message=$1
+    echo -e "\033[1;31m[ERROR]\033[0m $message (ec: \033[1;31m$error_code\033[0m)"
+    exit $error_code
+}
+
+error "$@"

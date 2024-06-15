@@ -29,4 +29,5 @@ extract () {
     fi
 }
 
+extract "$@"
 # Path: shell/bin/extract

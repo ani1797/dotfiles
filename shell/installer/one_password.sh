@@ -1,18 +1,16 @@
 #!/usr/bin/env sh
 
 if ! has curl; then
-    echo "curl is required to install 1Password CLI"
-    return 1
+    error "curl is required to install 1Password CLI" 69
 fi
 
 if ! has unzip; then
-    echo "unzip is required to install 1Password CLI"
-    return 1
+    error "unzip is required to install 1Password CLI" 69
 fi
-
 
 op_install() {
     BIN_DIR=${BIN_DIR:-$HOME/.local/bin}
+    VERSION=${1:-2.25.1}
 
     # Get the system architecture
     ARCH=$(uname -m)
@@ -23,10 +21,11 @@ op_install() {
         i386) ARCH=386 ;;
     esac
 
-    curl -s "https://cache.agilebits.com/dist/1P/op2/pkg/v2.25.1/op_linux_${ARCH}_v2.25.1.zip" -o /tmp/op.zip
-    unzip -o /tmp/op.zip -d /tmp
+    curl -s "https://cache.agilebits.com/dist/1P/op2/pkg/v${VERSION}/op_linux_${ARCH}_v${VERSION}.zip" -o /tmp/op.zip
+    unzip -o /tmp/op.zip -d /tmp > /dev/null
     mv /tmp/op "$BIN_DIR/op"
-    rm -rfv /tmp/op*
+    rm -rf /tmp/op*
+    success "1Password CLI has been installed to $BIN_DIR"
 }
 
 op_install "$@"

@@ -24,15 +24,6 @@ set_loc(){
     fi
 }
 
-# Adding local "bin" directories to PATH
-path_add "/usr/local/bin"
-path_add "$HOME/.local/bin"
-path_add "$HOME/bin"
-
-# Adding homebrew bin directory to PATH
-path_add "/opt/homebrew/bin"
-path_add "/home/linuxbrew/.linuxbrew/bin"
-
 
 # Check and find the first visible directory called "dotfiles" or ".dotfiles" in the following directories
 # 1. $HOME (the default location for dotfiles)
@@ -53,6 +44,16 @@ for dir in "$HOME" "${XDG_CONFIG_HOME:-$HOME/.config}" "/workspaces" "/workspace
     fi
 done
 
+# Adding local "bin" directories to PATH
+path_add "/usr/local/bin"
+path_add "$HOME/.local/bin"
+path_add "$HOME/bin"
+path_add "$DOTFILES/shell/bin"
+
+# Adding homebrew bin directory to PATH
+path_add "/opt/homebrew/bin"
+path_add "/home/linuxbrew/.linuxbrew/bin"
+
 ## Configuring the base paths
 set_env "PROJECTS" "$HOME/projects"
 set_env "WORK_DIR" "$PROJECTS/work"
@@ -67,21 +68,21 @@ set_loc "CONDARC" "$DOTFILES/conda/.condarc"
 set_loc "PIP_CONFIG_FILE" "$DOTFILES/pip/pip.conf"
 set_loc "GIT_CONFIG_GLOBAL" "$DOTFILES/git/.gitconfig"
 set_loc "NPM_CONFIG_USERCONFIG" "$DOTFILES/npm/.npmrc"
-has whalebrew && set_loc "WHALEBREW_CONFIG" "$DOTFILES/whalebrew/config.yml"
+set_loc "WHALEBREW_CONFIG" "$DOTFILES/whalebrew/config.yml"
 
 default_editor() {
     if command -v nvim > /dev/null; then
             export EDITOR=nvim
     elif command -v vim > /dev/null; then
         export EDITOR="vim"
+    elif command -v code > /dev/null; then
+        export EDITOR="code"
     elif command -v nano > /dev/null; then
         export EDITOR="nano"
     elif command -v vi > /dev/null; then
         export EDITOR="vi"
-    elif command -v code > /dev/null; then
-        export EDITOR="code"
     else
-        echo "No editor found. Please install one of the following editors: vim, nano, vi, code, nvim"
+        echo "No editor found. Please install one of the following editors: nvim, vim, code, nano, vi"
     fi
 }
 default_editor

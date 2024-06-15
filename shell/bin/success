@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# success: Print an success message
+#
+# Usage: success <message>
+# Example: success "Some success message"
+# Prints: [SUCCESS] Some success message
+# [SUCCESS] in green color and bold text.
+#
+
+success() {
+    message=$1
+    echo -e "\033[1;32m[SUCCESS]\033[0m $message"
+}
+
+success "$@"

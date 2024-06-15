@@ -56,6 +56,9 @@ required "gcc"
 # Ensure homebrew is installed
 ensure_homebrew
 
+# Install other homebrew common pacakges
+ibrew
+
 # Adding homebrew bin directory to PATH
 path_add "/opt/homebrew/bin"
 path_add "/home/linuxbrew/.linuxbrew/bin"

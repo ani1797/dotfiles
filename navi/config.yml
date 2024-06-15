@@ -20,8 +20,7 @@ finder:
 
 cheats:
   paths:
-    - ~/.config/navi/cheats
-#     - F:\\path\\to\\dir # on Windows
+    - $DOTFILES/navi/cheats
 # path: /path/to/some/dir # (DEPRECATED) equivalent to the --path option
 
 # search:

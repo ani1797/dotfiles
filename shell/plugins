@@ -69,6 +69,7 @@ fi
 
 # region: navi
 if has navi; then
+    export NAVI_CONFIG="$DOTFILES/navi/config.yml"
     eval "$(navi widget $active_shell)"
 fi
 # endregion

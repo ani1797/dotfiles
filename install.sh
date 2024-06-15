@@ -30,17 +30,29 @@ ensure_homebrew() {
 }
 
 link() {
-    src=$1
-    dest=$2
-    if [ -e "$dest" ]; then
-        rm -rv "$dest"
+    source=$1
+    destination=$2
+
+    if [ -f "$destination" ] || [ -d "$destination" ]; then
+        # if the destination file or directory exists and is not a symlink, create a backup
+        if [ ! -L "$destination" ]; then
+            # Get the basename of the file or directory
+            dest_base=$(basename "$destination")
+            # Backup file or directory name
+            dest_bak="$HOME/.cache/dotfiles/$dest_base.bak"
+            echo "[INFO] backup $destination"
+            mkdir -p "$HOME/.cache/dotfiles"
+            mv "$destination" "$dest_bak"
+        else
+            # if the destination is a symlink, remove the symlink
+            echo "[INFO] unlink $destination"
+            rm "$destination"
+        fi
     fi
-    parent_dir=$(dirname "$dest")
-    if [ ! -d "$parent_dir" ]; then
-        mkdir -pv "$parent_dir"
-    fi
-    ln -s "$src" "$dest"
-    echo "[INFO] $src <-> $dest linked."
+    parent_dir=$(dirname "$destination")
+    mkdir -p "$parent_dir"
+    ln -sfn "$source" "$destination"
+    echo "[OK] linked $source <-> $destination"
 }
 
 required "git"
@@ -72,20 +84,22 @@ link "$PWD/shell/env" "$HOME/.zshenv"
 link "$PWD/shell/bash/.bashrc" "$HOME/.bashrc"
 link "$PWD/shell/zsh/.zshrc" "$HOME/.zshrc"
 
-# Adding direnv configuration to $XDG_CONFIG_HOME/direnv/direnv.toml
-link "$PWD/direnv/direnv.toml" "${XDG_CONFIG_HOME:-"$HOME/.config"}/direnv/direnv.toml"
-link "$PWD/direnv/direnvrc" "${XDG_CONFIG_HOME:-"$HOME/.config"}/direnv/direnvrc"
-
-# Adding git configuration to $XDG_CONFIG_HOME/git
-link "$PWD/git/.gitignore" "${XDG_CONFIG_HOME:-"$HOME/.config"}/git/.gitignore"
-link "$PWD/git/commit-template.txt" "${XDG_CONFIG_HOME:-"$HOME/.config"}/git/commit-template.txt"
+CONFIG_DIR="${XDG_CONFIG_HOME:-"$HOME/.config"}"
 
 # Adding ssh configuration to $HOME/ssh
 link "$PWD/ssh/config" "$HOME/.ssh/config"
 link "$PWD/ssh/allowed_signers" "$HOME/.ssh/allowed_signers"
 
+# Adding direnv configuration to $XDG_CONFIG_HOME/direnv/direnv.toml
+link "$PWD/direnv/direnv.toml" "$CONFIG_DIR/direnv/direnv.toml"
+link "$PWD/direnv/direnvrc" "$CONFIG_DIR/direnv/direnvrc"
+
+# Adding git configuration to $XDG_CONFIG_HOME/git
+link "$PWD/git/.gitignore" "$CONFIG_DIR/git/.gitignore"
+link "$PWD/git/commit-template.txt" "$CONFIG_DIR/git/commit-template.txt"
+
 # Adding alacritty configuration to $XDG_CONFIG_HOME/alacritty
-link "$PWD/alacritty/alacritty.toml" "${XDG_CONFIG_HOME:-"$HOME/.config"}/alacritty/alacritty.toml"
+link "$PWD/alacritty/alacritty.toml" "$CONFIG_DIR/alacritty/alacritty.toml"
 
 # Adding tmux configuration to $XDG_CONFIG_HOME/tmux
-link "$PWD/tmux/tmux.conf" "${XDG_CONFIG_HOME:-"$HOME/.config"}/tmux/tmux.conf"
+link "$PWD/tmux/tmux.conf" "$CONFIG_DIR/tmux/tmux.conf"

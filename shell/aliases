@@ -9,11 +9,23 @@ alias e="exit"
 alias h="history"
 alias j="jobs"
 
+# Load hash directories
+hash -d dot=$DOTFILES
+hash -d projects=$PROJECTS
+hash -d work=$PROJECTS/work
+hash -d personal=$PROJECTS/personal
+
+# Quick access editor
+alias edit=$EDITOR
+alias mkpv="mkdir -pv"
 
 # Quick reload of the shell
 alias reload="$(which $active_shell)"
 
 if has eza; then
-    alias la="eza --icons=auto --color=auto -a"
+    alias la="eza --icons=auto --color=auto -h"
     alias ll="eza --icons=auto --color=auto -alh"
+    alias lg="eza --icons=auto --color=auto -alh -T --git-ignore"
+    alias lat="eza --icons=auto --color=auto -lh -T"
+    alias llt="eza --icons=auto --color=auto -alh -T"
 fi

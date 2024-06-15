@@ -6,3 +6,9 @@ brew 'fzf'
 
 # eza for ls replacement
 brew 'eza'
+
+# direnv for environment management
+brew 'direnv'
+
+# mise for managing software packages
+brew 'mise'

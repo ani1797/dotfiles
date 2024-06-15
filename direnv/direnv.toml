@@ -1,0 +1,7 @@
+[global]
+disable_stdin = true
+load_dotenv = true
+warn_timeout = 0
+
+[whitelist]
+prefix = ["~/projects/", "/workspaces", "/mnt/d"]

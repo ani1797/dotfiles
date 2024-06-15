@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+ibrew() {
+    bundle_name="${1:-common}"
+    if [ -f "$DOTFILES/brew/$bundle_name/Brewfile" ]; then
+        brew bundle --file="$DOTFILES/brew/$bundle_name/Brewfile" --no-lock
+    else
+        echo "No Brewfile found for bundle '$bundle_name'"
+    fi
+}
+
+ibrew "$@"

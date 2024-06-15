@@ -35,6 +35,10 @@ link() {
     if [ -e "$dest" ]; then
         rm -rv "$dest"
     fi
+    parent_dir=$(dirname "$dest")
+    if [ ! -d "$parent_dir" ]; then
+        mkdir -pv "$parent_dir"
+    fi
     ln -s "$src" "$dest"
     echo "[INFO] $src <-> $dest linked."
 }
@@ -62,3 +66,7 @@ link "$PWD/shell/env" "$HOME/.zshenv"
 # Adding both bashrc and zshrc to the home directory
 link "$PWD/shell/bash/.bashrc" "$HOME/.bashrc"
 link "$PWD/shell/zsh/.zshrc" "$HOME/.zshrc"
+
+# Adding direnv configuration to $XDG_CONFIG_HOME/direnv/direnv.toml
+link "$PWD/direnv/direnv.toml" "${XDG_CONFIG_HOME:-"$HOME/.config"}/direnv/direnv.toml"
+link "$PWD/direnv/direnvrc" "${XDG_CONFIG_HOME:-"$HOME/.config"}/direnv/direnvrc"

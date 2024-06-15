@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
-has() {
-    type "$1" > /dev/null 2>&1
-}
+# has() {
+#     type "$1" > /dev/null 2>&1
+# }
 
 # get the active shell used by the user
 active_shell=$(ps -p $$ -o comm=)
@@ -31,6 +31,12 @@ if has brew; then
 fi
 # endregion
 
+# region: direnv setup
+if has direnv; then
+    eval "$(direnv hook $active_shell)"
+fi
+# endregion
+
 # region: fzf plugin load
 if has fzf; then
    source <(fzf --$active_shell)
@@ -43,6 +49,13 @@ if has fzf; then
     --border="double" --border-label="" --preview-window="border-rounded" --prompt="> "
     --marker=">" --pointer="◆" --separator="─" --scrollbar="│"
     --info="right"'
+fi
+# endregion
+
+# region: mise plugin load
+if has mise; then
+    eval "$(mise activate $active_shell)"
+    eval "$(mise completion $active_shell)"
 fi
 # endregion
 

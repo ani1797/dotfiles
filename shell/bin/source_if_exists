@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+#
+# source_if_exists: source a file if it exists
+#
+# Usage:
+#  source_if_exists /path/to/file
+#
+
+source_if_exists () {
+    if test -r "$1"; then
+        source "$1"
+    fi
+}
+
+source_if_exists "$@"
+# Path: shell/bin/source_if_exists

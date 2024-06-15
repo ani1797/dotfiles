@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+#
+# take: create a directory and cd into it
+#
+# Usage:
+#   take <directory>
+#
+
+function take {
+    mkdir -pv $1
+    cd $1
+}
+
+take "$@"
+# Path: shell/bin/take

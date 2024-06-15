@@ -3,7 +3,7 @@
 path_add() {
     f_path=$1
     if [ -d "$f_path" ] && [[ ":$PATH:" != *":$f_path:"* ]]; then
-        export PATH="${PATH:+"$PATH:"}$f_path"
+        export PATH="$f_path${PATH:+":$PATH"}"
     fi
 }
 
@@ -19,7 +19,7 @@ set_loc(){
     name=$1
     value=$2
     # if name is not already set and if value is a file or a directory
-    if [ -n "$name" ] && [ -e "$value" ]; then
+    if [ -n "$name" ] && [ -f "$value" ] || [ -d "$value" ]; then
         export "$name"="$value"
     fi
 }
@@ -53,5 +53,11 @@ for dir in "$HOME" "${XDG_CONFIG_HOME:-$HOME/.config}" "/workspaces" "/workspace
     fi
 done
 
+## Configuring the base paths
+set_env "PROJECTS" "$HOME/projects"
+set_env "WORK_DIR" "$PROJECTS/work"
+set_env "PERSONAL_DIR" "$PROJECTS/personal"
+
 ## Configurations for specific tools
 set_loc "STARSHIP_CONFIG" "$DOTFILES/starship/starship.toml"
+set_loc "MISE_CONFIG_DIR" "$DOTFILES/mise"

@@ -59,6 +59,8 @@ set_env "WORK_DIR" "$PROJECTS/work"
 set_env "PERSONAL_DIR" "$PROJECTS/personal"
 
 ## Configurations for specific tools
+set_loc "ZSH_CONFIG_DIR" "$DOTFILES/ssh/zsh"
+set_loc "DIRENV_CONFIG" "$DOTFILES/direnv"  
 set_loc "STARSHIP_CONFIG" "$DOTFILES/starship/starship.toml"
 set_loc "MISE_CONFIG_DIR" "$DOTFILES/mise"
 set_loc "CONDARC" "$DOTFILES/conda/.condarc"

@@ -21,6 +21,59 @@ alias mkpv="mkdir -pv"
 
 # Quick reload of the shell
 alias reload="$(which $active_shell)"
+alias time_zsh="time zsh -i -c exit"
+
+alias eenv="$EDITOR $DOTFILES/shell/env"
+
+if has asdf; then
+    # shorthand for asdf
+    alias a=asdf
+    complete -F _asdf a
+
+    # shorthand to list all installed plugins
+    alias aplist="asdf plugin-list"
+    complete -F _asdf__installed_plugins aplist
+
+    # shorthand to list all available plugins
+    alias apall="asdf plugin-list-all"
+    complete -F _asdf__available_plugins apall
+
+    # shorthand to list installed version of a package
+    alias available="asdf list"
+    complete -F _asdf__installed_versions_of available
+
+    # shorthand to list all available versions of a package
+    alias all="asdf list-all"
+    complete -F _asdf__list_all_versions all
+
+    alias add="asdf local"
+    complete -F _asdf__installed_versions_of add
+
+    # shorthand to install package
+    alias ainstall="asdf install"
+
+    # shorthand to add plugin
+    alias apadd="asdf plugin-add"
+fi
+
+if has curl; then
+    alias curl="curl -K $DOTFILES/curl/.curlrc"
+fi
+
+if has docker; then
+    source <(docker completion zsh)
+    alias d=docker
+    compdef _docker d
+
+    alias dcup="docker-compose up -d"
+    alias dcdown="docker-compose down"
+    alias dcdownv="docker-compose down -v"
+    alias dcstop="docker-compose stop"
+    alias dcrestart="docker-compose restart"
+    alias dcrebuild="docker-compose up -d --build"
+    alias dclogs="docker-compose logs -f"
+    alias dcrecreate="docker-compose up -d --force-recreate --remove-orphans"
+fi
 
 if has eza; then
     alias la="eza --icons=auto --color=auto -h"
@@ -28,4 +81,67 @@ if has eza; then
     alias lg="eza --icons=auto --color=auto -alh -T --git-ignore"
     alias lat="eza --icons=auto --color=auto -lh -T"
     alias llt="eza --icons=auto --color=auto -alh -T"
+fi
+
+if has git; then
+    alias g=git
+    compdef _git g
+fi
+
+if has helm; then
+    # load helm completions
+    source <(helm completion zsh)
+fi
+
+if has kind; then
+    # load kind completions
+    source <(kind completion zsh)
+fi
+
+if has kubectl; then
+    # load kubectl completions
+    source <(kubectl completion zsh)
+    # set k as alias for kubectl
+    alias k="kubectl --insecure-skip-tls-verify"
+    # load completion for kubectl aliases
+    compdef _kubectl k
+fi
+
+if has kube-linter; then
+    # load kube-linter completions
+    source <(kube-linter completion zsh)
+fi
+
+if has navi; then
+    alias n=navi
+    alias np="navi --print"
+fi
+
+if has op; then
+    eval "$(op completion zsh)"
+    alias oplogin='eval $(op signin)'
+fi
+
+if has terraform; then
+    alias tf="terraform"
+    alias tfplan="tf plan -out=/tmp/out.plan"
+    alias tfapply="tf apply /tmp/out.plan"
+    alias tfdestroy="tf destroy"
+    alias tfdnr="tf destroy -auto-approve"
+    alias tfaa="tf apply -auto-approve"
+
+    complete -o nospace -C $(which terraform) terraform
+    complete -o nospace -C tf terraform
+fi
+
+if has tilt; then
+    eval "$(tilt completion zsh)"
+fi
+
+if has thefuck; then 
+	eval "$(thefuck --alias ffs)"
+fi
+
+if has whalebrew; then
+    export WHALEBREW_INSTALL_PATH="$HOME/.local/bin"
 fi

@@ -63,13 +63,17 @@ set_env "PERSONAL_DIR" "$PROJECTS/personal"
 set_loc "ZSH_CONFIG_DIR" "$DOTFILES/ssh/zsh"
 set_loc "DIRENV_CONFIG" "$DOTFILES/direnv"  
 set_loc "STARSHIP_CONFIG" "$DOTFILES/starship/starship.toml"
-set_loc "MISE_CONFIG_DIR" "$DOTFILES/mise"
 set_loc "CONDARC" "$DOTFILES/conda/.condarc"
 set_loc "PIP_CONFIG_FILE" "$DOTFILES/pip/pip.conf"
 set_loc "GIT_CONFIG_GLOBAL" "$DOTFILES/git/.gitconfig"
 set_loc "NPM_CONFIG_USERCONFIG" "$DOTFILES/npm/.npmrc"
 set_loc "WHALEBREW_CONFIG" "$DOTFILES/whalebrew/config.yml"
 set_loc "HTTPIE_CONFIG_DIR" "$DOTFILES/httpie"
+
+set_loc "MISE_CONFIG_DIR" "$DOTFILES/mise"
+set_loc "MISE_PYTHON_DEFAULT_PACKAGES_FILE" "$MISE_CONFIG_DIR/python/default-packages.txt"
+# set_loc "MISE_SHORTHANDS_FILE" "$MISE_CONFIG_DIR/shorthands.toml"
+
 
 default_editor() {
     if command -v nvim > /dev/null; then
@@ -90,6 +94,7 @@ default_editor
 
 # source $HOME/env.local if it exists and is executable
 if [ -f "$HOME/.env.local" ] && [ -x "$HOME/.env.local" ]; then
+    # shellcheck disable=SC1091
     source "$HOME/.env.local"
 else
     touch "$HOME/.env.local" && chmod +x "$HOME/.env.local" # create the file if it doesn't exist (for easy local only configurations)

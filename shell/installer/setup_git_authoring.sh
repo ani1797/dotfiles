@@ -5,11 +5,29 @@ set -e
 required "git"
 required "op"
 
-PERSONAL_CONFIG="$HOME/.config/git/.gitconfig-personal"
-WORK_CONFIG="$HOME/.config/git/.gitconfig-work"
+eval "$(op signin --account "$OP_ACCOUNT")"
 
-if [ ! -f "$PERSONAL_CONFIG" ] || [ ! -f "$WORK_CONFIG" ]; then
-    eval "$(op signin --account "$OP_ACCOUNT")"
-    op inject -i "$DOTFILES/git/config/personal.tpl" -o "$PERSONAL_CONFIG"
-    op inject -i "$DOTFILES/git/config/work.tpl" -o "$WORK_CONFIG"
+if [ ! -d "$HOME/.config/git" ]; then
+  mkdir -p "$HOME/.config/git"
 fi
+
+if [ ! -d "$HOME/.ssh/keys" ]; then
+  mkdir -p "$HOME/.ssh/keys"
+fi
+
+setup_profile() {
+    local profile=$1
+    # shellcheck disable=SC2155
+    local pf=$(echo "$profile" | tr '[:upper:]' '[:lower:]')
+    if [ ! -f "$HOME/.config/git/$pf.gitconfig" ]; then
+        op inject -i "$DOTFILES/git/config/$pf.tpl" -o "$HOME/.config/git/$pf.gitconfig"
+    fi
+
+    if [ ! -f "$HOME/.ssh/keys/${pf}_rsa" ]; then
+        op read "op://Development/$profile/private key?ssh-format=openssh" | tr -d '\r' | tee "$HOME/.ssh/keys/${pf}_rsa" > /dev/null
+        chmod 400 "$HOME/.ssh/keys/${pf}_rsa"
+    fi
+}
+
+setup_profile "Personal"
+setup_profile "Work"

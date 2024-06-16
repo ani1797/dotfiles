@@ -2,22 +2,20 @@
 # Configure things like proxy, 1password agent config or whatever else you need
 Include config.d/*
 
-Host pi
-User pi
-HostName 10.0.0.69
+Host work
+  User git
+  HostName github.com
+  PreferredAuthentications publickey
+  IdentityFile ~/.ssh/keys/work_rsa
+
+Host personal
+  User git
+  HostName github.com
+  PreferredAuthentications publickey
+  IdentityFile ~/.ssh/keys/personal_rsa
 
 Host unraid
-User root
-HostName 10.0.0.99
-
-Host k8s-control-plane
-HostName 10.0.0.92
-User kubeadm
-
-Host k8s-worker-1
-HostName 10.0.0.59
-User kubeadm
-
-Host k8s-worker-2
-HostName 10.0.0.163
-User kubeadm
+  User root
+  HostName 10.0.0.99
+  PreferredAuthentications publickey
+  IdentityFile ~/.ssh/keys/personal_rsa

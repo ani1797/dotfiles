@@ -5,6 +5,7 @@ node = 'lts'
 usage = "latest"
 watchexec = "latest"
 uv = "latest"
+shellcheck = "latest"
 
 [settings]
 # plugins can read the versions files used by other version managers (if enabled by the plugin)

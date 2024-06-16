@@ -8,7 +8,7 @@ required() {
     cmd=$1
     ec=${2:-1}
     if ! has "$cmd"; then
-        log_error "$cmd is required." $ec
+        log_error "$cmd is required." "$ec"
     fi
 }
 

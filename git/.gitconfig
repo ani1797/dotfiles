@@ -47,10 +47,10 @@
 	autocrlf = input
 
 [includeIf "gitdir:~/projects/personal/"]
-	path = ~/.config/git/.gitconfig-personal
+	path = ~/.config/git/personal.gitconfig
 
 [includeIf "gitdir:~/projects/work/"]
-	path = ~/.config/git/.gitconfig-work
+	path = ~/.config/git/work.gitconfig
 
 [include]
 	path = ~/.config/git/.gitconfig-all

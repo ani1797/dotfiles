@@ -5,3 +5,73 @@ if has mise; then
         direnv_load mise direnv exec
     }
 fi
+
+layout_mpython() {
+    dotenv_if_exists .env
+    use mise
+    # run mise which python --version to get the python version to use, if the command fails, use the default python.
+    # don't output the command to the console
+    if mise which python --version > /dev/null; then
+        pyversion=$(mise which python --version)
+    else
+        log_error "no mise configuration found or python was not set in mise"
+        exit 1
+    fi
+    log_status "Using python version: $pyversion"
+
+    test -d .venv || python -m venv .venv
+    # shellcheck disable=SC1091
+    . .venv/bin/activate 
+    export PYTHONPATH=.
+
+    # check and see if there is an existing requirements checksum file
+    watch_file requirements.txt
+
+    if [ -f .mise/.reqsum ]; then
+        reqsum=$(cat .mise/.reqsum)
+        if [ "$reqsum" != "$(md5sum requirements.txt)" ]; then
+            log_status "requirements.txt has changed, updating dependencies"
+            pip install -r requirements.txt
+            md5sum requirements.txt > .mise/.reqsum
+        fi
+    else
+        log_status "Running pip install -r requirements.txt to install dependencies"
+        pip install -r requirements.txt
+        md5sum requirements.txt > .mise/.reqsum
+    fi
+}
+
+layout_mconda() {
+    dotenv_if_exists .env
+    use mise
+    # run mise which python --version to get the python version to use, if the command fails, use the default python.
+    # don't output the command to the console
+    if mise which python --version > /dev/null; then
+        pyversion=$(mise which python --version)
+    else
+        log_error "no mise configuration found or python was not set in mise"
+        exit 1
+    fi
+    log_status "Using python version: $pyversion"
+
+    test -d .venv || uv venv 
+    # shellcheck disable=SC1091
+    . .venv/bin/activate 
+    export PYTHONPATH=.
+
+    # check and see if there is an existing requirements checksum file
+    watch_file requirements.txt
+
+    if [ -f .mise/.reqsum ]; then
+        reqsum=$(cat .mise/.reqsum)
+        if [ "$reqsum" != "$(md5sum requirements.txt)" ]; then
+            log_status "requirements.txt has changed, updating dependencies"
+            pip install -r requirements.txt
+            md5sum requirements.txt > .mise/.reqsum
+        fi
+    else
+        log_status "Running pip install -r requirements.txt to install dependencies"
+        pip install -r requirements.txt
+        md5sum requirements.txt > .mise/.reqsum
+    fi
+}

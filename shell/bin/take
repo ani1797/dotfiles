@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env sh
 #
 # take: create a directory and cd into it
 #
@@ -6,9 +6,9 @@
 #   take <directory>
 #
 
-function take {
-    mkdir -pv $1
-    cd $1
+take() {
+    mkdir -pv "$1"
+    cd "$1" || return
 }
 
 take "$@"

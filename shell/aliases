@@ -105,6 +105,11 @@ if has kube-linter; then
     source <(kube-linter completion "$active_shell")
 fi
 
+if has mise; then 
+    alias m=mise
+    alias mx="mise x --"
+fi
+
 if has navi; then
     alias n=navi
     alias np="navi --print"

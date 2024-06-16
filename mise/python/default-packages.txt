@@ -2,9 +2,8 @@ pip
 ipykernel
 argcomplete
 
-poetry
-pipenv
-
 unittest
 coverage
 pytest
+
+ruff

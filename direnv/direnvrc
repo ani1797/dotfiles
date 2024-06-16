@@ -15,13 +15,8 @@ layout_mpython() {
     if mise which python --version > /dev/null; then
         pyversion=$(mise which python --version)
     else
-        # check if mise list -mc --no-header lists a python version and if "missing" is not in the output
-        if mise list -mc --no-header | grep -q python | grep -q missing; then
-            log_error "No python version found in mise, please ensure you have a python version listed in mise config"
-        else
-            pyversion=$(mise list -mc --no-header | grep python | awk '{print $2}')
-            mise use "python@$pyversion"
-        fi
+        mise use python@latest
+        pyversion=$(mise which python --version)
     fi
     log_status "Using python version: $pyversion"
 

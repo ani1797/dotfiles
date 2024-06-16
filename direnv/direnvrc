@@ -15,7 +15,7 @@ layout_mpython() {
     if mise which python --version > /dev/null; then
         pyversion=$(mise which python --version)
     else
-        mise use python@latest
+        mise use --path .mise/config.toml python@latest
         pyversion=$(mise which python --version)
     fi
     log_status "Using python version: $pyversion"

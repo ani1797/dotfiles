@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# log_error: Print an error log message and exit with an error code.
+#
+# Usage: log_error <message> [exit_code]
+# Example: log_error "File not found" 2
+#
+
+log_error() {
+    error_code=${2:-1}
+    message=$1
+    echo -e "\033[1;31m[ERROR]\033[0m $message (ec: \033[1;31m$error_code\033[0m)"
+    exit $error_code
+}
+
+log_error "$@"

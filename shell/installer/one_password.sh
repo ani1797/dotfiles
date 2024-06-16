@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
 
 if ! has curl; then
-    error "curl is required to install 1Password CLI" 69
+    log_error "curl is required to install 1Password CLI" 69
 fi
 
 if ! has unzip; then
-    error "unzip is required to install 1Password CLI" 69
+    log_error "unzip is required to install 1Password CLI" 69
 fi
 
 op_install() {
@@ -25,7 +25,7 @@ op_install() {
     unzip -o /tmp/op.zip -d /tmp > /dev/null
     mv /tmp/op "$BIN_DIR/op"
     rm -rf /tmp/op*
-    success "1Password CLI has been installed to $BIN_DIR"
+    log_success "1Password CLI has been installed to $BIN_DIR"
 }
 
 op_install "$@"

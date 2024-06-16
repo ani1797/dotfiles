@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 #
-# warn: Print an warn message
+# log_warn: Print an warn message
 #
-# Usage: warn <message>
-# Example: warn "Some warn message"
+# Usage: log_warn <message>
+# Example: log_warn "Some warn message"
 # Prints: [WARN] Some warn message
 # [WARN] in dark orange color and bold text.
 #
 
-warn() {
+log_warn() {
     message=$1
     echo -e "\033[1;33m[WARN]\033[0m $message"
 }
 
-warn "$@"
+log_warn "$@"

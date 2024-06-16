@@ -2,6 +2,17 @@
 
 set -e
 
+ # Check to see if sudo is required for the user
+if sudo -v >/dev/null 2>&1; then
+    # keep-alive: update existing `sudo` time stamp if set, otherwise do nothing.
+    while true; do
+        sudo -n true
+        sleep 60
+        kill -0 "$$" || exit
+    done 2>/dev/null &
+    _sudo="sudo"
+fi
+
 path_add() {
     f_path=$1
     if [ -d "$f_path" ] && [[ ":$PATH:" != *":$f_path:"* ]]; then
@@ -14,12 +25,12 @@ path_add "$PWD/shell/bin"
 
 ensure_homebrew() {
     if ! has brew; then
-        info "Installing Homebrew..."
+        log_info "Installing Homebrew..."
         if ! NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" < /dev/null; 
         then
-            error "Homebrew installation failed."
+            log_error "Homebrew installation failed."
         fi
-        success "Homebrew installed successfully."
+        log_success "Homebrew installed successfully."
     fi
 }
 
@@ -33,19 +44,19 @@ link() {
             dest_base=$(basename "$destination")
             # Backup file or directory name
             dest_bak="$HOME/.cache/dotfiles/$dest_base.bak"
-            info "backup $destination"
+            log_info "backup $destination"
             mkdir -p "$HOME/.cache/dotfiles"
             mv "$destination" "$dest_bak"
         else
             # if the destination is a symlink, remove the symlink
-            info "unlink $destination"
+            log_info "unlink $destination"
             rm "$destination"
         fi
     fi
     parent_dir=$(dirname "$destination")
     mkdir -p "$parent_dir"
     ln -sfn "$source" "$destination"
-    success "linked $source <-> $destination"
+    log_success "linked $source <-> $destination"
 }
 
 required "git"
@@ -66,9 +77,9 @@ path_add "$HOME/bin"
 
 # Install starship prompt
 if  has brew && ! has starship; then
-    info "Installing starship prompt..."
+    log_info "Installing starship prompt..."
     brew install starship
-    success "starship prompt installed successfully."
+    log_success "starship prompt installed successfully."
 fi
 
 # Adding both bashenv and zshenv to the home directory

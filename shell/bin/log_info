@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# log_info: Print an info log message.
+#
+# Usage: log_info <message>
+# Example: log_info "Some log_info message"
+# Prints: [log_info] Some log_info message
+# [log_info] in blue color and bold text.
+#
+
+log_info() {
+    message=$1
+    echo -e "\033[1;34m[INFO]\033[0m $message"
+}
+
+log_info "$@"

@@ -57,6 +57,6 @@ autoSetupRemote = true
 directory = [ "~/projects/personal", "~/projects/work", "/workspaces/" ]
 
 [user]
-name = "Anirudh Aggarwal"
-email = "ani.aggarwal@mail.utoronto.ca"
-signingkey = 48678B0D4B4A8A18
+	name = Anirudh Aggarwal
+	email = ani.aggarwal@mail.utoronto.ca
+	signingkey = 48678B0D4B4A8A18

@@ -306,7 +306,7 @@ auto_update_conda: True
 # #   env var string delimiter: ','
 # #   Packages that are by default added to a newly created environments.
 # #
-create_default_packages: ["pip", "ipykernel", "argcomplete"]
+create_default_packages: ["pip", "ipykernel", "ruff", "pytest", "coverage"]
 
 # # disallowed_packages (sequence: primitive)
 # #   aliases: disallow

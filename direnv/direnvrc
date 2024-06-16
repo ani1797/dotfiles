@@ -22,8 +22,17 @@ layout_mpython() {
 
     test -d .venv || $(mise which python) -m venv .venv
     # shellcheck disable=SC1091
-    . .venv/bin/activate 
+    . .venv/bin/activate
 
+    # check and see if there is a default packages file
+    if [ -n "$MISE_PYTHON_DEFAULT_PACKAGES_FILE" ]; then
+        if [ ! -f .mise/.default_packages_installed ] || [ "$(cat .mise/.default_packages_installed)" != "$(md5sum "$MISE_PYTHON_DEFAULT_PACKAGES_FILE")" ]; then
+            log_status "Installing default packages from $MISE_PYTHON_DEFAULT_PACKAGES_FILE"
+            pip install -r "$MISE_PYTHON_DEFAULT_PACKAGES_FILE"
+            md5sum "$MISE_PYTHON_DEFAULT_PACKAGES_FILE" > .mise/.default_packages_installed
+        fi
+    fi
+    
     # check and see if there is an existing requirements checksum file
     if [ -f .mise/.reqsum ]; then
         reqsum=$(cat .mise/.reqsum)

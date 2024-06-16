@@ -20,10 +20,9 @@ layout_mpython() {
     fi
     log_status "Using python version: $pyversion"
 
-    test -d .venv || python -m venv .venv
+    test -d .venv || $(mise which python) -m venv .venv
     # shellcheck disable=SC1091
     . .venv/bin/activate 
-    export PYTHONPATH=.
 
     # check and see if there is an existing requirements checksum file
     if [ -f .mise/.reqsum ]; then

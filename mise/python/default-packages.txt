@@ -1,9 +1,5 @@
 pip
-ipykernel
-argcomplete
-
-unittest
-coverage
-pytest
-
 ruff
+pytest
+coverage
+ipykernel

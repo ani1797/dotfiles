@@ -53,6 +53,12 @@
 [gpg]
     format = ssh
 
+# user is positional and any includeIf must be after it in the file to work.
+[user]
+    name = Anirudh Aggarwal
+    email = ani.aggarwal@mail.utoronto.ca
+    signingkey = "~/.ssh/keys/personal_rsa"
+
 [includeIf "gitdir/i:~/projects/personal/**"]
 	path = ~/.config/git/personal.gitconfig.txt
 
@@ -67,8 +73,3 @@
 
 [safe]
 	directory = [ "~/projects/personal", "~/projects/work", "/workspaces/" ]
-
-[user]
-    name = Anirudh Aggarwal
-    email = ani.aggarwal@mail.utoronto.ca
-    signingkey = "~/.ssh/keys/personal_rsa"

@@ -53,6 +53,7 @@ path_add "$DOTFILES/shell/bin"
 # Adding homebrew bin directory to PATH
 path_add "/opt/homebrew/bin"
 path_add "/home/linuxbrew/.linuxbrew/bin"
+path_add "$HOME/homebrew/bin"
 
 ## Configuring the base paths
 set_env "PROJECTS" "$HOME/projects"

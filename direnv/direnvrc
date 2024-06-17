@@ -6,6 +6,15 @@ if has mise; then
     }
 fi
 
+pip_install() {
+    req_file=$1
+    if has uv; then
+        uv pip install -r "$req_file"
+    else
+        pip install -r "$req_file"
+    fi
+}
+
 layout_mpython() {
     dotenv_if_exists .env
     watch_file requirements.txt
@@ -28,7 +37,7 @@ layout_mpython() {
     if [ -n "$MISE_PYTHON_DEFAULT_PACKAGES_FILE" ]; then
         if [ ! -f .mise/.default_packages_installed ] || [ "$(cat .mise/.default_packages_installed)" != "$(md5sum "$MISE_PYTHON_DEFAULT_PACKAGES_FILE")" ]; then
             log_status "Installing default packages from $MISE_PYTHON_DEFAULT_PACKAGES_FILE"
-            pip install -r "$MISE_PYTHON_DEFAULT_PACKAGES_FILE"
+            pip_install "$MISE_PYTHON_DEFAULT_PACKAGES_FILE"
             md5sum "$MISE_PYTHON_DEFAULT_PACKAGES_FILE" > .mise/.default_packages_installed
         fi
     fi
@@ -38,12 +47,12 @@ layout_mpython() {
         reqsum=$(cat .mise/.reqsum)
         if [ "$reqsum" != "$(md5sum requirements.txt)" ]; then
             log_status "requirements.txt has changed, updating dependencies"
-            pip install -r requirements.txt
+            pip_install "requirements.txt"
             md5sum requirements.txt > .mise/.reqsum
         fi
     elif [ -f requirements.txt ]; then
         log_status "Running pip install -r requirements.txt to install dependencies"
-        pip install -r requirements.txt
+        pip_install "requirements.txt"
         md5sum requirements.txt > .mise/.reqsum
     else
         log_status "No requirements.txt file found, skipping pip install"

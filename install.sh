@@ -69,6 +69,7 @@ ensure_homebrew
 # Adding homebrew bin directory to PATH
 path_add "/opt/homebrew/bin"
 path_add "/home/linuxbrew/.linuxbrew/bin"
+path_add "$HOME/homebrew/bin"
 
 # Adding local "bin" directories to PATH
 path_add "/usr/local/bin"

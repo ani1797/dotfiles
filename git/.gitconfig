@@ -40,20 +40,21 @@
 
 [commit]
 	template = ~/.config/git/commit-template.txt
+	gpgsign = true
 
 [core]
 	excludesFile = ~/.config/git/.gitignore
 	editor = "$EDITOR"
 	autocrlf = input
 
+[gpg]
+    format = ssh
+
 [includeIf "gitdir:~/projects/personal/"]
 	path = ~/.config/git/personal.gitconfig
 
 [includeIf "gitdir:~/projects/work/"]
 	path = ~/.config/git/work.gitconfig
-
-[include]
-	path = ~/.config/git/.gitconfig-all
 
 [init]
 	defaultBranch = main
@@ -65,5 +66,6 @@
 	directory = [ "~/projects/personal", "~/projects/work", "/workspaces/" ]
 
 [user]
-	name = Anirudh Aggarwal
-	email = ani.aggarwal@mail.utoronto.ca
+    name = Anirudh Aggarwal
+    email = ani.aggarwal@mail.utoronto.ca
+    signingkey = "~/.ssh/keys/personal_rsa"

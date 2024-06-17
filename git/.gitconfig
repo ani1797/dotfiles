@@ -47,6 +47,9 @@
 	editor = "$EDITOR"
 	autocrlf = input
 
+[format]
+	signOff = true
+
 [gpg]
     format = ssh
 

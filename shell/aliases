@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 
 # Get the current shell
-active_shell=$(ps -p $$ -o comm=)
+s=$(ps -p $$ -o comm=)
+if echo "$s" | grep -q "zsh"; then
+    active_shell="zsh"
+elif echo "$s" | grep -q "bash"; then
+    active_shell="bash"
+else
+    active_shell="sh"
+fi
 
 # System aliases
 alias c="clear"

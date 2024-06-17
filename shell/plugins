@@ -5,7 +5,14 @@
 # }
 
 # get the active shell used by the user
-active_shell=$(ps -p $$ -o comm=)
+s=$(ps -p $$ -o comm=)
+if echo "$s" | grep -q "zsh"; then
+    active_shell="zsh"
+elif echo "$s" | grep -q "bash"; then
+    active_shell="bash"
+else
+    active_shell="sh"
+fi
 
 # region: Brew Activation and Completion
 if has brew; then

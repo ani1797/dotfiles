@@ -59,6 +59,12 @@ set_env "PROJECTS" "$HOME/projects"
 set_env "WORK_DIR" "$PROJECTS/work"
 set_env "PERSONAL_DIR" "$PROJECTS/personal"
 
+
+#  Configuring History Settings
+set_env "HISTFILE" "$HOME/.history"
+set_env "HISTSIZE" 10000000
+set_env "SAVEHIST" 10000000
+
 ## Configurations for specific tools
 set_loc "ZSH_CONFIG_DIR" "$DOTFILES/ssh/zsh"
 set_loc "DIRENV_CONFIG" "$DOTFILES/direnv"  

@@ -49,3 +49,15 @@ layout_mpython() {
         log_status "No requirements.txt file found, skipping pip install"
     fi
 }
+
+layout_mterraform() {
+    dotenv_if_exists .env
+    use mise
+    if mise which terraform --version > /dev/null; then
+        tfversion=$(mise which terraform --version)
+    else
+        mise use --path .mise/config.toml terraform@latest
+        tfversion=$(mise which terraform --version)
+    fi
+    log_status "Using terraform version: $tfversion"
+}

@@ -101,7 +101,7 @@ link "$PWD/direnv/direnv.toml" "$CONFIG_DIR/direnv/direnv.toml"
 link "$PWD/direnv/direnvrc" "$CONFIG_DIR/direnv/direnvrc"
 
 # Adding git configuration to $XDG_CONFIG_HOME/git
-link "$PWD/git/.gitignore" "$CONFIG_DIR/git/.gitignore"
+link "$PWD/git/.gitignore" "$CONFIG_DIR/git/global.gitignore"
 link "$PWD/git/commit-template.txt" "$CONFIG_DIR/git/commit-template.txt"
 
 # Adding alacritty configuration to $XDG_CONFIG_HOME/alacritty

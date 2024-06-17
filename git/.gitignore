@@ -1,17 +1,18 @@
 # Mise Configurations
 # --------------------
-.mise.toml
-.mise.*.toml
-.mise/*
+**/.mise.toml
+**/.mise.*.toml
+**/.mise/*
+**/.tool-versions
 
 # Direnv Configurations
 # ----------------------
-.envrc
-.envrc.toml
+**/.envrc
+**/.envrc.toml
 
 # Editor Configurations
 # ----------------------
-.vscode/*
-.idea/*
-*.sublime-project
-*.sublime-workspace
+**/.vscode/*
+**/.idea/*
+**/*.sublime-project
+**/*.sublime-workspace

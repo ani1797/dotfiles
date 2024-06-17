@@ -43,7 +43,7 @@
 	gpgsign = true
 
 [core]
-	excludesFile = ~/.config/git/.gitignore
+	excludesFile = ~/.config/git/global.gitignore
 	editor = "$EDITOR"
 	autocrlf = input
 

@@ -30,7 +30,6 @@ setup_profile() {
 
     if [ ! -f "$HOME/.ssh/keys/${pf}_rsa.pub" ]; then
         op read "op://Development/$profile/public key" | tr -d '\r' | tee "$HOME/.ssh/keys/${pf}_rsa.pub" > /dev/null
-        chmod 400 "$HOME/.ssh/keys/${pf}_rsa.pub"
     fi
 }
 

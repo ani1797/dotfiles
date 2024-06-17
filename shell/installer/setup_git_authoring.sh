@@ -20,16 +20,16 @@ setup_profile() {
     # shellcheck disable=SC2155
     local pf=$(echo "$profile" | tr '[:upper:]' '[:lower:]')
     if [ ! -f "$HOME/.config/git/$pf.gitconfig" ]; then
-        op inject -i "$DOTFILES/git/config/$pf.tpl" -o "$HOME/.config/git/$pf.gitconfig"
+      op inject -i "$DOTFILES/git/config/$pf.tpl" -o "$HOME/.config/git/$pf.gitconfig.txt"
     fi
 
     if [ ! -f "$HOME/.ssh/keys/${pf}_rsa" ]; then
-        op read "op://Development/$profile/private key?ssh-format=openssh" | tr -d '\r' | tee "$HOME/.ssh/keys/${pf}_rsa" > /dev/null
-        chmod 400 "$HOME/.ssh/keys/${pf}_rsa"
+      op read "op://Development/$profile/private key?ssh-format=openssh" | tr -d '\r' | tee "$HOME/.ssh/keys/${pf}_rsa" > /dev/null
+      chmod 400 "$HOME/.ssh/keys/${pf}_rsa"
     fi
 
     if [ ! -f "$HOME/.ssh/keys/${pf}_rsa.pub" ]; then
-        op read "op://Development/$profile/public key" | tr -d '\r' | tee "$HOME/.ssh/keys/${pf}_rsa.pub" > /dev/null
+      op read "op://Development/$profile/public key" | tr -d '\r' | tee "$HOME/.ssh/keys/${pf}_rsa.pub" > /dev/null
     fi
 }
 

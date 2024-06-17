@@ -50,11 +50,11 @@
 [gpg]
     format = ssh
 
-[includeIf "gitdir:~/projects/personal/"]
-	path = ~/.config/git/personal.gitconfig
+[includeIf "gitdir/i:~/projects/personal/**"]
+	path = ~/.config/git/personal.gitconfig.txt
 
-[includeIf "gitdir:~/projects/work/"]
-	path = ~/.config/git/work.gitconfig
+[includeIf "gitdir/i:~/projects/work/**"]
+	path = ~/.config/git/work.gitconfig.txt
 
 [init]
 	defaultBranch = main

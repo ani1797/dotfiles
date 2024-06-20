@@ -7,3 +7,6 @@ brew 'navi'
 
 # gum
 brew 'gum'
+
+# bat
+brew 'bat'

@@ -15,7 +15,18 @@ pip_install() {
     fi
 }
 
+create_venv() {
+    if [ ! -d .venv ]; then
+        if has uv; then
+            uv venv
+        else
+            $(mise which python) -m venv .venv
+        fi
+    fi
+}
+
 layout_mpython() {
+    
     dotenv_if_exists .env
     watch_file requirements.txt
     use mise
@@ -24,12 +35,13 @@ layout_mpython() {
     if mise which python --version > /dev/null; then
         pyversion=$(mise which python --version)
     else
-        mise use --path .mise/config.toml python@latest
+        py_version=${1:-"latest"}
+        mise use --path .mise/config.toml "python@${py_version}"
         pyversion=$(mise which python --version)
     fi
     log_status "Using python version: $pyversion"
 
-    test -d .venv || $(mise which python) -m venv .venv
+    test -d .venv || create_venv
     # shellcheck disable=SC1091
     . .venv/bin/activate
 

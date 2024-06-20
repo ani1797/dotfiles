@@ -8,6 +8,7 @@ uv = "latest"
 shellcheck = "latest"
 github-cli = "latest"
 azure-cli = "latest"
+snyk = "latest"
 
 [settings]
 # plugins can read the versions files used by other version managers (if enabled by the plugin)

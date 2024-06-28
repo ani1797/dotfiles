@@ -8,13 +8,12 @@ uv = "latest"
 shellcheck = "latest"
 github-cli = "latest"
 azure-cli = "latest"
-snyk = "latest"
 
 [settings]
 # plugins can read the versions files used by other version managers (if enabled by the plugin)
 # for example, .nvmrc in the case of node's nvm
 legacy_version_file = true                     # enabled by default (unlike asdf)
-legacy_version_file_disable_tools = ['python'] # disable for specific tools
+legacy_version_file_disable_tools = [] # disable for specific tools
 
 # configure `mise install` to always keep the downloaded archive
 always_keep_download = false # deleted after install by default
@@ -47,7 +46,7 @@ env_file = '.env'   # load env vars from a dotenv file, see `MISE_ENV_FILE`
 experimental = true # enable experimental features
 
 # configure messages displayed when entering directories with config files
-status = { missing_tools = "if_other_versions_installed", show_env = true, show_tools = false }
+status = { missing_tools = "if_other_versions_installed", show_env = false, show_tools = false }
 
 # Configure the python plugin
 python_compile = true

@@ -4,3 +4,6 @@ pytest
 coverage
 ipykernel
 icecream
+python-dotenv
+setuptools
+watchdog

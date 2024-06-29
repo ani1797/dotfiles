@@ -6,5 +6,5 @@
         "--all",
         "--sorted"
     ],
-    "plugins_dir": "~/.config/httpie/plugins",
+    "plugins_dir": "~/.config/httpie/plugins"
 }

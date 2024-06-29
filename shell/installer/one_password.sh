@@ -1,14 +1,9 @@
 #!/usr/bin/env sh
 
-if ! has curl; then
-    log_error "curl is required to install 1Password CLI" 69
-fi
-
-if ! has unzip; then
-    log_error "unzip is required to install 1Password CLI" 69
-fi
-
 op_install() {
+    required curl
+    required unzip
+
     BIN_DIR=${BIN_DIR:-$HOME/.local/bin}
     VERSION=${1:-2.25.1}
 

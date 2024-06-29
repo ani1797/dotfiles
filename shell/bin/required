@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #
-# required: check if a command is available in the system
+# required: check if a command is available in the system, if not exit with an error message.
 # usage: required <command>
 #
 

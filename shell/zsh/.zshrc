@@ -28,11 +28,18 @@ setopt hist_reduce_blanks # Remove superfluous blanks before saving history
 setopt share_history # Share history across terminals
 setopt inc_append_history # Immediately append to history instead of overwriting
 
+# Loading all functions from the functions directory
+if [ -d "$DOTFILES/shell/functions" ]; then
+    for file in "$DOTFILES/shell/functions"/*; do
+        source "$file"
+    done
+fi
+
 
 # Loading all the custom aliases and their completions
 precmd() {
     if [ -x "$DOTFILES/shell/aliases" ]; then
-        . "$DOTFILES/shell/aliases"
+        source "$DOTFILES/shell/aliases"
     fi
 }
 precmd

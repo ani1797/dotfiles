@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 #
 # source_if_exists: source a file if it exists
 #
@@ -8,6 +8,7 @@
 
 source_if_exists () {
     if test -r "$1"; then
+        # shellcheck source=/dev/null
         source "$1"
     fi
 }

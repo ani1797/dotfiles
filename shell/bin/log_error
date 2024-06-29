@@ -10,7 +10,7 @@ log_error() {
     error_code=${2:-1}
     message=$1
     echo -e "\033[1;31m[ERROR]\033[0m $message (ec: \033[1;31m$error_code\033[0m)"
-    exit $error_code
+    exit "$error_code"
 }
 
 log_error "$@"

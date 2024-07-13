@@ -134,6 +134,15 @@ if has python; then
     alias py=python
 fi
 
+if has terraform; then
+    complete -o nospace -C terraform terraform
+    complete -o nospace -C terraform tf
+    alias tf=terraform
+    alias tfmt="terraform fmt"
+    alias tfplan="terraform plan -out=/tmp/out.tfplan"
+    alias tfapply="terraform apply /tmp/out.tfplan"
+fi
+
 if has tilt; then
     eval "$(tilt completion "$active_shell")"
 fi

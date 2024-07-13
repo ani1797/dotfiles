@@ -130,6 +130,10 @@ if has op; then
     eval "$(op completion "$active_shell")"
 fi
 
+if has python; then
+    alias py=python
+fi
+
 if has tilt; then
     eval "$(tilt completion "$active_shell")"
 fi

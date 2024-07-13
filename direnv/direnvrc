@@ -16,11 +16,12 @@ pip_install() {
 }
 
 create_venv() {
+    python=${1}
     if [ ! -d .venv ]; then
         if has uv; then
-            uv venv
+            uv venv -p "$python"
         else
-            "$(mise which python)" -m venv .venv
+            "$python" -m venv .venv
         fi
     fi
 }
@@ -28,7 +29,7 @@ create_venv() {
 configure_python() {
     version=$1
     watch_file requirements.txt
-    test -d .venv || create_venv
+    test -d .venv || create_venv "$(mise which python)"
     # shellcheck disable=SC1091
     . .venv/bin/activate
     log_status "Using $(python --version) from $(which python)"

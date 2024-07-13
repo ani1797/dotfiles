@@ -7,6 +7,11 @@ This project aims to streamline and simplify my machine setup. I primarily use M
 Get started by running commands below:
 
 ```sh
+
+# Please ensure git, curl, gcc, unzip is installed in your machine
+# for Ubuntu run: apt-get update && apt-get install zsh git curl vim build-essential unzip -y -qq
+# for mac most of the dependencies are preinstalled.
+
 # Here is a suggestion for dotfiles locations:
 # 1. $HOME/.dotfiles
 # 2. $HOME/dotfiles

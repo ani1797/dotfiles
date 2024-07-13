@@ -26,20 +26,21 @@ create_venv() {
 }
 
 layout_mpython() {
-    
     dotenv_if_exists .env
     watch_file requirements.txt
     use mise
-    # run mise which python --version to get the python version to use, if the command fails, use the default python.
-    # don't output the command to the console
-    if mise which python --version > /dev/null; then
-        pyversion=$(mise which python --version)
+
+    # check if PY_VERSION is set
+    if [ -z "$PY_VERSION" ]; then
+        py_version="latest"
     else
-        py_version=${1:-"latest"}
-        mise use --path .mise/config.toml "python@${py_version}"
-        pyversion=$(mise which python --version)
+        py_version="$PY_VERSION"
     fi
-    log_status "Using python version: $pyversion"
+    log_status "Using python version: $py_version"
+
+    mkdir -vp .mise
+    mise use --path .mise/config.toml "python@${py_version}"
+    
 
     test -d .venv || create_venv
     # shellcheck disable=SC1091

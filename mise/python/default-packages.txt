@@ -2,9 +2,13 @@ pip
 ruff
 pytest
 coverage
-ipykernel
+
 icecream
 python-dotenv
 setuptools
 watchdog
 result
+
+ipykernel
+ipywidgets
+ipyprogressbar

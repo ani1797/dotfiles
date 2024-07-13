@@ -21,7 +21,8 @@ path_add() {
 }
 
 # Adding ./shell/bin to PATH (required for functions)
-path_add "$PWD/shell/bin"
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+path_add "$SCRIPT_DIR/shell/bin"
 
 ensure_homebrew() {
     if ! has brew; then
@@ -84,29 +85,29 @@ if  has brew && ! has starship; then
 fi
 
 # Adding both bashenv and zshenv to the home directory
-link "$PWD/shell/env" "$HOME/.bashenv"
-link "$PWD/shell/env" "$HOME/.zshenv"
+link "$SCRIPT_DIR/shell/env" "$HOME/.bashenv"
+link "$SCRIPT_DIR/shell/env" "$HOME/.zshenv"
 
 # Adding both bashrc and zshrc to the home directory
-link "$PWD/shell/bash/.bashrc" "$HOME/.bashrc"
-link "$PWD/shell/zsh/.zshrc" "$HOME/.zshrc"
+link "$SCRIPT_DIR/shell/bash/.bashrc" "$HOME/.bashrc"
+link "$SCRIPT_DIR/shell/zsh/.zshrc" "$HOME/.zshrc"
 
 CONFIG_DIR="${XDG_CONFIG_HOME:-"$HOME/.config"}"
 
 # Adding ssh configuration to $HOME/ssh
-link "$PWD/ssh/config" "$HOME/.ssh/config"
-link "$PWD/ssh/allowed_signers" "$HOME/.ssh/allowed_signers"
+link "$SCRIPT_DIR/ssh/config" "$HOME/.ssh/config"
+link "$SCRIPT_DIR/ssh/allowed_signers" "$HOME/.ssh/allowed_signers"
 
 # Adding direnv configuration to $XDG_CONFIG_HOME/direnv/direnv.toml
-link "$PWD/direnv/direnv.toml" "$CONFIG_DIR/direnv/direnv.toml"
-link "$PWD/direnv/direnvrc" "$CONFIG_DIR/direnv/direnvrc"
+link "$SCRIPT_DIR/direnv/direnv.toml" "$CONFIG_DIR/direnv/direnv.toml"
+link "$SCRIPT_DIR/direnv/direnvrc" "$CONFIG_DIR/direnv/direnvrc"
 
 # Adding git configuration to $XDG_CONFIG_HOME/git
-link "$PWD/git/.gitignore" "$CONFIG_DIR/git/global.gitignore"
-link "$PWD/git/commit-template.txt" "$CONFIG_DIR/git/commit-template.txt"
+link "$SCRIPT_DIR/git/.gitignore" "$CONFIG_DIR/git/global.gitignore"
+link "$SCRIPT_DIR/git/commit-template.txt" "$CONFIG_DIR/git/commit-template.txt"
 
 # Adding alacritty configuration to $XDG_CONFIG_HOME/alacritty
-link "$PWD/alacritty/alacritty.toml" "$CONFIG_DIR/alacritty/alacritty.toml"
+link "$SCRIPT_DIR/alacritty/alacritty.toml" "$CONFIG_DIR/alacritty/alacritty.toml"
 
 # Adding tmux configuration to $XDG_CONFIG_HOME/tmux
-link "$PWD/tmux/tmux.conf" "$CONFIG_DIR/tmux/tmux.conf"
+link "$SCRIPT_DIR/tmux/tmux.conf" "$CONFIG_DIR/tmux/tmux.conf"

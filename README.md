@@ -16,7 +16,7 @@ Get started by running commands below:
 
 # Assuming you will be cloning and using $HOME folder for you dotfiles.
 git clone https://github.com/ani1797/dot.git $HOME/.dotfiles
-$HOME/dotfiles/.install.sh
+$HOME/.dotfiles/install.sh
 ```
 
 > Note the 5rd option is where Github Codespaces clones and installs the dotfiles from.

@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 op_install() {
     required curl
     required unzip

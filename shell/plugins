@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # has() {
 #     type "$1" > /dev/null 2>&1
@@ -27,10 +27,12 @@ if has brew; then
     if [ $active_shell = "bash" ]; then
         if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]
         then
+            # shellcheck source=/dev/null
             source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
         else
             for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*
             do
+            # shellcheck source=/dev/null
             [[ -r "${COMPLETION}" ]] && source "${COMPLETION}"
             done
         fi
@@ -40,6 +42,7 @@ fi
 
 # region: asdf plugin load
 if has asdf; then
+    # shellcheck source=/dev/null
     source "$HOMEBREW_PREFIX/opt/asdf/etc/bash_completion.d/asdf.bash"
 fi
 # endregion
@@ -52,6 +55,7 @@ fi
 
 # region: fzf plugin load
 if has fzf; then
+    # shellcheck source=/dev/null
    source <(fzf --$active_shell)
 
     export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'

@@ -20,31 +20,18 @@ create_venv() {
         if has uv; then
             uv venv
         else
-            $(mise which python) -m venv .venv
+            "$(mise which python)" -m venv .venv
         fi
     fi
 }
 
-layout_mpython() {
-    dotenv_if_exists .env
+configure_python() {
+    version=$1
     watch_file requirements.txt
-    use mise
-
-    # check if PY_VERSION is set
-    if [ -z "$PY_VERSION" ]; then
-        py_version="latest"
-    else
-        py_version="$PY_VERSION"
-    fi
-    log_status "Using python version: $py_version"
-
-    mkdir -vp .mise
-    mise use --path .mise/config.toml "python@${py_version}"
-    
-
     test -d .venv || create_venv
     # shellcheck disable=SC1091
     . .venv/bin/activate
+    log_status "Using $(python --version) from $(which python)"
 
     # check and see if there is a default packages file
     if [ -n "$MISE_PYTHON_DEFAULT_PACKAGES_FILE" ]; then
@@ -72,14 +59,22 @@ layout_mpython() {
     fi
 }
 
-layout_mterraform() {
-    dotenv_if_exists .env
+layout_mise() {
     use mise
-    if mise which terraform --version > /dev/null; then
-        tfversion=$(mise which terraform --version)
+    if [ -z "$MISE_ENV" ]; then
+        MISE_CONFIG_FILE=".mise/config.toml"
     else
-        mise use --path .mise/config.toml terraform@latest
-        tfversion=$(mise which terraform --version)
+        MISE_CONFIG_FILE=".mise/$MISE_ENV/config.toml"
     fi
-    log_status "Using terraform version: $tfversion"
+    # for each function argument, get tool and version and add to config file
+    mise use --path "$MISE_CONFIG_FILE" "$@"
+    for arg in "$@"; do
+        tool=$(echo "$arg" | cut -d@ -f1)
+        version=$(echo "$arg" | cut -d@ -f2)
+        # find a function named configure_$tool and run it
+        if declare -f "configure_$tool" > /dev/null; then
+            "configure_$tool" "$version"
+        fi
+    done
+    dotenv_if_exists .env
 }

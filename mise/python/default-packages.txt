@@ -1,11 +1,9 @@
-pip
 ruff
 pytest
 coverage
 
 icecream
 python-dotenv
-setuptools
 watchdog
 result
 

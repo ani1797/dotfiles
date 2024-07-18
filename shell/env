@@ -78,7 +78,7 @@ set_loc "WHALEBREW_CONFIG" "$DOTFILES/whalebrew/config.yml"
 set_loc "HTTPIE_CONFIG_DIR" "$DOTFILES/httpie"
 
 set_loc "MISE_CONFIG_DIR" "$DOTFILES/mise"
-set_loc "MISE_PYTHON_DEFAULT_PACKAGES_FILE" "$MISE_CONFIG_DIR/python/default-packages.txt"
+# set_loc "MISE_PYTHON_DEFAULT_PACKAGES_FILE" "$MISE_CONFIG_DIR/python/default-packages.txt"
 # set_loc "MISE_SHORTHANDS_FILE" "$MISE_CONFIG_DIR/shorthands.toml"
 
 

@@ -7,8 +7,7 @@ watchexec = "latest"
 uv = "latest"
 shellcheck = "latest"
 github-cli = "latest"
-azure-cli = "latest"
-python = "3.12.4"
+python = "latest"
 
 [settings]
 # plugins can read the versions files used by other version managers (if enabled by the plugin)
@@ -40,15 +39,16 @@ paranoid = false              # see MISE_PARANOID
 
 # shorthands_file = '~/.dotfiles/mise/shorthands.toml' # path to the shorthands file, see `MISE_SHORTHANDS_FILE` # setting via ENV to allow for dynamic paths
 disable_default_shorthands = false # disable the default shorthands, see `MISE_DISABLE_DEFAULT_SHORTHANDS`
-disable_tools = [
-] # disable specific tools, generally used to turn off core tools
+disable_tools = [ ] # disable specific tools, generally used to turn off core tools
 
 env_file = '.env'   # load env vars from a dotenv file, see `MISE_ENV_FILE`
 experimental = true # enable experimental features
 
 # configure messages displayed when entering directories with config files
-status = { missing_tools = "if_other_versions_installed", show_env = false, show_tools = false }
+status = { missing_tools = "never", show_env = false, show_tools = false }
 
 # Configure the python plugin
 python_compile = true
-# python_default_packages_file = "$DOTFILES/mise/python/default-packages.txt" # setting via ENV to allow for dynamic paths
+python_default_packages_file = "{{env.DOTFILES}}/mise/python/default-packages.txt" # setting via ENV to allow for dynamic paths
+
+[env]

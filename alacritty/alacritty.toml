@@ -40,7 +40,6 @@ magenta = '#e27e8d'
 cyan = '#70e1e8'
 white = '#ffffff'
 
-
 [font]
 size = 15
 builtin_box_drawing = true
@@ -51,15 +50,15 @@ style = "Regular"
 
 [font.bold]
 family = "Fira Code"
-style = "Regular"
+style = "Bold"
 
 [font.italic]
 family = "Fira Code"
-style = "Regular"
+style = "Italic"
 
 [font.bold_italic]
 family = "Fira Code"
-style = "Regular"
+style = "Bold"
 
 [mouse]
 hide_when_typing = true

@@ -22,6 +22,7 @@ op_install() {
     unzip -o /tmp/op.zip -d /tmp > /dev/null
     mkdir -p $BIN_DIR
     mv /tmp/op "$BIN_DIR/op"
+    chmod u+x "$BIN_DIR/op"
     rm -rf /tmp/op*
     log_success "1Password CLI has been installed to $BIN_DIR"
 }

@@ -141,6 +141,9 @@ if has terraform; then
     alias tfmt="terraform fmt"
     alias tfplan="terraform plan -out=/tmp/out.tfplan"
     alias tfapply="terraform apply /tmp/out.tfplan"
+    alias tfdestroy="terraform destroy"
+    alias tfdaa="terraform destroy -auto-approve"
+    alias tfclean="rm -f /tmp/out.tfplan"
 fi
 
 if has tilt; then

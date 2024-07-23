@@ -14,7 +14,6 @@ Host personal
   PreferredAuthentications publickey
   IdentityFile ~/.ssh/keys/personal_rsa
 
-
 Host github github.com
   User git
   HostName github.com
@@ -24,6 +23,6 @@ Host github github.com
 
 Host unraid
   User root
-  HostName 10.0.0.99
+  HostName 192.168.4.200
   PreferredAuthentications publickey
   IdentityFile ~/.ssh/keys/personal_rsa

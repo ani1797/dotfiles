@@ -81,6 +81,7 @@ if has docker; then
     alias dcrebuild="docker-compose up -d --build"
     alias dclogs="docker-compose logs -f"
     alias dcrecreate="docker-compose up -d --force-recreate --remove-orphans"
+    alias dclean="docker system prune --all --volume --force"
 fi
 
 if has eza; then

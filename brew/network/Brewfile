@@ -3,3 +3,9 @@ brew 'nmap'
 
 # httpie
 brew 'httpie'
+
+# mkcert
+brew 'mkcert'
+
+# sipcalc
+brew 'sipcalc'

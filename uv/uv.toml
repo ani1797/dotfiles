@@ -1,0 +1,13 @@
+native-tls = true
+compile-bytecode = false
+preview = true
+index-url = "https://pypi.org/simple"
+extra-index-url = [
+    "https://pypi.python.org/simple",
+    "https://files.pythonhosted.org/simple",
+    "https://artifactory.manulife.ca/artifactory/api/pypi/pypi/simple",
+    "https://artifactory.manulife.ca/artifactory/api/pypi/pypi-remote/simple",
+    "https://artifactory.manulife.ca/artifactory/api/pypi/cdn-cdnaa-pypi/simple",
+    "https://1821-659B-1112-B778@download.prodi.gy/index",
+    "https://download.pytorch.org/whl/cpu"
+]

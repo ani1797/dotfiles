@@ -30,8 +30,9 @@ configure_python() {
     version=$1
     watch_file requirements.txt
     test -d .venv || create_venv "$(mise which python)"
+    VIRTUAL_ENV="$(pwd)/.venv"
     # shellcheck disable=SC1091
-    . .venv/bin/activate
+    . "$VIRTUAL_ENV/bin/activate"
     log_status "Using $(python --version) from $(which python)"
 
     # check and see if there is a default packages file
@@ -58,6 +59,7 @@ configure_python() {
     else
         log_status "No requirements.txt file found, skipping pip install"
     fi
+    export VIRTUAL_ENV
 }
 
 layout_mise() {

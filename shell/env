@@ -76,6 +76,7 @@ set_loc "GIT_CONFIG_GLOBAL" "$DOTFILES/git/.gitconfig"
 set_loc "NPM_CONFIG_USERCONFIG" "$DOTFILES/npm/.npmrc"
 set_loc "WHALEBREW_CONFIG" "$DOTFILES/whalebrew/config.yml"
 set_loc "HTTPIE_CONFIG_DIR" "$DOTFILES/httpie"
+set_loc "UV_CONFIG_FILE" "$DOTFILES/uv/uv.toml"
 
 set_loc "MISE_CONFIG_DIR" "$DOTFILES/mise"
 # set_loc "MISE_PYTHON_DEFAULT_PACKAGES_FILE" "$MISE_CONFIG_DIR/python/default-packages.txt"

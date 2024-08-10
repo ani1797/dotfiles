@@ -17,6 +17,8 @@ alias h="history"
 alias j="jobs"
 alias g="git"
 
+alias wn="watch -n 1 "
+
 # # Load hash directories
 hash -d dot="$DOTFILES"
 hash -d projects="$PROJECTS"
@@ -72,8 +74,11 @@ if has docker; then
     eval "$(docker completion "$active_shell")"
     alias d=docker
     alias dc=docker-compose
+    alias dcp="docker-compose pull"
 
     alias dcup="docker-compose up -d"
+    alias dcupf="docker-compose up -d --force-recreate"
+    alias dcupfl="docker-compose up -d --force-recreate && docker-compose logs -f"
     alias dcdown="docker-compose down"
     alias dcdownv="docker-compose down -v"
     alias dcstop="docker-compose stop"

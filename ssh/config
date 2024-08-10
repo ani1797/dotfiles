@@ -2,6 +2,12 @@
 # Configure things like proxy, 1password agent config or whatever else you need
 Include config.d/*
 
+Host unraid
+  User root
+  HostName 192.168.4.200
+  PreferredAuthentications publickey
+  IdentityFile ~/.ssh/keys/personal_rsa
+
 Host work
   User git
   HostName github.com
@@ -20,9 +26,3 @@ Host github github.com
   PreferredAuthentications publickey
   IdentityFile ~/.ssh/keys/personal_rsa
   # IdentityFile ~/.ssh/keys/work_rsa
-
-Host unraid
-  User root
-  HostName 192.168.4.200
-  PreferredAuthentications publickey
-  IdentityFile ~/.ssh/keys/personal_rsa

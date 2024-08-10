@@ -2,6 +2,67 @@
 
 format = "$all"
 
+[shell]
+disabled = false
+bash_indicator = ""
+powershell_indicator = ""
+cmd_indicator = ""
+zsh_indicator = ""
+
+[os]
+disabled = false
+format = "$symbol "
+
+
+[os.symbols]
+Ubuntu = ""
+Windows = "🪟"
+Macos = ""
+AIX = "➿ "
+AlmaLinux = "💠 "
+Alpaquita = "🔔 "
+Alpine = "🏔️ "
+Amazon = "🙂 "
+Android = "🤖 "
+Arch = "🎗️ "
+Artix = "🎗️ "
+CentOS = "💠 "
+Debian = "🌀 "
+DragonFly = "🐉 "
+Emscripten = "🔗 "
+EndeavourOS = "🚀 "
+Fedora = "🎩 "
+FreeBSD = "😈 "
+Garuda = "🦅 "
+Gentoo = "🗜️ "
+HardenedBSD = "🛡️ "
+Illumos = "🐦 "
+Kali = "🐉 "
+Linux = "🐧 "
+Mabox = "📦 "
+Manjaro = "🥭 "
+Mariner = "🌊 "
+MidnightBSD = "🌘 "
+Mint = "🌿 "
+NetBSD = "🚩 "
+NixOS = "❄️ "
+OpenBSD = "🐡 "
+OpenCloudOS = "☁️ "
+OracleLinux = "🦴 "
+Pop = "🍭 "
+Raspbian = "🍓 "
+RedHatEnterprise = "🎩 "
+Redhat = "🎩 "
+Redox = "🧪 "
+RockyLinux = "💠 "
+SUSE = "🦎 "
+Solus = "⛵ "
+Ultramarine = "🔷 "
+Unknown = "❓ "
+Void = "  "
+openEuler = "🦉 "
+openSUSE = "🦎 "
+
 [battery]
 disabled = false
 full_symbol = "🔋"

@@ -90,7 +90,8 @@ if has docker; then
 fi
 
 if has eza; then
-    alias la="eza --icons=auto --color=auto -h"
+    alias l="eza --icons=auto --color=auto -h"
+    alias la="eza --icons=auto --color=auto -h -T --git-ignore"
     alias ll="eza --icons=auto --color=auto -alh"
     alias lg="eza --icons=auto --color=auto -alh -T --git-ignore"
     alias lat="eza --icons=auto --color=auto -lh -T"

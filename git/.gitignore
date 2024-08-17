@@ -4,9 +4,17 @@
 **/.mise.*.toml
 **/.mise/*
 **/.tool-versions
+**/.mise*.toml
+
+
+# Cache files
+# --------------------
+**/.cache
+
 
 # Direnv Configurations
 # ----------------------
+**/.env
 **/.envrc
 **/.envrc.toml
 

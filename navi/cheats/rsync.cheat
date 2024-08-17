@@ -1,0 +1,4 @@
+% rsync
+
+# Copy files with progress
+rsync -ah --progress <source> <destination>

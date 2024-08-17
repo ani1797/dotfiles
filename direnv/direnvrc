@@ -28,34 +28,45 @@ create_venv() {
 
 configure_python() {
     version=$1
-    watch_file requirements.txt
+
+    # Create a new virtual environment if one does not exist
     test -d .venv || create_venv "$(mise which python)"
+
+    # Create a cache directory if one does not exist
+    test -d .cache || mkdir .cache
+
+    # Activate the virtual environment
     VIRTUAL_ENV="$(pwd)/.venv"
     # shellcheck disable=SC1091
     . "$VIRTUAL_ENV/bin/activate"
     log_status "Using $(python --version) from $(which python)"
 
+
+    MISE_PYTHON_DEFAULT_PACKAGES_FILE=${MISE_PYTHON_DEFAULT_PACKAGES_FILE:-$DOTFILES/mise/python/default_packages.txt}
+    REQUIREMENTS_FILE=${REQUIREMENTS_FILE:-"$(pwd)/requirements.txt"}
+
     # check and see if there is a default packages file
+    watch_file "$MISE_PYTHON_DEFAULT_PACKAGES_FILE"
     if [ -n "$MISE_PYTHON_DEFAULT_PACKAGES_FILE" ]; then
-        if [ ! -f .mise/.default_packages_installed ] || [ "$(cat .mise/.default_packages_installed)" != "$(md5sum "$MISE_PYTHON_DEFAULT_PACKAGES_FILE")" ]; then
-            log_status "Installing default packages from $MISE_PYTHON_DEFAULT_PACKAGES_FILE"
+        if ! md5sum -c .cache/default_packages.md5sum > /dev/null; then
+            log_status "global dependencies have changed, updating dependencies"
             pip_install "$MISE_PYTHON_DEFAULT_PACKAGES_FILE"
-            md5sum "$MISE_PYTHON_DEFAULT_PACKAGES_FILE" > .mise/.default_packages_installed
+            md5sum "$MISE_PYTHON_DEFAULT_PACKAGES_FILE" > .cache/default_packages.md5sum
         fi
     fi
     
     # check and see if there is an existing requirements checksum file
-    if [ -f .mise/.reqsum ]; then
-        reqsum=$(cat .mise/.reqsum)
-        if [ "$reqsum" != "$(md5sum requirements.txt)" ]; then
+    watch_file "$REQUIREMENTS_FILE"
+    if [ -f .cache/requirements.md5sm ]; then
+        if ! md5sum -c .cache/requirements.md5sm > /dev/null; then
             log_status "requirements.txt has changed, updating dependencies"
-            pip_install "requirements.txt"
-            md5sum requirements.txt > .mise/.reqsum
+            pip_install "$REQUIREMENTS_FILE"
+            md5sum "$REQUIREMENTS_FILE" > .cache/requirements.md5sm
         fi
-    elif [ -f requirements.txt ]; then
+    elif [ -f "$REQUIREMENTS_FILE" ]; then
         log_status "Running pip install -r requirements.txt to install dependencies"
-        pip_install "requirements.txt"
-        md5sum requirements.txt > .mise/.reqsum
+        pip_install "$REQUIREMENTS_FILE"
+        md5sum "$REQUIREMENTS_FILE" > .cache/requirements.md5sm
     else
         log_status "No requirements.txt file found, skipping pip install"
     fi
@@ -63,12 +74,9 @@ configure_python() {
 }
 
 layout_mise() {
+    dotenv_if_exists .env
     use mise
-    if [ -z "$MISE_ENV" ]; then
-        MISE_CONFIG_FILE=".mise/config.toml"
-    else
-        MISE_CONFIG_FILE=".mise/$MISE_ENV/config.toml"
-    fi
+    MISE_CONFIG_FILE=".mise.${MISE_ENV:-local}.toml"
     # for each function argument, get tool and version and add to config file
     mise use --path "$MISE_CONFIG_FILE" "$@"
     for arg in "$@"; do
@@ -78,6 +86,5 @@ layout_mise() {
         if declare -f "configure_$tool" > /dev/null; then
             "configure_$tool" "$version"
         fi
-    done
-    dotenv_if_exists .env
+    done   
 }

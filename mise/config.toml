@@ -50,5 +50,3 @@ status = { missing_tools = "never", show_env = false, show_tools = false }
 # Configure the python plugin
 python_compile = true
 python_default_packages_file = "{{env.DOTFILES}}/mise/python/default-packages.txt" # setting via ENV to allow for dynamic paths
-
-[env]

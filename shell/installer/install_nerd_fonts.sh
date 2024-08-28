@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+mkdir -pv "$HOME/.local/share/fonts/"
+
 log_info "Downloading fonts..."
 git clone --filter=blob:none --sparse https://github.com/ryanoasis/nerd-fonts.git /tmp/nerd-fonts
 (cd /tmp/nerd-fonts && git sparse-checkout set "patched-fonts")

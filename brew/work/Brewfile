@@ -1,6 +1,3 @@
-# Casks
-tap "homebrew/cask-fonts"
-
 # Firacode font
 cask "font-fira-code"
 
@@ -10,3 +7,9 @@ brew "databricks"
 
 # Allacritty (Terminal)
 cask "alacritty"
+
+# Azrue CLI
+brew "azure-cli"
+
+# 1Password CLI
+brew '1password-cli'

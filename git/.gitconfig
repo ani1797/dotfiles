@@ -12,6 +12,7 @@
 	last = log -1 HEAD --stat
 	p = push
 	pf = push --force
+	fp = push --force
 	pfl= push --force-with-lease
 	can = commit --amend --no-edit
 	cam = commit --amend -m

@@ -91,14 +91,17 @@ layout_mise() {
 
 layout_uv() {
     PY_VERSION=${1:-3.12}
+    log_status "Using Python version ${PY_VERSION}"
 
     if [ ! -d ".venv" ]; then
+        log_status "Creating a new virtual environment as one does not exist"
         uv venv --python "${PY_VERSION}"
     fi
 
     # Activate the virtual environment
     VIRTUAL_ENV="$(pwd)/.venv"
 
+    log_status "Activating the virtual environment at ${VIRTUAL_ENV}"
     # shellcheck source=/dev/null
     source "${VIRTUAL_ENV}/bin/activate"
 
@@ -112,13 +115,14 @@ layout_uv() {
     if [ -f ".gitignore" ]; then
         # check and see if there is an entry for requirements.in, if not add it
         if ! grep -q "requirements.in" ".gitignore"; then
-            echo "requirements.in" >> .gitignore
+            # ensure that requirements.in is added to the .gitignore file and make sure it is in a new line!
+            echo -e "\nrequirements.in" >> .gitignore
             log_status "Added requirements.in to .gitignore"
         fi
     else
         # create a .gitignore file with the contents of https://raw.githubusercontent.com/github/gitignore/refs/heads/main/Python.gitignore file
         curl -sSL -o .gitignore https://raw.githubusercontent.com/github/gitignore/refs/heads/main/Python.gitignore
-        echo "requirements.in" >> .gitignore
+        echo -e "\nrequirements.in" >> .gitignore
     fi
 
     # Keep the latest requirements synced with current environment

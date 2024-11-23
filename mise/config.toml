@@ -7,13 +7,11 @@ watchexec = "latest"
 uv = "latest"
 shellcheck = "latest"
 github-cli = "latest"
-python = "latest"
-terraform = "latest"
 
 [settings]
 # plugins can read the versions files used by other version managers (if enabled by the plugin)
 # for example, .nvmrc in the case of node's nvm
-legacy_version_file = true                     # enabled by default (unlike asdf)
+legacy_version_file = true             # enabled by default (unlike asdf)
 legacy_version_file_disable_tools = [] # disable for specific tools
 
 # configure `mise install` to always keep the downloaded archive
@@ -39,7 +37,8 @@ paranoid = false              # see MISE_PARANOID
 
 # shorthands_file = '~/.dotfiles/mise/shorthands.toml' # path to the shorthands file, see `MISE_SHORTHANDS_FILE` # setting via ENV to allow for dynamic paths
 disable_default_shorthands = false # disable the default shorthands, see `MISE_DISABLE_DEFAULT_SHORTHANDS`
-disable_tools = [ ] # disable specific tools, generally used to turn off core tools
+disable_tools = [
+] # disable specific tools, generally used to turn off core tools
 
 env_file = '.env'   # load env vars from a dotenv file, see `MISE_ENV_FILE`
 experimental = true # enable experimental features

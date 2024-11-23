@@ -1,13 +1,16 @@
-pip
+# Ruff Language Server
 ruff
-pytest
-coverage
 
+# Testing Tools
+pytest
+pytest-cov
+
+# Development Tools
 icecream
 python-dotenv
 watchdog
-result
 
+# Notebook Support
 ipykernel
 ipywidgets
 ipyprogressbar

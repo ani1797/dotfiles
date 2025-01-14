@@ -15,3 +15,6 @@ brew 'mise'
 
 # better find
 brew 'fd'
+
+# uv
+brew 'uv'

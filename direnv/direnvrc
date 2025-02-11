@@ -105,9 +105,34 @@ layout_uv() {
     # shellcheck source=/dev/null
     source "${VIRTUAL_ENV}/bin/activate"
 
-    if [ ! -f "requirements.in" ]; then
+    # If requirements.txt does not exists but requirements.in does, create a new requirements.txt file based on requirements.in
+    if [ ! -f "requirements.txt" ] && [ -f "requirements.in" ]; then
+        log_status "Creating a new requirements.txt file based on requirements.in"
+        uv pip compile -q requirements.in -o requirements.txt
+    fi
+
+    # If requirements.in and requirements.txt don't exist, create a new requirements.in file and then compile it to requirements.txt
+    if [ ! -f "requirements.in" ] && [ ! -f "requirements.txt" ]; then
+        log_status "Creating a new requirements.in file"
         cat "$DOTFILES/mise/python/default-packages.txt" > requirements.in
-        log_status "Created a fresh requirements.in file for dependencies"
+        uv pip compile -q requirements.in -o requirements.txt
+
+        # ensure if .gitignore exists, if so add requirements.in to it
+        if [ -f ".gitignore" ]; then
+            # check and see if there is an entry for requirements.in, if not add it
+            if ! grep -q "requirements.in" ".gitignore"; then
+                # ensure that requirements.in is added to the .gitignore file and make sure it is in a new line!
+                echo -e "\nrequirements.in" >> .gitignore
+                log_status "Added requirements.in to .gitignore"
+            fi
+        fi
+
+    fi
+
+    # if requirements.in exists, monitor it for changes and compile it to requirements.txt
+    if [ -f 'requirements.in' ]; then
+        # Monitor the requirements.in file for future changes
+        watch_file requirements.in
         uv pip compile -q requirements.in -o requirements.txt
     fi
 
@@ -126,11 +151,7 @@ layout_uv() {
     fi
 
     # Keep the latest requirements synced with current environment
-    uv pip compile -q requirements.in -o requirements.txt
     uv pip sync -q requirements.txt
-
-    # Monitor the requirements.in file for future changes
-    watch_file requirements.in
 
     # Watch for the dotenv file changes
     [ -f .env ] && watch_file .env

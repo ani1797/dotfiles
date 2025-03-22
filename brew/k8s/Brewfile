@@ -13,3 +13,7 @@ brew 'kubie'
 
 # tilt
 brew 'tilt'
+
+# Talos
+tap 'siderolabs/tap'
+brew 'talosctl'

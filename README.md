@@ -51,8 +51,7 @@ Common package consist of various tools I consider good to have on all systems. 
 2. fzf
 3. eza
 4. direnv
-5. mise
-6. fd
+5. fd
 
 You can also explore other mini collections and add more if you'd like and ibrew will install any bundle folders right name.
 

@@ -122,7 +122,7 @@ if has kube-linter; then
 fi
 
 if has mise; then
-    alias m=mise
+    alias m="mise"
     alias mx="mise x --"
 fi
 

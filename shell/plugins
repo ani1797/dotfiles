@@ -77,7 +77,7 @@ fi
 # endregion
 
 # region: starship prompt load
-if has starship; then 
+if has starship; then
     eval "$(starship init $active_shell)"
     eval "$(starship completions $active_shell)"
 fi

@@ -6,11 +6,9 @@
 **/.tool-versions
 **/.mise*.toml
 
-
 # Cache files
 # --------------------
 **/.cache
-
 
 # Direnv Configurations
 # ----------------------
@@ -20,7 +18,6 @@
 
 # Editor Configurations
 # ----------------------
-**/.vscode/*
 **/.idea/*
 **/*.sublime-project
 **/*.sublime-workspace

@@ -1,9 +1,6 @@
 # nmap
 brew 'nmap'
 
-# httpie
-brew 'httpie'
-
 # mkcert
 brew 'mkcert'
 

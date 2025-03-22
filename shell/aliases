@@ -26,7 +26,7 @@ hash -d work="$PROJECTS/work"
 hash -d personal="$PROJECTS/personal"
 
 # # Quick access editor
-alias edit='$EDITOR' 
+alias edit='$EDITOR'
 alias mkpv="mkdir -pv"
 
 # Quick reload of the shell
@@ -90,6 +90,7 @@ if has docker; then
 fi
 
 if has eza; then
+    alias ls="eza --icons=auto --color=auto -h"
     alias l="eza --icons=auto --color=auto -h"
     alias la="eza --icons=auto --color=auto -h -T --git-ignore"
     alias ll="eza --icons=auto --color=auto -alh"
@@ -120,7 +121,7 @@ if has kube-linter; then
     source <(kube-linter completion "$active_shell")
 fi
 
-if has mise; then 
+if has mise; then
     alias m=mise
     alias mx="mise x --"
 fi
@@ -158,6 +159,6 @@ if has tilt; then
     eval "$(tilt completion "$active_shell")"
 fi
 
-if has thefuck; then 
+if has thefuck; then
 	eval "$(thefuck --alias ffs)"
 fi

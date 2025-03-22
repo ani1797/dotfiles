@@ -1,0 +1,8 @@
+# cheatsheet
+brew 'navi'
+
+# gum
+brew 'gum'
+
+# httpie
+brew 'httpie'

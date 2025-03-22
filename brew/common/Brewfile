@@ -4,17 +4,18 @@ brew 'starship'
 # fzf for fuzzy finding in terminal
 brew 'fzf'
 
+# Text parsers for JSON and YAML
+brew 'jq'
+brew 'yq'
+
 # eza for ls replacement
 brew 'eza'
 
 # direnv for environment management
 brew 'direnv'
 
-# mise for managing software packages
-brew 'mise'
-
 # better find
 brew 'fd'
 
-# uv
-brew 'uv'
+# bat
+brew 'bat'

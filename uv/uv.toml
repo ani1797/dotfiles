@@ -12,3 +12,4 @@ extra-index-url = [
     "https://1821-659B-1112-B778@download.prodi.gy/index",
     "https://download.pytorch.org/whl/cpu",
 ]
+index-strategy = "unsafe-best-match"

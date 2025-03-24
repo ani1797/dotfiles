@@ -9,7 +9,7 @@ extra-index-url = [
     "https://artifactory.manulife.ca/artifactory/api/pypi/cdn-cdnaa-pypi/simple",
     "https://artifactory.manulife.ca/artifactory/api/pypi/cdn-invaa-pypi/simple",
     "https://artifactory.platform.manulife.io/artifactory/api/pypi/usdo-usdoaa-pypi/simple",
-    "https://1821-659B-1112-B778@download.prodi.gy/index",
+    # "https://1821-659B-1112-B778@download.prodi.gy/index",
     "https://download.pytorch.org/whl/cpu",
 ]
-index-strategy = "unsafe-best-match"
+index-strategy = "unsafe-any-match"

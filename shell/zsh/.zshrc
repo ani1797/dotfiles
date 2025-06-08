@@ -5,7 +5,7 @@ bindkey -e
 set -o emacs
 
 # Load completion system
-autoload -Uz compinit && compinit
+autoload -Uz compinit && compinit -C
 autoload -U +X bashcompinit && bashcompinit
 
 # Setting zsh options
@@ -37,12 +37,9 @@ fi
 
 
 # Loading all the custom aliases and their completions
-precmd() {
-    if [ -x "$DOTFILES/shell/aliases" ]; then
-        source "$DOTFILES/shell/aliases"
-    fi
-}
-precmd
+if [ -x "$DOTFILES/shell/aliases" ]; then
+    source "$DOTFILES/shell/aliases"
+fi
 
 # Load the plugins if they exist
 if [ -x "$DOTFILES/shell/plugins" ]; then

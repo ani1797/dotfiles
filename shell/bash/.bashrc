@@ -16,7 +16,7 @@ HISTFILESIZE=2000
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-## Load the $HOME/.zshenv if executable and exists (for automatic loading BASH_ENV could be set in ~/.profile)
+## Load the $HOME/.bashenv if executable and exists (for automatic loading BASH_ENV could be set in ~/.profile)
 # shellcheck source=/dev/null
 [ -x "$HOME/.bashenv" ] && source "$HOME/.bashenv"
 
@@ -44,4 +44,13 @@ fi
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     # shellcheck source=/dev/null
     source /etc/bash_completion
+fi
+
+## If Homebrew is installed load the bash completions for Homebrew
+if [ -n "$HOMEBREW_PREFIX" ] && [ -d "$HOMEBREW_PREFIX/etc/bash_completion.d" ]; then
+    for bcfile in "$HOMEBREW_PREFIX/etc/bash_completion.d/"*; do
+        if [ -f "$bcfile" ]; then
+            . "$bcfile"
+        fi
+    done
 fi

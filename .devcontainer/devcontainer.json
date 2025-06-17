@@ -1,3 +1,11 @@
 {
-    "image": "ubuntu:latest"
+    "image": "ubuntu:latest",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2.12.2": {
+            "dockerSocketPath": "/var/run/docker.sock"
+        },
+        "ghcr.io/devcontainers/features/git:1": {
+            "version": "latest"
+        }
+    }
 }

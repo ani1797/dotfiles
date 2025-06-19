@@ -1,1 +1,1 @@
-chore|bugfix: [desc]
+feat|fix: [desc]

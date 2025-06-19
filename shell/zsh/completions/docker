@@ -1,0 +1,5 @@
+#!/usr/bin/env zsh
+
+if has docker; then
+    eval "$(docker completion zsh)"
+fi

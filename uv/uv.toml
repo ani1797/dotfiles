@@ -1,15 +1,37 @@
-native-tls = true
-compile-bytecode = false
 preview = true
-index-url = "https://pypi.org/simple"
-extra-index-url = [
-    "https://pypi.python.org/simple",
-    "https://files.pythonhosted.org/simple",
-    "https://artifactory.manulife.ca/artifactory/api/pypi/pypi/simple",
-    "https://artifactory.manulife.ca/artifactory/api/pypi/cdn-cdnaa-pypi/simple",
-    "https://artifactory.manulife.ca/artifactory/api/pypi/cdn-invaa-pypi/simple",
-    "https://artifactory.platform.manulife.io/artifactory/api/pypi/usdo-usdoaa-pypi/simple",
-    # "https://1821-659B-1112-B778@download.prodi.gy/index",
-    "https://download.pytorch.org/whl/cpu",
-]
-index-strategy = "unsafe-any-match"
+native-tls = true
+link-mode = "symlink"
+compile-bytecode = false
+
+[[index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+
+[[index]]
+name = "pypi-mirror"
+url = "https://files.pythonhosted.org/simple"
+
+[[index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+
+[[index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+
+[[index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+
+[[index]]
+name = "prodigy"
+url = "https://1821-659B-1112-B778@download.prodi.gy/index"
+explicit = true
+
+# [[index]]
+# name = "manulife-artifactory-ca"
+# url = "https://artifactory.manulife.ca/artifactory/api/pypi/pypi/simple"
+
+# [[index]]
+# name = "manulife-artifactory-io
+# url = "https://artifactory.platform.manulife.io/artifactory/api/pypi/pypi/simple"

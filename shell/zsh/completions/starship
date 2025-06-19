@@ -1,0 +1,5 @@
+#!/usr/bin/env zsh
+
+if has starship 2>/dev/null; then
+    source <(starship completions zsh)
+fi

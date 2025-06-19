@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-required uv
+azswitch() {
+    required uv
 
-# shellcheck disable=SC2068
-uv run "$DOTFILES/shell/scripts/azswitch.py" $@
+    # shellcheck disable=SC2068
+    uv run "$DOTFILES/shell/scripts/azswitch.py" $@
+}
+
+azswitch "$@"

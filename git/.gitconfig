@@ -44,7 +44,7 @@
 	gpgsign = true
 
 [core]
-	excludesFile = ~/.config/git/global.gitignore
+	excludesFile = ~/.config/git/.gitignore
 	editor = "$EDITOR"
 	autocrlf = input
 
@@ -73,4 +73,6 @@
 	autoSetupRemote = true
 
 [safe]
-	directory = [ "~/projects/personal", "~/projects/work", "/workspaces/" ]
+	directory = ~/projects
+	directory = /workspaces
+	directory = /workspaces/dotfiles

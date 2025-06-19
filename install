@@ -132,11 +132,6 @@ ensure_homebrew() {
     fi
 }
 
-check_prerequisites() {
-    required "git"
-    required "curl"
-}
-
 add_common_paths() {
     # Adding homebrew bin directory to PATH
     path_add "/opt/homebrew/bin"
@@ -144,6 +139,50 @@ add_common_paths() {
     # Adding user custom bin directory to PATH
     path_add "$HOME/.local/bin"
     path_add "$HOME/bin"
+}
+
+check_prerequisites() {
+    required "git"
+    required "curl"
+}
+
+configure_shell() {
+    # Link bashenv and zshenv to preload all features
+    link "$DOTFILES/shell/env" "$HOME/.bashenv"
+    link "$DOTFILES/shell/env" "$HOME/.zshenv"
+
+    # Link bashrc and zshrc
+    link "$DOTFILES/shell/bash/bashrc" "$HOME/.bashrc"
+    link "$DOTFILES/shell/zsh/zshrc" "$HOME/.zshrc"
+
+    # Link SSH Configuration
+    link "$DOTFILES/ssh/config" "$HOME/.ssh/config"
+    link "$DOTFILES/ssh/allowed_signers" "$HOME/.ssh/allowed_signers"
+    chmod 600 "$HOME/.ssh/config"
+
+    # Link httpie config file in the default config directory
+    link "$DOTFILES/httpie/config.json" "$HOME/.config/httpie/config.json"
+
+    # Link pip config file
+    link "$DOTFILES/pip/pip.conf" "$HOME/.pip/pip.conf"
+
+    # Link gitconfig
+    link "$DOTFILES/git/.gitconfig" "$HOME/.gitconfig"
+
+    # Link direnv config
+    link "$DOTFILES/direnv/direnvrc" "$HOME/.config/direnv/direnvrc"
+    link "$DOTFILES/direnv/direnv.toml" "$HOME/.config/direnv/direnv.toml"
+
+    # Link git config
+    link "$DOTFILES/git/.gitconfig" "$HOME/.gitconfig"
+    link "$DOTFILES/git/.gitignore" "$HOME/.config/git/.gitignore"
+    link "$DOTFILES/git/commit-template.txt" "$HOME/.config/git/commit-template.txt"
+
+    # Link npm config
+    link "$DOTFILES/npm/.npmrc" "$HOME/.npmrc"
+
+    # Link UV config
+    link "$DOTFILES/uv/uv.toml" "$HOME/.config/uv/uv.toml"
 }
 
 main() {
@@ -155,18 +194,18 @@ main() {
     add_common_paths
     check_prerequisites
 
-    # if os is not alpine, ensure homebrew is installed.
+    # alpine doesn't support homebrew, ensure homebrew is installed in all other OSes.
     if [ "$os" != "alpine" ]; then
         ensure_homebrew
     fi
+    
+    add_common_paths
 
-    brew bundle
+    # installing the bundled packages
+    log_info "Installing packages from Brewfile"
+    brew bundle --file="$DOTFILES/Brewfile"
 
-    # Link bashenv and zshenv to preload all features
-    link "$DOTFILES/shell/env" "$HOME/.bashenv"
-
-    # Link bashrc and zshrc
-    link "$DOTFILES/shell/bash/.bashrc" "$HOME/.bashrc"
+    configure_shell
 }
 
 main "$@"

@@ -1,0 +1,6 @@
+#!/usr/bin/env zsh
+
+if has kind; then
+    # shellcheck source=/dev/null
+    source <(kind completion zsh)
+fi

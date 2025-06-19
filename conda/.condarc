@@ -8,8 +8,9 @@
 # #   The list of conda channels to include for relevant operations.
 # #
 channels:
-  - defaults
+# - manulife
   - conda-forge
+  - defaults
 
 # # channel_alias (str)
 # #   The prepended url location to associate with channel names.
@@ -58,8 +59,9 @@ channels:
 # #   https://anaconda-repo.dev/packages/conda-forge/linux-64/repodata.json,
 # #   add an entry 'conda-forge: https://anaconda-repo.dev/packages'.
 # #
-# custom_channels:
-#   pkgs/pro: https://repo.anaconda.com
+custom_channels:
+  mfc_artifactory_io: "https://artifactory.platform.manulife.io/artifactory/api/conda/conda-remote"
+  mfc_artifactory_ca: "https://artifactory.manulife.ca/artifactory/api/conda/conda-remote"
 
 # # custom_multichannels (map: sequence)
 # #   A multichannel is a metachannel composed of multiple channels. The two
@@ -71,7 +73,10 @@ channels:
 # #   multichannel name and the value is a list of channel names and/or
 # #   channel urls.
 # #
-# custom_multichannels: {}
+custom_multichannels:
+  manulife:
+  - mfc_artifactory_io
+  - mfc_artifactory_ca
 
 # # migrated_channel_aliases (sequence: primitive)
 # #   env var string delimiter: ','
@@ -286,7 +291,7 @@ channels:
 # #   Automatically update conda when a newer or higher priority version is
 # #   detected.
 # #
-auto_update_conda: True
+auto_update_conda: False
 
 # # channel_priority (ChannelPriority)
 # #   Accepts values of 'strict', 'flexible', and 'disabled'. The default
@@ -306,7 +311,8 @@ auto_update_conda: True
 # #   env var string delimiter: ','
 # #   Packages that are by default added to a newly created environments.
 # #
-create_default_packages: ["pip", "ipykernel", "ruff", "pytest", "coverage"]
+create_default_packages:
+- ruff
 
 # # disallowed_packages (sequence: primitive)
 # #   aliases: disallow
@@ -559,7 +565,8 @@ changeps1: False
 # report_errors:
 
 # # show_channel_urls (NoneType, bool)
-# #   Show channel URLs when displaying what is going to be downloaded.
+# # Show channel URLs when displaying what is going to be downloaded
+# # and in 'conda list'. The default is False.
 # #
 show_channel_urls: True
 # # verbosity (int)

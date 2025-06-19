@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+if has op; then
+    eval "$(op completion bash)"
+fi

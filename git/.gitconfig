@@ -41,7 +41,7 @@
 
 [commit]
 	template = ~/.config/git/commit-template.txt
-	# gpgsign = true
+	gpgsign = true
 
 [core]
 	excludesFile = ~/.config/git/.gitignore
@@ -62,7 +62,7 @@
 [user]
 	name = "Anirudh Aggarwal"
 	email = "starfire1797@gmail.com"
-	# signingkey = ~/.ssh/id_ed25519
+	signingkey = ~/.ssh/id_ed25519
 
 [gpg]
 	format = ssh

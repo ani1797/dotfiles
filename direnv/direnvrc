@@ -20,6 +20,7 @@ if has uv; then
 fi
 
 
+
 if has op; then
     use_oprc() {
         [[ -f .oprc ]] || return 0

@@ -111,9 +111,7 @@ if has navi; then
 fi
 
 if has op; then
-    export OP_ACCOUNT="my.1password.ca"
-    export OP_ADDRESS="https://my.1password.ca"
-    alias oplogin='eval $(op signin --account $OP_ACCOUNT)'
+    alias oplogin='eval $(op signin --account my.1password.ca)'
 fi
 
 if has python; then

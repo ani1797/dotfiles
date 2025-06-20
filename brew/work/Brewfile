@@ -1,15 +1,9 @@
-# Firacode font
-cask "font-fira-code"
-
 # Databricks CLI
 tap "databricks/tap"
 brew "databricks"
 
-# Allacritty (Terminal)
-cask "alacritty"
-
-# Azrue CLI
+# Azure CLI
 brew "azure-cli"
 
-# 1Password CLI
-brew '1password-cli'
+# Allacritty (Terminal)
+cask "alacritty"

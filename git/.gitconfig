@@ -40,11 +40,11 @@
 	untracked = red bold
 
 [commit]
-	template = ~/.config/git/commit-template.txt
+	template = "~/.config/git/commit-template.txt"
 	gpgsign = true
 
 [core]
-	excludesFile = ~/.config/git/.gitignore
+	excludesFile = "~/.config/git/.gitignore"
 	editor = "$EDITOR"
 	autocrlf = input
 
@@ -55,9 +55,8 @@
 	autoSetupRemote = true
 
 [safe]
-	directory = ~/projects
-	directory = /workspaces
-	directory = /workspaces/dotfiles
+	directory = "~/projects"
+	directory = "/workspaces"
 
 [user]
 	name = "Anirudh Aggarwal"
@@ -69,3 +68,4 @@
 
 [gpg "ssh"]
 	defaultKeyCommand = 'cat "$HOME/.ssh/id_ed25519.pub"'
+	allowedSignersFile = "~/.ssh/allowed_signers"

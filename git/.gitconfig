@@ -62,8 +62,10 @@
 [user]
 	name = "Anirudh Aggarwal"
 	email = "starfire1797@gmail.com"
-	signingkey = ~/.ssh/id_ed25519
+	signingkey = "~/.ssh/id_ed25519.pub"
 
 [gpg]
-	format = ssh
-	# defaultKeyCommand = "echo ~/.ssh/id_ed25519"
+	format = "ssh"
+
+[gpg "ssh"]
+	defaultKeyCommand = 'cat "$HOME/.ssh/id_ed25519.pub"'

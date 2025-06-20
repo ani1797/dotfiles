@@ -152,8 +152,8 @@ configure_shell() {
     link "$DOTFILES/shell/env" "$HOME/.zshenv"
 
     # Link bashrc and zshrc
-    link "$DOTFILES/shell/bash/bashrc" "$HOME/.bashrc"
-    link "$DOTFILES/shell/zsh/zshrc" "$HOME/.zshrc"
+    link "$DOTFILES/shell/bash/.bashrc" "$HOME/.bashrc"
+    link "$DOTFILES/shell/zsh/.zshrc" "$HOME/.zshrc"
 
     # Link SSH Configuration
     link "$DOTFILES/ssh/config" "$HOME/.ssh/config"

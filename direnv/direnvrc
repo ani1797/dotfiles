@@ -1,196 +1,29 @@
 #!/usr/bin/env bash
 
-if has mise; then
-    use_mise() {
-        direnv_load mise direnv exec
+if has uv; then
+    layout_uv () {
+        local PY_VERSION=${1:-3.13}
+        if [[ -d ".venv" ]]; then
+            VIRTUAL_ENV="$(pwd)/.venv"
+        fi
+
+        if [[ -z $VIRTUAL_ENV || ! -d $VIRTUAL_ENV ]]; then
+            log_status "No virtual environment exists. Executing \`uv venv\` to create one."
+            uv venv --python "$PY_VERSION" "$(pwd)/.venv"
+            VIRTUAL_ENV="$(pwd)/.venv"
+        fi
+
+        PATH_add "$VIRTUAL_ENV/bin"
+        export UV_ACTIVE=1  # or VENV_ACTIVE=1
+        export VIRTUAL_ENV
     }
 fi
 
-pip_install() {
-    req_file=$1
-    if has uv; then
-        uv pip install -r "$req_file"
-    else
-        pip install -r "$req_file"
-    fi
-}
 
-create_venv() {
-    python=${1}
-    if [ ! -d .venv ]; then
-        if has uv; then
-            uv venv -p "$python"
-        else
-            "$python" -m venv .venv
-        fi
-    fi
-}
-
-# configure_python() {
-#     version=$1
-
-#     # Create a new virtual environment if one does not exist
-#     test -d .venv || create_venv "$(mise which python)"
-
-#     # Create a cache directory if one does not exist
-#     test -d .cache || mkdir .cache
-
-#     # Activate the virtual environment
-#     VIRTUAL_ENV="$(pwd)/.venv"
-#     # shellcheck disable=SC1091
-#     . "$VIRTUAL_ENV/bin/activate"
-#     log_status "Using $(python --version) from $(which python)"
-
-
-#     MISE_PYTHON_DEFAULT_PACKAGES_FILE=${MISE_PYTHON_DEFAULT_PACKAGES_FILE:-$DOTFILES/mise/python/default-packages.txt}
-#     REQUIREMENTS_FILE=${REQUIREMENTS_FILE:-"$(pwd)/requirements.txt"}
-
-#     # check and see if there is a default packages file
-#     watch_file "$MISE_PYTHON_DEFAULT_PACKAGES_FILE"
-#     if [ -n "$MISE_PYTHON_DEFAULT_PACKAGES_FILE" ]; then
-#         if ! md5sum -c .cache/default_packages.md5sum > /dev/null; then
-#             log_status "global dependencies have changed, updating dependencies"
-#             pip_install "$MISE_PYTHON_DEFAULT_PACKAGES_FILE"
-#             md5sum "$MISE_PYTHON_DEFAULT_PACKAGES_FILE" > .cache/default_packages.md5sum
-#         fi
-#     fi
-
-#     # check and see if there is an existing requirements checksum file
-#     watch_file "$REQUIREMENTS_FILE"
-#     if [ -f .cache/requirements.md5sm ]; then
-#         if ! md5sum -c .cache/requirements.md5sm > /dev/null; then
-#             log_status "requirements.txt has changed, updating dependencies"
-#             pip_install "$REQUIREMENTS_FILE"
-#             md5sum "$REQUIREMENTS_FILE" > .cache/requirements.md5sm
-#         fi
-#     elif [ -f "$REQUIREMENTS_FILE" ]; then
-#         log_status "Running pip install -r requirements.txt to install dependencies"
-#         pip_install "$REQUIREMENTS_FILE"
-#         md5sum "$REQUIREMENTS_FILE" > .cache/requirements.md5sm
-#     else
-#         log_status "No requirements.txt file found, skipping pip install"
-#     fi
-#     export VIRTUAL_ENV
-# }
-
-# layout_mise() {
-#     dotenv_if_exists .env
-#     use mise
-#     MISE_CONFIG_FILE=".mise.${MISE_ENV:-local}.toml"
-#     # for each function argument, get tool and version and add to config file
-#     mise use --path "$MISE_CONFIG_FILE" "$@"
-#     for arg in "$@"; do
-#         tool=$(echo "$arg" | cut -d@ -f1)
-#         version=$(echo "$arg" | cut -d@ -f2)
-#         # find a function named configure_$tool and run it
-#         if declare -f "configure_$tool" > /dev/null; then
-#             "configure_$tool" "$version"
-#         fi
-#     done
-# }
-
-# layout_uv() {
-#     PY_VERSION=${1:-3.12}
-#     log_status "Using Python version ${PY_VERSION}"
-
-#     if [ ! -d ".venv" ]; then
-#         log_status "Creating a new virtual environment as one does not exist"
-#         uv venv --python "${PY_VERSION}"
-#     fi
-
-#     # Activate the virtual environment
-#     VIRTUAL_ENV="$(pwd)/.venv"
-
-#     log_status "Activating the virtual environment at ${VIRTUAL_ENV}"
-#     # shellcheck source=/dev/null
-#     source "${VIRTUAL_ENV}/bin/activate"
-
-#     # If requirements.txt does not exists but requirements.in does, create a new requirements.txt file based on requirements.in
-#     if [ ! -f "requirements.txt" ] && [ -f "requirements.in" ]; then
-#         log_status "Creating a new requirements.txt file based on requirements.in"
-#         uv pip compile -q requirements.in -o requirements.txt
-#     fi
-
-#     # If requirements.in and requirements.txt don't exist, create a new requirements.in file and then compile it to requirements.txt
-#     if [ ! -f "requirements.in" ] && [ ! -f "requirements.txt" ]; then
-#         log_status "Creating a new requirements.in file"
-#         cat "$DOTFILES/mise/python/default-packages.txt" > requirements.in
-#         uv pip compile -q requirements.in -o requirements.txt
-
-#         # ensure if .gitignore exists, if so add requirements.in to it
-#         if [ -f ".gitignore" ]; then
-#             # check and see if there is an entry for requirements.in, if not add it
-#             if ! grep -q "requirements.in" ".gitignore"; then
-#                 # ensure that requirements.in is added to the .gitignore file and make sure it is in a new line!
-#                 echo -e "\nrequirements.in" >> .gitignore
-#                 log_status "Added requirements.in to .gitignore"
-#             fi
-#         fi
-
-#     fi
-
-#     # if requirements.in exists, monitor it for changes and compile it to requirements.txt
-#     if [ -f 'requirements.in' ]; then
-#         # Monitor the requirements.in file for future changes
-#         watch_file requirements.in
-#         uv pip compile -q requirements.in -o requirements.txt
-#     fi
-
-#     # ensure if .gitignore exists, if so add requirements.in to it
-#     if [ -f ".gitignore" ]; then
-#         # check and see if there is an entry for requirements.in, if not add it
-#         if ! grep -q "requirements.in" ".gitignore"; then
-#             # ensure that requirements.in is added to the .gitignore file and make sure it is in a new line!
-#             echo -e "\nrequirements.in" >> .gitignore
-#             log_status "Added requirements.in to .gitignore"
-#         fi
-#     else
-#         # create a .gitignore file with the contents of https://raw.githubusercontent.com/github/gitignore/refs/heads/main/Python.gitignore file
-#         curl -sSL -o .gitignore https://raw.githubusercontent.com/github/gitignore/refs/heads/main/Python.gitignore
-#         echo -e "\nrequirements.in" >> .gitignore
-#     fi
-
-#     # Keep the latest requirements synced with current environment
-#     uv pip sync -q requirements.txt
-
-#     # Watch for the dotenv file changes
-#     [ -f .env ] && watch_file .env
-
-#     # Display the python version and path
-#     log_status "Using $(python --version) from $(which python)"
-# }
-
-
-layout_uv() {
-    PY_VERSION=${1:-3.12}
-    VIRTUAL_ENV=${2:-"$(pwd)/.venv"}
-
-    if [ ! -d ".venv" ]; then
-        log_status "Creating a new virtual environment python@${PY_VERSION} at ${VIRTUAL_ENV}"
-        uv venv --python "${PY_VERSION}"
-    else
-        log_status "Using python@${PY_VERSION} virtual environment at ${VIRTUAL_ENV}"
-    fi
-
-    # shellcheck source=/dev/null
-    source "${VIRTUAL_ENV}/bin/activate"
-
-    REQUIREMENTS_FILE="$(pwd)/requirements.txt"
-    PYPROJECT_FILE="$(pwd)/pyproject.toml"
-
-    # if REQUIREMENTS_FILE or PYPROJECT_FILE exists, sync the project requirements with the current environment
-    watch_file "$REQUIREMENTS_FILE" "$PYPROJECT_FILE"
-    if [ -f "$REQUIREMENTS_FILE" ] || [ -f "$PYPROJECT_FILE" ]; then
-        log_status "Syncing the project requirements with the current environment"
-        if [ -f "$REQUIREMENTS_FILE" ]; then
-            uv pip sync --quiet "$REQUIREMENTS_FILE"
-        else
-            uv sync --quiet
-        fi
-    else
-        log_status "No requirements.txt or pyproject.toml file found, creating a new pyproject.toml file"
-        uv init --bare --python "${PY_VERSION}"
-        uv sync --quiet
-    fi
-    dotenv_if_exists
-}
+if has op; then
+    use_oprc() {
+        [[ -f .oprc ]] || return 0
+        direnv_load op run --env-file .oprc --no-masking -- direnv dump
+    }
+    watch_file .oprc
+fi

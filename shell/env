@@ -78,7 +78,21 @@ default_editor() {
 
 default_editor
 
-# create file $HOME/.env if it doesn't exist
-if [ ! -f "$HOME/.env" ]; then
-    touch "$HOME/.env"
+# create file $HOME/.env.local if it doesn't exist
+if [ ! -f "$HOME/.env.local" ]; then
+cat >"$HOME/.env.local"<<'EOF'
+# .env.local
+# 
+# This file is for your personal environment variable overrides.
+# It is sourced after your main shell environment is loaded.
+# 
+# You can add any environment variables here that you do not want to commit to version control,
+# such as machine-specific settings, Private API keys, or tokens (if not using a secret manager).
+# 
+# Example:
+# export MY_SECRET_TOKEN="your-token-here"
+#
+# This file is ignored by default in most dotfiles setups.
+EOF
+    chmod 600 "$HOME/.env.local"
 fi

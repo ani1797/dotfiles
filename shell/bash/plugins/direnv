@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+if has direnv 2>/dev/null; then
+    eval "$(direnv hook bash)"
+fi

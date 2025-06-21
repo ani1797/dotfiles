@@ -19,12 +19,16 @@ if has uv; then
     }
 fi
 
-
-
 if has op; then
     use_oprc() {
         [[ -f .oprc ]] || return 0
         direnv_load op run --env-file .oprc --no-masking -- direnv dump
     }
+    if [[ -f .oprc ]]; then
+        use_oprc
+    fi
+    # If you want to watch the .oprc file for changes
     watch_file .oprc
 fi
+
+dotenv_if_exists

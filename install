@@ -183,11 +183,26 @@ configure_shell() {
 
     # Link UV config
     link "$DOTFILES/uv/uv.toml" "$HOME/.config/uv/uv.toml"
+
+    # Link alacritty configuration
+    link "$DOTFILES/alacritty/alacritty.toml" "$HOME/.config/alacritty/alacritty.toml"
+
+    # Link tmux configuration
+    link "$DOTFILES/tmux/tmux.conf" "$HOME/.config/tmux/tmux.conf"
+}
+
+cleanup() {
+    log_info "Cleaning up temporary files..."
+    # Remove any dead symlinks
+    find "$HOME" -xtype l -exec rm -f {} \;
+    log_success "Cleanup completed."
 }
 
 main() {
     os=$(detect_os)
     DOTFILES=$(cd "$(dirname "$0")" && pwd)
+
+    trap cleanup EXIT
     
     log_info "Setting up the machine ($os) with dotfiles ${DOTFILES}"
 

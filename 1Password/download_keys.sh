@@ -10,8 +10,8 @@ download() {
     local items=$(op item list --categories "SSH Key" --vault "$vault" --format json | jq -r '.[].id')
     for item in $items; do
         local name=$(op item get "$item" --vault "$vault" --format json | jq -r '.title')
-        local private_key=$(op read "op://$vault/$item/private_key?ssh-format=openssh")
-        local public_key=$(op read "op://$vault/$item/public_key")
+        local private_key=$(op read "op://$vault/$item/private_key?ssh-format=openssh" | tr -d '\r')
+        local public_key=$(op read "op://$vault/$item/public_key" | tr -d '\r')
         local key_type=$(op read "op://$vault/$item/key_type")
         # Save the private key to a file
         echo "$private_key" >"${download_dir}/id_${key_type}"

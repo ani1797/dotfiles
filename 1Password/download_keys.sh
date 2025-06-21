@@ -1,6 +1,4 @@
-#!/usr/bin/env zsh
-
-set -euo pipefail
+#!/usr/bin/env sh
 
 download() {
     required op

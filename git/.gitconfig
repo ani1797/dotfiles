@@ -60,7 +60,7 @@
 
 [user]
 	name = "Anirudh Aggarwal"
-	email = "starfire1797@gmail.com"
+	email = "ani1797@users.noreply.github.com"
 	signingkey = "~/.ssh/id_ed25519.pub"
 
 [gpg]

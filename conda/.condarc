@@ -313,6 +313,7 @@ auto_update_conda: False
 # #
 create_default_packages:
 - ruff
+- ipykernel
 
 # # disallowed_packages (sequence: primitive)
 # #   aliases: disallow

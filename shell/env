@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o emacs
+
 path_add() {
     f_path=$1
     if [ -d "$f_path" ] && [[ ":$PATH:" != *":$f_path:"* ]]; then

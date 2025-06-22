@@ -1,0 +1,5 @@
+#!/usr/bin/env zsh
+
+if has goenv 2>/dev/null; then
+    eval "$(goenv init - zsh)"
+fi

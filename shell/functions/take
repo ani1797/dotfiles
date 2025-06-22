@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-take() {
-    dir=$1
-    [ -d "$dir" ] || mkdir -pv "$dir"
-    cd "$dir" || return
-}

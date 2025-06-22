@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if has starship 2>/dev/null; then
+    # Configure starship prompt
+    set_loc "STARSHIP_CONFIG" "$DOTFILES/starship/starship.toml"
+
+    # Activate starship in bash
+    eval "$(starship init bash)"
+fi

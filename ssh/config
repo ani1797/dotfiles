@@ -6,23 +6,11 @@ Host unraid
   User root
   HostName 192.168.4.200
   PreferredAuthentications publickey
-  IdentityFile ~/.ssh/keys/personal_rsa
+  IdentityFile ~/.ssh/id_ed25519
 
-Host work
-  User git
+Host github
   HostName github.com
-  PreferredAuthentications publickey
-  IdentityFile ~/.ssh/keys/work_rsa
-
-Host personal
   User git
-  HostName github.com
+  Port 443
   PreferredAuthentications publickey
-  IdentityFile ~/.ssh/keys/personal_rsa
-
-Host github github.com
-  User git
-  HostName github.com
-  PreferredAuthentications publickey
-  IdentityFile ~/.ssh/keys/personal_rsa
-  # IdentityFile ~/.ssh/keys/work_rsa
+  IdentityFile ~/.ssh/id_ed25519

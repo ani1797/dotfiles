@@ -40,31 +40,13 @@
 	untracked = red bold
 
 [commit]
-	template = ~/.config/git/commit-template.txt
+	template = "~/.config/git/commit-template.txt"
 	gpgsign = true
 
 [core]
-	excludesFile = ~/.config/git/global.gitignore
+	excludesFile = "~/.config/git/.gitignore"
 	editor = "$EDITOR"
 	autocrlf = input
-
-[format]
-	signOff = true
-
-[gpg]
-    format = ssh
-
-# user is positional and any includeIf must be after it in the file to work.
-[user]
-    name = Anirudh Aggarwal
-    email = starfire1797@gmail.com
-    signingkey = "~/.ssh/keys/personal_rsa"
-
-[includeIf "gitdir/i:~/projects/personal/**"]
-	path = ~/.config/git/personal.gitconfig.txt
-
-[includeIf "gitdir/i:~/projects/work/**"]
-	path = ~/.config/git/work.gitconfig.txt
 
 [init]
 	defaultBranch = main
@@ -73,4 +55,17 @@
 	autoSetupRemote = true
 
 [safe]
-	directory = [ "~/projects/personal", "~/projects/work", "/workspaces/" ]
+	directory = "~/projects"
+	directory = "/workspaces"
+
+[user]
+	name = "Anirudh Aggarwal"
+	email = "ani1797@users.noreply.github.com"
+	signingkey = "~/.ssh/id_ed25519.pub"
+
+[gpg]
+	format = "ssh"
+
+[gpg "ssh"]
+	defaultKeyCommand = 'cat "$HOME/.ssh/id_ed25519.pub"'
+	allowedSignersFile = "~/.ssh/allowed_signers"

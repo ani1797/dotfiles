@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o emacs
+
 path_add() {
     f_path=$1
     if [ -d "$f_path" ] && [[ ":$PATH:" != *":$f_path:"* ]]; then
@@ -24,7 +26,6 @@ set_loc(){
     fi
 }
 
-
 # Check and find the first visible directory called "dotfiles" or ".dotfiles" in the following directories
 # 1. $HOME (the default location for dotfiles)
 # 2. $HOME/.config (for dotfiles in the XDG_CONFIG_HOME directory)
@@ -32,60 +33,38 @@ set_loc(){
 # 4. /workspaces/.codespaces/.persistedshare (see: https://docs.github.com/en/codespaces/setting-your-user-preferences/personalizing-github-codespaces-for-your-account#dotfiles)
 # if found, set the DOTFILES environment variable to the path of the directory and add the bin directory to PATH
 for dir in "$HOME" "${XDG_CONFIG_HOME:-$HOME/.config}" "/workspaces" "/workspaces/.codespaces/.persistedshare"; do
-    if [ -d "$dir/dotfiles" ]; then
-        set_env "DOTFILES" "$dir/dotfiles"
-        path_add "$DOTFILES/shell/bin"
-        break
-    fi
-    if [ -d "$dir/.dotfiles" ]; then
-        set_env "DOTFILES" "$dir/.dotfiles"
-        path_add "$DOTFILES/shell/bin"
-        break
-    fi
+    for sub in "dotfiles" ".dotfiles"; do
+        candidate="$dir/$sub"
+        if [ -d "$candidate" ]; then
+            set_env "DOTFILES" "$candidate"
+            break 2
+        fi
+    done
 done
 
+# Important PATH additions
+path_add "$DOTFILES/shell/bin"
+
 # Adding local "bin" directories to PATH
-path_add "/usr/local/bin"
 path_add "$HOME/.local/bin"
 path_add "$HOME/bin"
-path_add "$DOTFILES/shell/bin"
 
 # Adding homebrew bin directory to PATH
 path_add "/opt/homebrew/bin"
 path_add "/home/linuxbrew/.linuxbrew/bin"
-path_add "$HOME/homebrew/bin"
 
 ## Configuring the base paths
 set_env "PROJECTS" "$HOME/projects"
 set_env "WORK_DIR" "$PROJECTS/work"
 set_env "PERSONAL_DIR" "$PROJECTS/personal"
-
-
-#  Configuring History Settings
-set_env "HISTFILE" "$HOME/.history"
-set_env "HISTSIZE" 10000000
-set_env "SAVEHIST" 10000000
+set_env "CONDA_ROOT" "$DOTFILES/conda"
 
 ## Configurations for specific tools
-set_loc "ZSH_CONFIG_DIR" "$DOTFILES/ssh/zsh"
-set_loc "DIRENV_CONFIG" "$DOTFILES/direnv"  
-set_loc "STARSHIP_CONFIG" "$DOTFILES/starship/starship.toml"
-set_loc "CONDARC" "$DOTFILES/conda/.condarc"
-set_loc "PIP_CONFIG_FILE" "$DOTFILES/pip/pip.conf"
-set_loc "GIT_CONFIG_GLOBAL" "$DOTFILES/git/.gitconfig"
-set_loc "NPM_CONFIG_USERCONFIG" "$DOTFILES/npm/.npmrc"
-set_loc "WHALEBREW_CONFIG" "$DOTFILES/whalebrew/config.yml"
-set_loc "HTTPIE_CONFIG_DIR" "$DOTFILES/httpie"
 set_loc "UV_CONFIG_FILE" "$DOTFILES/uv/uv.toml"
-
-set_loc "MISE_CONFIG_DIR" "$DOTFILES/mise"
-set_loc "MISE_PYTHON_DEFAULT_PACKAGES_FILE" "$MISE_CONFIG_DIR/python/default-packages.txt"
-# set_loc "MISE_SHORTHANDS_FILE" "$MISE_CONFIG_DIR/shorthands.toml"
-
 
 default_editor() {
     if command -v nvim > /dev/null; then
-            export EDITOR=nvim
+        export EDITOR=nvim
     elif command -v vim > /dev/null; then
         export EDITOR="vim"
     elif command -v code > /dev/null; then
@@ -98,12 +77,24 @@ default_editor() {
         echo "No editor found. Please install one of the following editors: nvim, vim, code, nano, vi"
     fi
 }
+
 default_editor
 
-# source $HOME/env.local if it exists and is executable
-if [ -f "$HOME/.env.local" ] && [ -x "$HOME/.env.local" ]; then
-    # shellcheck disable=SC1091
-    source "$HOME/.env.local"
-else
-    touch "$HOME/.env.local" && chmod +x "$HOME/.env.local" # create the file if it doesn't exist (for easy local only configurations)
+# create file $HOME/.env.local if it doesn't exist
+if [ ! -f "$HOME/.env.local" ]; then
+cat >"$HOME/.env.local"<<'EOF'
+# .env.local
+# 
+# This file is for your personal environment variable overrides.
+# It is sourced after your main shell environment is loaded.
+# 
+# You can add any environment variables here that you do not want to commit to version control,
+# such as machine-specific settings, Private API keys, or tokens (if not using a secret manager).
+# 
+# Example:
+# export MY_SECRET_TOKEN="your-token-here"
+#
+# This file is ignored by default in most dotfiles setups.
+EOF
+    chmod 600 "$HOME/.env.local"
 fi

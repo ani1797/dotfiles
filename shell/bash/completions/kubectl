@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+if has kubectl; then
+    # shellcheck source=/dev/null
+    source <(kubectl completion bash)
+fi

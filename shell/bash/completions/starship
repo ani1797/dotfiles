@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+if has starship 2>/dev/null; then
+    source <(starship completions bash)
+fi

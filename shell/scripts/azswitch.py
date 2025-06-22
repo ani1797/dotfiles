@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "python==3.12",
-# ]
 # ///
 
 import os

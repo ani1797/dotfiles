@@ -1,0 +1,6 @@
+#!/usr/bin/env zsh
+
+if has helm; then
+    # shellcheck source=/dev/null
+    source <(helm completion zsh)
+fi

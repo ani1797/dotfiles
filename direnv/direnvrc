@@ -25,4 +25,24 @@ use_oprc() {
     watch_file .oprc
 }
 
+use_tfenv() {
+    local TF_VERSION=${1:-}
+    if [[ -z $TF_VERSION ]]; then
+        if [[ -f .terraform-version ]]; then
+            TF_VERSION=$(cat .terraform-version)
+        else
+            log_status "No terraform version specified and .terraform-version file not found."
+            return 1
+        fi
+    fi
+
+    if command -v tfenv >/dev/null 2>&1; then
+        tfenv install "$TF_VERSION"
+        tfenv use "$TF_VERSION"
+    else
+        log_status "tfenv is not installed or not in PATH."
+        return 1
+    fi
+}
+
 dotenv_if_exists

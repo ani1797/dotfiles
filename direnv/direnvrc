@@ -1,34 +1,28 @@
 #!/usr/bin/env bash
 
-if has uv; then
-    layout_uv () {
-        local PY_VERSION=${1:-3.13}
-        if [[ -d ".venv" ]]; then
-            VIRTUAL_ENV="$(pwd)/.venv"
-        fi
-
-        if [[ -z $VIRTUAL_ENV || ! -d $VIRTUAL_ENV ]]; then
-            log_status "No virtual environment exists. Executing \`uv venv\` to create one."
-            uv venv --python "$PY_VERSION" "$(pwd)/.venv"
-            VIRTUAL_ENV="$(pwd)/.venv"
-        fi
-
-        PATH_add "$VIRTUAL_ENV/bin"
-        export UV_ACTIVE=1  # or VENV_ACTIVE=1
-        export VIRTUAL_ENV
-    }
-fi
-
-if has op; then
-    use_oprc() {
-        [[ -f .oprc ]] || return 0
-        direnv_load op run --env-file .oprc --no-masking -- direnv dump
-    }
-    if [[ -f .oprc ]]; then
-        use_oprc
+layout_uv () {
+    local PY_VERSION=${1:-3.13}
+    if [[ -d ".venv" ]]; then
+        VIRTUAL_ENV="$(pwd)/.venv"
     fi
+
+    if [[ -z $VIRTUAL_ENV || ! -d $VIRTUAL_ENV ]]; then
+        log_status "No virtual environment exists. Executing \`uv venv\` to create one."
+        uv venv --python "$PY_VERSION" "$(pwd)/.venv"
+        VIRTUAL_ENV="$(pwd)/.venv"
+    fi
+
+    PATH_add "$VIRTUAL_ENV/bin"
+    export UV_ACTIVE=1  # or VENV_ACTIVE=1
+    export VIRTUAL_ENV
+}
+
+use_oprc() {
+    [[ -f .oprc ]] || return 0
+    
+    direnv_load op run --env-file .oprc --no-masking -- direnv dump
     # If you want to watch the .oprc file for changes
     watch_file .oprc
-fi
+}
 
 dotenv_if_exists

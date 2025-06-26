@@ -49,3 +49,8 @@ fi
 if has op && [ -x "$HOME/.config/op/plugins.sh" ]; then
     source "$HOME/.config/op/plugins.sh"
 fi
+
+# Source ~/.env.local file if it exists
+if [ -f "$HOME/.env.local" ]; then
+    source "$HOME/.env.local"
+fi

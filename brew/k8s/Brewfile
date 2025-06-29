@@ -6,6 +6,7 @@ brew 'kind'
 
 # helm
 brew 'helm'
+brew 'helmfile'
 
 # k8s context switcher
 brew 'k9s'

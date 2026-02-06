@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Install Oh-My-Zsh if not present
+
+set -e
+
+OMZ_DIR="$HOME/.oh-my-zsh"
+
+echo "==================================="
+echo "Oh-My-Zsh Configuration Helper"
+echo "==================================="
+echo ""
+
+# Check if already installed
+if [[ -d "$OMZ_DIR" ]]; then
+  echo "✓ Oh-My-Zsh already installed at $OMZ_DIR"
+  echo ""
+  read -p "Update to latest version? [y/N] " response
+  if [[ "$response" =~ ^[Yy]$ ]]; then
+    echo "Updating Oh-My-Zsh..."
+    cd "$OMZ_DIR" && git pull
+    echo ""
+    echo "✓ Updated successfully!"
+  fi
+  exit 0
+fi
+
+# Install Oh-My-Zsh
+echo "Installing Oh-My-Zsh to $OMZ_DIR..."
+echo ""
+
+# Download and run installer in unattended mode
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+
+echo ""
+echo "✓ Oh-My-Zsh installed successfully!"
+echo ""
+echo "Next steps:"
+echo "  - Restart your shell or run: source ~/.zshrc"
+echo "  - Customize plugins in ~/.config/zsh/20-oh-my-zsh.zsh"

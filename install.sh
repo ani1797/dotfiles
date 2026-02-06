@@ -27,13 +27,13 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
 fi
 
 # Parse modules
-MODULES=$(yq e '.modules[] | select(.name != null) | .name' "$CONFIG_FILE")
+MODULES=$(yq -r '.modules[].name' "$CONFIG_FILE")
 
 # Iterate over modules
 while read -r module; do
     log "Processing module: $module"
     # Get module path
-    MODULE_PATH=$(yq e ".modules[] | select(.name == \"$module\") | .path" "$CONFIG_FILE")
+    MODULE_PATH=$(yq -r ".modules[] | select(.name == \"$module\") | .path" "$CONFIG_FILE")
     if [[ -z "$MODULE_PATH" ]]; then
         log "Warning: No path specified for module $module. Skipping."
         continue
@@ -45,24 +45,24 @@ while read -r module; do
         exit 1
     fi
     # Get module-level default target (if specified)
-    MODULE_TARGET=$(yq e ".modules[] | select(.name == \"$module\") | .target // \"\"" "$CONFIG_FILE")
+    MODULE_TARGET=$(yq -r ".modules[] | select(.name == \"$module\") | .target // \"\"" "$CONFIG_FILE")
 
     # Get number of hosts
-    HOST_COUNT=$(yq e ".modules[] | select(.name == \"$module\") | .hosts | length" "$CONFIG_FILE")
+    HOST_COUNT=$(yq -r ".modules[] | select(.name == \"$module\") | .hosts | length" "$CONFIG_FILE")
 
     # For each host, use stow to deploy
     for i in $(seq 0 $((HOST_COUNT - 1))); do
         # Check if host is a string or object
-        HOST_TYPE=$(yq e ".modules[] | select(.name == \"$module\") | .hosts[$i] | type" "$CONFIG_FILE")
+        HOST_TYPE=$(yq -r ".modules[] | select(.name == \"$module\") | .hosts[$i] | type" "$CONFIG_FILE")
 
-        if [[ "$HOST_TYPE" == "!!str" ]]; then
+        if [[ "$HOST_TYPE" == "string" ]]; then
             # Simple string host
-            HOST_NAME=$(yq e ".modules[] | select(.name == \"$module\") | .hosts[$i]" "$CONFIG_FILE")
+            HOST_NAME=$(yq -r ".modules[] | select(.name == \"$module\") | .hosts[$i]" "$CONFIG_FILE")
             TARGET="${MODULE_TARGET:-$HOME}"
         else
             # Object with name and possibly target
-            HOST_NAME=$(yq e ".modules[] | select(.name == \"$module\") | .hosts[$i].name" "$CONFIG_FILE")
-            HOST_TARGET=$(yq e ".modules[] | select(.name == \"$module\") | .hosts[$i].target // \"\"" "$CONFIG_FILE")
+            HOST_NAME=$(yq -r ".modules[] | select(.name == \"$module\") | .hosts[$i].name" "$CONFIG_FILE")
+            HOST_TARGET=$(yq -r ".modules[] | select(.name == \"$module\") | .hosts[$i].target // \"\"" "$CONFIG_FILE")
             # Priority: host-level target > module-level target > $HOME
             TARGET="${HOST_TARGET:-${MODULE_TARGET:-$HOME}}"
         fi
@@ -76,7 +76,8 @@ while read -r module; do
         mkdir -p "$TARGET"
 
         # Run stow in module directory, specifying target
-        (cd "$MODULE_ABS" && stow -t "$TARGET" --dir . .)
+        # Use --no-folding to prevent directory-level symlinks when multiple modules share directories
+        (cd "$MODULE_ABS" && stow --no-folding -t "$TARGET" --dir . .)
     done
 
 done <<< "$MODULES"

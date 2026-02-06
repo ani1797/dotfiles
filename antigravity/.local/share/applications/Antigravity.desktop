@@ -1,0 +1,10 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Name=Antigravity
+Comment=Antigravity Desktop Application
+Exec=/opt/Antigravity/antigravity
+Icon=/opt/Antigravity/resources/app/resources/linux/code.png
+Terminal=false
+Type=Application
+Categories=Utility;

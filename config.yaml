@@ -1,0 +1,20 @@
+modules:
+  - name: "antigravity"
+    path: "antigravity"
+    # target: "$HOME"  # Optional: specify default target for all hosts
+    hosts:
+      - HOME-DESKTOP # Uses $HOME by default
+  - name: "bashrc"
+    path: "bash"
+    hosts:
+      - HOME-DESKTOP
+  - name: "vim"
+    path: "vim"
+    hosts:
+      - HOME-DESKTOP
+      - name: work  # Can specify per-host target
+        target: "$HOME/.work"
+  - name: "zsh"
+    path: "zsh"
+    hosts:
+      - HOME-DESKTOP

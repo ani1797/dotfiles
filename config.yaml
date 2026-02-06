@@ -30,3 +30,11 @@ modules:
     path: "kitty"
     hosts:
       - HOME-DESKTOP
+  - name: "rofi"
+    path: "rofi"
+    hosts:
+      - HOME-DESKTOP
+  - name: "hyprland"
+    path: "hyprland"
+    hosts:
+      - HOME-DESKTOP

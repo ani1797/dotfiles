@@ -1,0 +1,323 @@
+#!/usr/bin/env bash
+# configure-antigravity-application - Automated Google Antigravity IDE installer
+# Downloads and installs Google Antigravity to /opt/Antigravity
+
+set -euo pipefail
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+readonly INSTALL_DIR="/opt/Antigravity"
+readonly VERSION="1.16.5"
+readonly BASE_URL="https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/pool/antigravity-debian"
+
+# Build-specific version numbers and checksums from AUR PKGBUILD
+readonly X86_MINOR="1770081357"
+readonly ARM64_MINOR="1770081396"
+readonly X86_CHECK="1e91c55b802c42d27f931c53e68fc2ab"
+readonly ARM64_CHECK="c50fd2a09a9c4bc5a4ef2c96ff8b8d0b"
+
+# Color codes
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly NC='\033[0m'
+
+# ============================================================================
+# LOGGING FUNCTIONS
+# ============================================================================
+
+info() {
+    echo -e "${BLUE}[configure-antigravity]${NC} $*"
+}
+
+success() {
+    echo -e "${GREEN}✓${NC} $*"
+}
+
+error() {
+    echo -e "${RED}✗${NC} $*" >&2
+}
+
+warn() {
+    echo -e "${YELLOW}!${NC} $*"
+}
+
+# ============================================================================
+# CLEANUP HANDLER
+# ============================================================================
+
+TEMP_DIR=""
+
+cleanup() {
+    if [[ -n "${TEMP_DIR}" && -d "${TEMP_DIR}" ]]; then
+        info "Cleaning up temporary files..."
+        rm -rf "${TEMP_DIR}"
+    fi
+}
+
+trap 'error "Installation failed at line $LINENO"; cleanup; exit 1' ERR
+trap cleanup EXIT
+
+# ============================================================================
+# DEPENDENCY CHECKING
+# ============================================================================
+
+check_dependencies() {
+    info "Checking dependencies..."
+    local missing=()
+
+    for cmd in curl ar tar sudo; do
+        if ! command -v "$cmd" &> /dev/null; then
+            missing+=("$cmd")
+        fi
+    done
+
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        error "Missing required dependencies: ${missing[*]}"
+        error "Please install them and try again"
+        info "On Debian/Ubuntu: sudo apt-get install curl binutils tar"
+        info "On Arch: sudo pacman -S curl binutils tar"
+        info "On Fedora/RHEL: sudo dnf install curl binutils tar"
+        exit 1
+    fi
+
+    success "All dependencies found"
+}
+
+# ============================================================================
+# ARCHITECTURE DETECTION
+# ============================================================================
+
+detect_architecture() {
+    local arch
+    arch="$(uname -m)"
+
+    case "$arch" in
+        x86_64)
+            echo "amd64"
+            ;;
+        aarch64|arm64)
+            echo "arm64"
+            ;;
+        *)
+            error "Unsupported architecture: $arch"
+            error "Antigravity only supports x86_64 (amd64) and aarch64 (arm64)"
+            exit 1
+            ;;
+    esac
+}
+
+# ============================================================================
+# EXISTING INSTALLATION CHECK
+# ============================================================================
+
+check_existing_installation() {
+    if [[ -d "$INSTALL_DIR" ]]; then
+        info "Antigravity is already installed at $INSTALL_DIR"
+
+        read -p "Update to version $VERSION? [y/N] " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            info "Installation cancelled"
+            exit 0
+        fi
+
+        info "Proceeding with update..."
+    fi
+}
+
+# ============================================================================
+# DOWNLOAD PHASE
+# ============================================================================
+
+download_antigravity() {
+    local arch="$1"
+    local minor checksum
+
+    # Set build-specific values based on architecture
+    if [[ "$arch" == "amd64" ]]; then
+        minor="$X86_MINOR"
+        checksum="$X86_CHECK"
+    else
+        minor="$ARM64_MINOR"
+        checksum="$ARM64_CHECK"
+    fi
+
+    local deb_filename="antigravity_${VERSION}-${minor}_${arch}_${checksum}.deb"
+    local download_url="${BASE_URL}/${deb_filename}"
+
+    TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR"
+
+    info "Downloading Antigravity $VERSION for $arch..."
+    info "URL: $download_url"
+
+    if ! curl -fsSL -o "antigravity.deb" "$download_url"; then
+        error "Failed to download Antigravity"
+        error "URL attempted: $download_url"
+        warn "You may need to download manually from: https://antigravity.google/download"
+        exit 1
+    fi
+
+    # Verify download
+    if [[ ! -s "antigravity.deb" ]]; then
+        error "Downloaded file is empty"
+        exit 1
+    fi
+
+    success "Downloaded $(du -h antigravity.deb | cut -f1)"
+}
+
+# ============================================================================
+# EXTRACTION PHASE
+# ============================================================================
+
+extract_deb_package() {
+    info "Extracting .deb package..."
+
+    cd "$TEMP_DIR"
+
+    # Extract .deb archive structure
+    if ! ar x antigravity.deb; then
+        error "Failed to extract .deb archive"
+        exit 1
+    fi
+
+    # Find and extract data tarball
+    local data_tarball
+    data_tarball=$(ls data.tar.* 2>/dev/null | head -n1)
+
+    if [[ -z "$data_tarball" ]]; then
+        error "Could not find data tarball in .deb package"
+        exit 1
+    fi
+
+    if ! tar xf "$data_tarball"; then
+        error "Failed to extract data tarball"
+        exit 1
+    fi
+
+    success "Extracted package contents"
+}
+
+# ============================================================================
+# INSTALLATION PHASE
+# ============================================================================
+
+install_to_opt() {
+    info "Installing to $INSTALL_DIR..."
+
+    cd "$TEMP_DIR"
+
+    # Find the antigravity directory in extracted contents
+    local source_dir=""
+
+    if [[ -d "usr/share/antigravity" ]]; then
+        source_dir="usr/share/antigravity"
+    elif [[ -d "usr/lib/antigravity" ]]; then
+        source_dir="usr/lib/antigravity"
+    elif [[ -d "opt/antigravity" ]]; then
+        source_dir="opt/antigravity"
+    elif [[ -d "opt/Antigravity" ]]; then
+        source_dir="opt/Antigravity"
+    else
+        error "Could not find antigravity directory in extracted package"
+        error "Contents of package:"
+        ls -la
+        exit 1
+    fi
+
+    info "Found application at: $source_dir"
+
+    # Create installation directory
+    if ! sudo mkdir -p "$INSTALL_DIR"; then
+        error "Failed to create $INSTALL_DIR (need sudo)"
+        exit 1
+    fi
+
+    # Copy files
+    info "Copying files to $INSTALL_DIR..."
+    if ! sudo cp -r "$source_dir/"* "$INSTALL_DIR/"; then
+        error "Failed to copy files to $INSTALL_DIR"
+        exit 1
+    fi
+
+    # Set executable permissions
+    if ! sudo chmod +x "$INSTALL_DIR/antigravity"; then
+        error "Failed to set executable permissions"
+        exit 1
+    fi
+
+    success "Installed to $INSTALL_DIR"
+}
+
+# ============================================================================
+# VERIFICATION PHASE
+# ============================================================================
+
+verify_installation() {
+    info "Verifying installation..."
+
+    local errors=0
+
+    # Check executable
+    if [[ ! -f "$INSTALL_DIR/antigravity" ]]; then
+        error "Executable not found: $INSTALL_DIR/antigravity"
+        ((errors++))
+    elif [[ ! -x "$INSTALL_DIR/antigravity" ]]; then
+        error "Executable is not executable: $INSTALL_DIR/antigravity"
+        ((errors++))
+    else
+        success "Executable found and is executable"
+    fi
+
+    # Check icon (warn only, not fatal)
+    if [[ ! -f "$INSTALL_DIR/resources/app/resources/linux/code.png" ]]; then
+        warn "Icon not found at expected location: $INSTALL_DIR/resources/app/resources/linux/code.png"
+        warn "Desktop entry may not display icon correctly"
+    else
+        success "Icon found"
+    fi
+
+    if [[ $errors -gt 0 ]]; then
+        error "Installation verification failed with $errors error(s)"
+        exit 1
+    fi
+
+    success "Installation verified successfully"
+}
+
+# ============================================================================
+# MAIN
+# ============================================================================
+
+main() {
+    echo ""
+    info "Google Antigravity IDE Installer"
+    info "Version: $VERSION"
+    echo ""
+
+    check_dependencies
+
+    local arch
+    arch=$(detect_architecture)
+    info "Detected architecture: $arch"
+
+    check_existing_installation
+
+    download_antigravity "$arch"
+    extract_deb_package
+    install_to_opt
+    verify_installation
+
+    echo ""
+    success "Antigravity installed successfully!"
+    info "You can launch it from: $INSTALL_DIR/antigravity"
+    info "Or use the desktop entry: Antigravity.desktop"
+    echo ""
+}
+
+main "$@"

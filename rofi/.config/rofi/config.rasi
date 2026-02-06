@@ -1,0 +1,220 @@
+configuration {
+    modi: "drun,run,window";
+    icon-theme: "Papirus-Dark";
+    show-icons: true;
+    terminal: "alacritty";
+    drun-display-format: "{name}";
+    location: 0;
+    disable-history: false;
+    hide-scrollbar: true;
+    display-drun: "  Apps";
+    display-run: "  Run";
+    display-window: "  Window";
+    sidebar-mode: false;
+}
+
+* {
+    bg-col:  #24283b;           // Tokyo Night Storm
+    bg-transparent: #24283bd9;  // Transparent bg (85% opacity)
+    search-bg: #1a1b26e6;       // Search bar bg
+    border-col: #7aa2f7;        // Tokyo Night Blue
+    glass-hover: #ffffff18;     // Light glass effect (subtle white overlay)
+    selected-col: #7aa2f740;    // Subtle blue highlight
+    blue: #7aa2f7;              // Tokyo Night Blue
+    fg-col: #c0caf5;            // Tokyo Night Foreground
+    fg-dim: #a9b1d6;            // Dimmed text
+    grey: #565f89;              // Tokyo Night Comment
+
+    background-color: transparent;
+    text-color: @fg-col;
+    font: "JetBrainsMono Nerd Font 10";
+}
+
+window {
+    transparency: "real";
+    background-color: @bg-transparent;
+    border: 2px;
+    border-color: @blue;
+    border-radius: 16px;
+    width: 800px;
+    padding: 20px;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing: 20px;
+    padding: 5px;
+}
+
+inputbar {
+    background-color: @search-bg;
+    border: 0px;
+    border-radius: 12px;
+    padding: 15px 20px;
+    spacing: 12px;
+    children: [prompt, entry];
+}
+
+prompt {
+    background-color: transparent;
+    text-color: @blue;
+    font: "JetBrainsMono Nerd Font Bold 11";
+}
+
+entry {
+    background-color: transparent;
+    text-color: @fg-col;
+    placeholder: "Search...";
+    placeholder-color: @grey;
+}
+
+listview {
+    background-color: transparent;
+    columns: 4;
+    lines: 4;
+    spacing: 10px;
+    cycle: true;
+    dynamic: true;
+    layout: vertical;
+    fixed-height: true;
+    scrollbar: false;
+}
+
+element {
+    background-color: transparent;
+    text-color: @fg-dim;
+    orientation: vertical;
+    border-radius: 12px;
+    padding: 20px 10px;
+    spacing: 8px;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color: @fg-dim;
+}
+
+element alternate.normal {
+    background-color: transparent;
+    text-color: @fg-dim;
+}
+
+element normal.urgent {
+    background-color: transparent;
+    text-color: #f7768e;
+}
+
+element alternate.urgent {
+    background-color: transparent;
+    text-color: #f7768e;
+}
+
+element normal.active {
+    background-color: transparent;
+    text-color: @blue;
+}
+
+element alternate.active {
+    background-color: transparent;
+    text-color: @blue;
+}
+
+element selected.normal {
+    background-color: @glass-hover;
+    text-color: @fg-col;
+    border: 2px;
+    border-color: @blue;
+}
+
+element alternate.selected.normal {
+    background-color: @glass-hover;
+    text-color: @fg-col;
+    border: 2px;
+    border-color: @blue;
+}
+
+element selected.urgent {
+    background-color: @glass-hover;
+    text-color: #f7768e;
+    border: 2px;
+    border-color: #f7768e;
+}
+
+element alternate.selected.urgent {
+    background-color: @glass-hover;
+    text-color: #f7768e;
+    border: 2px;
+    border-color: #f7768e;
+}
+
+element selected.active {
+    background-color: @glass-hover;
+    text-color: @blue;
+    border: 2px;
+    border-color: @blue;
+}
+
+element alternate.selected.active {
+    background-color: @glass-hover;
+    text-color: @blue;
+    border: 2px;
+    border-color: @blue;
+}
+
+element-icon {
+    background-color: transparent;
+    size: 48px;
+    cursor: inherit;
+    horizontal-align: 0.5;
+}
+
+element-text {
+    background-color: transparent;
+    text-color: inherit;
+    cursor: inherit;
+    vertical-align: 0.5;
+    horizontal-align: 0.5;
+}
+
+message {
+    background-color: @search-bg;
+    border: 0px;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+textbox {
+    background-color: transparent;
+    text-color: @fg-col;
+    padding: 5px;
+    horizontal-align: 0.5;
+}
+
+error-message {
+    background-color: @bg-transparent;
+    border: 2px;
+    border-color: #f7768e;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+mode-switcher {
+    background-color: @search-bg;
+    border: 0px;
+    border-radius: 12px;
+    spacing: 0;
+}
+
+button {
+    background-color: transparent;
+    text-color: @grey;
+    padding: 12px 20px;
+    border-radius: 8px;
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+}
+
+button selected {
+    background-color: @blue;
+    text-color: @bg-col;
+}

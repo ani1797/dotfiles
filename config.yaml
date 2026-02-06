@@ -18,3 +18,11 @@ modules:
     path: "zsh"
     hosts:
       - HOME-DESKTOP
+      - local
+      - work
+  - name: "fish"
+    path: "fish"
+    hosts:
+      - HOME-DESKTOP
+      - local
+      - work

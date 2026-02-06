@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Install Fisher and plugins
+
+set -e
+
+echo "==================================="
+echo "Fisher Plugin Manager Setup"
+echo "==================================="
+echo ""
+
+# Check if fisher is already installed
+if fish -c "type -q fisher" 2>/dev/null; then
+    echo "✓ Fisher already installed"
+    echo ""
+    read -p "Update all plugins? [y/N] " response
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+        echo "Updating plugins from fish_plugins..."
+        fish -c "fisher update"
+        echo "✓ Plugins updated!"
+    fi
+    exit 0
+fi
+
+# Install fisher
+echo "Installing Fisher..."
+fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher"
+
+echo ""
+echo "✓ Fisher installed successfully!"
+echo ""
+echo "Installing plugins from fish_plugins..."
+fish -c "fisher update"
+
+echo ""
+echo "✓ All plugins installed!"
+echo ""
+echo "Next steps:"
+echo "  - Restart fish or run: exec fish"
+echo "  - Run 'configure-tide' to set up your prompt"

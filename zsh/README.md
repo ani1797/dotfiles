@@ -35,6 +35,7 @@ Files in `~/.config/zsh/` load in numbered order:
 - `51-aliases-arch.zsh` - Arch Linux specific (if on Arch)
 - `51-aliases-debian.zsh` - Debian/Ubuntu specific (if on Debian)
 - `51-aliases-fedora.zsh` - Fedora/RHEL specific (if on Fedora)
+- `60-direnv.zsh` - Direnv integration (if direnv installed)
 
 ## Optional Tool Installation
 

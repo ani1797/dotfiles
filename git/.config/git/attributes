@@ -1,0 +1,94 @@
+# Git Attributes
+# Managed by dotfiles - deployed via GNU Stow
+# Define attributes for path patterns
+
+# ==============================================================================
+# Line Ending Normalization
+# ==============================================================================
+
+# Automatically normalize line endings for text files
+* text=auto
+
+# Explicitly declare text files
+*.txt text
+*.md text
+*.yml text
+*.yaml text
+*.json text
+*.xml text
+*.html text
+*.css text
+*.scss text
+*.js text
+*.ts text
+*.jsx text
+*.tsx text
+*.py text
+*.rb text
+*.go text
+*.rs text
+*.java text
+*.c text
+*.cpp text
+*.h text
+*.hpp text
+*.sh text
+*.bash text
+*.zsh text
+*.fish text
+*.vim text
+
+# Declare files that should always have LF line endings
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+*.fish text eol=lf
+
+# ==============================================================================
+# Binary Files
+# ==============================================================================
+
+# Explicitly declare binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.tgz binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+
+# ==============================================================================
+# Diff Settings
+# ==============================================================================
+
+# Use specific diff drivers for certain files
+*.md diff=markdown
+*.json diff=json
+
+# ==============================================================================
+# Merge Settings
+# ==============================================================================
+
+# Never merge certain files, always use ours or theirs
+package-lock.json merge=ours
+yarn.lock merge=ours
+Cargo.lock merge=ours
+
+# ==============================================================================
+# Language-Specific Settings
+# ==============================================================================
+
+# Treat Markdown as documentation
+*.md linguist-documentation
+
+# Exclude vendored code from statistics
+vendor/** linguist-vendored
+node_modules/** linguist-vendored

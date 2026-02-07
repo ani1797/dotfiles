@@ -1,0 +1,56 @@
+# direnvrc - Custom direnv configuration
+# Main entry point that loads modular layout libraries
+# See: https://direnv.net/man/direnv-stdlib.1.html
+
+# ==============================================================================
+# LOAD DIRENV STANDARD LIBRARY
+# ==============================================================================
+# The stdlib provides essential functions like:
+# - PATH_add, path_add - Add paths to PATH
+# - log_status, log_error - Logging functions
+# - dotenv - Load .env files
+# - source_env - Source other .envrc files
+# - use <language> - Built-in language version managers
+# See: https://direnv.net/man/direnv-stdlib.1.html
+
+# stdlib is automatically loaded by direnv, no need to source it explicitly
+
+# ==============================================================================
+# LOAD LIBRARY FILES
+# ==============================================================================
+
+# Get the directory containing this direnvrc
+DIRENV_LIB_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/direnv/lib"
+
+# Load helper functions first
+if [[ -f "$DIRENV_LIB_DIR/helpers.sh" ]]; then
+    source "$DIRENV_LIB_DIR/helpers.sh"
+else
+    log_error "direnv helpers.sh not found at $DIRENV_LIB_DIR/helpers.sh"
+fi
+
+# Load layout libraries
+for lib in "$DIRENV_LIB_DIR"/layout-*.sh; do
+    if [[ -f "$lib" ]]; then
+        source "$lib"
+    fi
+done
+
+# Load custom user libraries if they exist
+if [[ -d "$DIRENV_LIB_DIR/custom" ]]; then
+    for lib in "$DIRENV_LIB_DIR/custom"/*.sh; do
+        if [[ -f "$lib" ]]; then
+            source "$lib"
+        fi
+    done
+fi
+
+# ==============================================================================
+# MACHINE-SPECIFIC OVERRIDES
+# ==============================================================================
+
+# Load machine-specific direnvrc if it exists
+# This allows per-machine customization without modifying the main config
+if [[ -f ~/.config/direnv/direnvrc.local ]]; then
+    source_env ~/.config/direnv/direnvrc.local
+fi

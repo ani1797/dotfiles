@@ -33,6 +33,7 @@ Fish automatically sources files in `conf.d/` alphabetically:
 - `aliases-debian.fish` - Debian/Ubuntu specific (if on Debian)
 - `aliases-fedora.fish` - Fedora/RHEL specific (if on Fedora)
 - `aliases-universal.fish` - Cross-platform aliases
+- `60-direnv.fish` - Direnv integration (if direnv installed)
 - `cachyos.fish` - CachyOS integration (if on CachyOS)
 
 ## Optional Tool Installation

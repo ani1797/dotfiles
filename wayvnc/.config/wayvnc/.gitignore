@@ -1,0 +1,11 @@
+# Actual configuration with credentials
+config
+
+# TLS certificates and keys
+*.pem
+*.key
+*.crt
+
+# Backup files
+*.bak
+*~

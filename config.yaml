@@ -12,20 +12,18 @@ modules:
     path: "vim"
     hosts:
       - HOME-DESKTOP
-      - name: work  # Can specify per-host target
-        target: "$HOME/.work"
   - name: "zsh"
     path: "zsh"
     hosts:
       - HOME-DESKTOP
-      - local
-      - work
   - name: "fish"
     path: "fish"
     hosts:
       - HOME-DESKTOP
-      - local
-      - work
+  - name: "direnv"
+    path: "direnv"
+    hosts:
+      - HOME-DESKTOP
   - name: "kitty"
     path: "kitty"
     hosts:
@@ -36,5 +34,13 @@ modules:
       - HOME-DESKTOP
   - name: "hyprland"
     path: "hyprland"
+    hosts:
+      - HOME-DESKTOP
+  - name: "wayvnc"
+    path: "wayvnc"
+    hosts:
+      - HOME-DESKTOP
+  - name: "git"
+    path: "git"
     hosts:
       - HOME-DESKTOP

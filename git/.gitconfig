@@ -1,0 +1,240 @@
+# Git Global Configuration
+# Managed by dotfiles - deployed via GNU Stow
+
+[user]
+    name = Anirudh Aggarwal
+    email = 16053724+ani1797@users.noreply.github.com
+    signingKey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOBfSIwTxtDsEPmyK4DdkFYYa74PWPU2ItKBqsV85uCo
+
+[core]
+    editor = vim
+    # Use global gitignore
+    excludesFile = ~/.config/git/ignore
+    # Improve diff output
+    pager = less -FRX
+    # Prevent showing files with non-ASCII names as octal
+    quotePath = false
+    # Normalize line endings
+    autocrlf = input
+    # Treat whitespace issues as errors
+    whitespace = trailing-space,space-before-tab
+
+[commit]
+    # Sign commits by default
+    gpgSign = true
+    # Use commit message template
+    template = ~/.config/git/message
+    # Show diff in commit message editor
+    verbose = true
+
+[gpg]
+    format = ssh
+
+[gpg "ssh"]
+    program = /opt/1Password/op-ssh-sign
+    # Fallback for machines without 1Password
+    # program = /usr/bin/ssh-keygen
+
+[init]
+    # Default branch name for new repositories
+    defaultBranch = main
+
+[pull]
+    # Rebase by default instead of merge
+    rebase = true
+    # Automatically stash and unstash when rebasing
+    autoStash = true
+
+[push]
+    # Push current branch to upstream
+    default = current
+    # Push tags along with commits
+    followTags = true
+    # Automatically setup remote tracking
+    autoSetupRemote = true
+
+[fetch]
+    # Prune deleted remote branches
+    prune = true
+    # Prune tags
+    pruneTags = true
+
+[rebase]
+    # Automatically stash and unstash
+    autoStash = true
+    # Automatically squash fixup commits
+    autoSquash = true
+
+[merge]
+    # Show common ancestor in conflict markers
+    conflictStyle = zdiff3
+    # Use better merge algorithm
+    algorithm = histogram
+
+[diff]
+    # Use better diff algorithm
+    algorithm = histogram
+    # Detect renames and copies
+    renames = copies
+    # Use mnemonic prefixes (index, work tree, commit, object)
+    mnemonicPrefix = true
+    # Detect moved lines in diff
+    colorMoved = default
+
+[status]
+    # Show submodule summary
+    submoduleSummary = true
+    # Show branch and tracking info
+    showUntrackedFiles = all
+
+[log]
+    # Show abbreviated commit hash
+    abbrevCommit = true
+    # Show dates in relative format
+    date = relative
+    # Follow file history across renames
+    follow = true
+
+[color]
+    # Enable colors in terminal
+    ui = auto
+    branch = auto
+    diff = auto
+    status = auto
+    interactive = auto
+
+[color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+
+[color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old = red bold
+    new = green bold
+    whitespace = red reverse
+
+[color "status"]
+    added = green
+    changed = yellow
+    untracked = red
+
+# Useful aliases
+[alias]
+    # Short status
+    s = status -sb
+
+    # Add interactively
+    a = add -p
+
+    # Commit with message
+    c = commit -m
+
+    # Commit and amend
+    ca = commit --amend
+
+    # Commit all changes
+    cam = commit -am
+
+    # Checkout branch
+    co = checkout
+
+    # Create and checkout new branch
+    cob = checkout -b
+
+    # List branches
+    br = branch -v
+
+    # List all branches including remotes
+    bra = branch -av
+
+    # Delete branch
+    brd = branch -d
+
+    # Force delete branch
+    brD = branch -D
+
+    # Better log
+    l = log --oneline --decorate --graph
+
+    # Detailed log
+    ll = log --oneline --decorate --graph --all
+
+    # Log with stats
+    ls = log --stat --abbrev-commit
+
+    # Show last commit
+    last = log -1 HEAD --stat
+
+    # Show what I did today
+    today = log --since='1 day ago' --oneline --author='Anirudh Aggarwal'
+
+    # Show what I did this week
+    week = log --since='1 week ago' --oneline --author='Anirudh Aggarwal'
+
+    # Diff staged changes
+    ds = diff --staged
+
+    # Diff with better word diff
+    dw = diff --word-diff
+
+    # Show all remotes
+    remotes = remote -v
+
+    # Pull with rebase
+    up = pull --rebase --autostash
+
+    # Push current branch
+    p = push
+
+    # Push with force (safely)
+    pf = push --force-with-lease
+
+    # Undo last commit (keep changes)
+    undo = reset HEAD~1 --mixed
+
+    # Undo last commit (discard changes)
+    undohard = reset HEAD~1 --hard
+
+    # Stash with message
+    save = stash save
+
+    # List stashes
+    stashes = stash list
+
+    # Apply latest stash
+    pop = stash pop
+
+    # Show files in last commit
+    files = show --name-only
+
+    # Show summary of last commit
+    summary = show --stat
+
+    # Find commits by message
+    find = log --all --oneline --grep
+
+    # Find commits by author
+    who = log --all --oneline --author
+
+    # Show all contributors
+    contributors = shortlog -sn
+
+    # Show ignored files
+    ignored = ls-files --others -i --exclude-standard
+
+    # Clean up merged branches
+    cleanup = "!git branch --merged | grep -v '\\*\\|main\\|master\\|develop' | xargs -r git branch -d"
+
+    # Show git aliases
+    aliases = config --get-regexp alias
+
+# Include machine-specific overrides
+# This file is NOT version controlled - perfect for:
+# - Different email addresses per machine (work vs personal)
+# - Different editor preferences
+# - Machine-specific 1Password paths
+# - Custom aliases
+[include]
+    path = ~/.gitconfig.local

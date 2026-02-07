@@ -1,0 +1,10 @@
+#%PAM-1.0
+# WayVNC PAM Configuration
+# This file must be installed to /etc/pam.d/wayvnc with root permissions
+# Use: sudo cp wayvnc/pam.d/wayvnc /etc/pam.d/wayvnc
+# Or run: configure-wayvnc (which will offer to install it)
+#
+# Simplified configuration for basic authentication
+
+auth       required     pam_unix.so
+account    required     pam_unix.so

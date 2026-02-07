@@ -1,0 +1,62 @@
+# <type>: <subject> (max 50 characters)
+
+# Body: Explain *what* and *why* (not *how*). Wrap at 72 characters.
+
+
+# Footer: Reference issues, breaking changes, etc.
+
+
+# ==============================================================================
+# Commit Message Guidelines
+# ==============================================================================
+#
+# Type (choose one):
+#   feat:     New feature
+#   fix:      Bug fix
+#   docs:     Documentation only changes
+#   style:    Code style changes (formatting, missing semicolons, etc.)
+#   refactor: Code change that neither fixes a bug nor adds a feature
+#   perf:     Performance improvement
+#   test:     Adding or updating tests
+#   build:    Changes to build system or dependencies
+#   ci:       Changes to CI configuration
+#   chore:    Other changes that don't modify src or test files
+#   revert:   Revert a previous commit
+#
+# Subject line:
+#   - Use imperative mood ("Add feature" not "Added feature")
+#   - Don't capitalize first letter
+#   - No period at the end
+#   - Max 50 characters
+#
+# Body:
+#   - Separate from subject with blank line
+#   - Wrap at 72 characters
+#   - Explain what and why, not how
+#   - Can use bullet points (- or *)
+#
+# Footer:
+#   - Reference issues: "Closes #123", "Fixes #456"
+#   - Note breaking changes: "BREAKING CHANGE: description"
+#
+# Examples:
+#   feat: add user authentication system
+#   fix: resolve memory leak in data processor
+#   docs: update API documentation for v2.0
+#   refactor: simplify error handling logic
+#
+# Good commit message example:
+#
+#   feat: add 1Password integration to direnv
+#
+#   Enables automatic loading of secrets from 1Password when entering
+#   directories. Supports .oprc file for dedicated secrets and falls
+#   back to .env with op:// references.
+#
+#   - Checks for op CLI and authentication
+#   - Processes op:// references line by line
+#   - Provides layout_op and layout_env_op functions
+#
+#   Closes #42
+#
+# ==============================================================================

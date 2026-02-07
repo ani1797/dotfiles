@@ -24,7 +24,11 @@ Dynamic tiling Wayland compositor configuration with enhanced window management 
 - **Lock Screen**: Tokyo Night themed hyprlock with blurred background
 - **Screenshots**: Area selection with grim + slurp
 - **Media Controls**: Volume, brightness, and playback bindings
-- **VNC Support**: WayVNC for remote access
+- **Remote Desktop**: Secure VNC access via separate wayvnc module (see below)
+
+## Documentation
+
+- `keyshortcuts.md` - Comprehensive Hyprland keybinding reference (stowed to `~/.config/keyshortcuts.md`)
 
 ## Files
 
@@ -33,6 +37,7 @@ Dynamic tiling Wayland compositor configuration with enhanced window management 
 ├── hyprland.conf       # Main configuration
 ├── hypridle.conf       # Idle/lock/suspend settings
 ├── hyprlock.conf       # Lock screen appearance
+├── keyshortcuts.md     # Keybinding reference
 └── scripts/
     ├── snap-window.sh      # Window snapping script
     └── switch-layout.sh    # Layout toggle script
@@ -53,7 +58,7 @@ Dynamic tiling Wayland compositor configuration with enhanced window management 
 ### Optional
 - `grim` + `slurp` - Screenshot tools
 - `wl-clipboard` - Clipboard manager
-- `wayvnc` - VNC server for remote access
+- `wayvnc` - VNC server (configured via separate wayvnc module)
 - `brightnessctl` - Brightness control
 - `playerctl` - Media playback control
 - `notify-send` - Desktop notifications
@@ -179,9 +184,50 @@ Edit `hyprland.conf` exec-once section:
 exec-once = hyprpaper
 exec-once = waybar
 exec-once = hypridle
+# WayVNC is managed by systemd (see wayvnc module)
+# To use exec-once instead: disable systemd service and uncomment below
+# exec-once = wayvnc -C ~/.config/wayvnc/config -o wayvnc
 # Add more:
 # exec-once = dunst        # Notification daemon
 # exec-once = nm-applet    # Network manager
+```
+
+### Remote Desktop Access
+
+WayVNC can be started in two ways:
+
+**Option 1: Systemd Service (Recommended)**
+- Managed independently of Hyprland
+- Survives Hyprland crashes/reloads
+- Better logging and service management
+- See [wayvnc/README.md](../wayvnc/README.md) for setup
+
+**Option 2: Hyprland exec-once (Fallback)**
+- Started automatically with Hyprland
+- Stops when Hyprland exits
+- Simpler but less robust
+
+By default, the systemd service approach is recommended. The `exec-once` line for wayvnc in `hyprland.conf` is commented out in favor of the systemd service.
+
+**Setup steps**:
+1. Deploy the wayvnc module (see main dotfiles README)
+2. Run `configure-wayvnc` to set up authentication and systemd service
+3. Service starts automatically on login
+
+**For detailed information**, see [wayvnc/README.md](../wayvnc/README.md) which covers:
+- Security model (PAM authentication, TLS encryption)
+- SSH tunneling for secure remote access
+- Systemd service management
+- Configuration options
+- Troubleshooting
+
+**Quick test** (after wayvnc module setup):
+```bash
+# Check wayvnc service status
+systemctl --user status wayvnc.service
+
+# Connect locally
+vncviewer localhost:5900
 ```
 
 ## Scripts

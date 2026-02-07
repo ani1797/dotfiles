@@ -1,0 +1,18 @@
+[Unit]
+Description=WayVNC Remote Desktop Server
+Documentation=man:wayvnc(1)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/wayvnc -C %h/.config/wayvnc/config
+Restart=on-failure
+RestartSec=5
+
+# Security hardening (minimal set that allows PAM authentication)
+# Note: More restrictive settings prevent PAM's unix_chkpwd from accessing /etc/shadow
+PrivateTmp=true
+
+[Install]
+WantedBy=graphical-session.target

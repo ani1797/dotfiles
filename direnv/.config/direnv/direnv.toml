@@ -1,0 +1,60 @@
+# direnv.toml - Direnv configuration
+# See: https://direnv.net/man/direnv.toml.1.html
+
+# ==============================================================================
+# AUTO-APPROVAL WHITELIST
+# ==============================================================================
+# Directories listed here will have their .envrc files automatically allowed
+# without requiring explicit 'direnv allow' each time they change.
+# Use this for trusted directories where you control the .envrc content.
+
+[whitelist]
+# Home directory projects (trusted locations)
+prefix = [
+    # User project directories
+    "/home/anirudh/Projects",
+    "/home/anirudh/Documents",
+    "/home/anirudh/workspace",
+    "/home/anirudh/dev",
+
+    # Dotfiles repository (this repo)
+    "/home/anirudh/.local/share/dotfiles",
+
+    # GitHub Codespaces workspace
+    "/workspaces",
+
+    # Temporary testing
+    "/tmp",
+]
+
+# Exact directory matches (if you want specific directories only)
+# exact = [
+#     "/home/anirudh/specific-project",
+# ]
+
+# ==============================================================================
+# GLOBAL SETTINGS
+# ==============================================================================
+
+[global]
+# Don't warn about unloading environment when leaving directory
+# warn_timeout = "5s"
+
+# Disable hints about direnv allow
+# disable_stdin = false
+
+# ==============================================================================
+# NOTES
+# ==============================================================================
+#
+# Security Considerations:
+# - Only whitelist directories YOU control
+# - DO NOT whitelist system directories or untrusted locations
+# - Review .envrc files before whitelisting their parent directory
+# - .env files in whitelisted directories are automatically loaded
+#
+# Whitelist Patterns:
+# - prefix: Matches directory and all subdirectories
+# - exact: Matches only the specific directory
+#
+# After modifying this file, restart your shell or run: direnv reload

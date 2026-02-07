@@ -1,18 +1,39 @@
-# Hyprland Keyboard Shortcuts Reference
+---
+layout: default
+title: "Keyboard Shortcuts"
+nav_order: 10
+---
+
+# Keyboard Shortcuts Reference
+
+Comprehensive keyboard shortcuts and keybindings for all modules.
+
+{: .no_toc }
+
+## Table of Contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+## Hyprland (Window Manager)
 
 **Main Modifier Key**: `Super` (Windows key)
 
-## Table of Contents
-1. [Applications & System](#applications--system)
-2. [Window Focus & Navigation](#window-focus--navigation)
-3. [Window Positioning & Snapping](#window-positioning--snapping)
-4. [Window Resizing](#window-resizing)
-5. [Window Swapping & Rearranging](#window-swapping--rearranging)
-6. [Window States](#window-states)
-7. [Workspaces](#workspaces)
-8. [Layout Management](#layout-management)
-9. [Special Features](#special-features)
-10. [Mouse Bindings](#mouse-bindings)
+### Quick Reference Categories
+
+- [Applications & System](#applications--system)
+- [Window Focus & Navigation](#window-focus--navigation)
+- [Window Positioning & Snapping](#window-positioning--snapping)
+- [Window Resizing](#window-resizing)
+- [Window Swapping & Rearranging](#window-swapping--rearranging)
+- [Window States](#window-states)
+- [Workspaces](#workspaces)
+- [Layout Management](#layout-management)
+- [Special Features](#special-features)
+- [Mouse Bindings](#mouse-bindings)
 
 ---
 
@@ -274,7 +295,32 @@ Understanding the modifier key combinations:
 
 ---
 
-**Configuration Location**: `~/.config/hypr/hyprland.conf`
-**Helper Scripts**: `~/.config/hypr/scripts/`
+## Other Module Shortcuts
 
-Last updated: 2026-02-06 (Revised to use proper Super-based shortcuts)
+### Kitty Terminal
+
+See [Kitty Module Documentation](modules/kitty.md) for terminal-specific keybindings.
+
+### Rofi Launcher
+
+See [Rofi Module Documentation](modules/rofi.md) for launcher shortcuts.
+
+### Git Aliases
+
+See [Git Module Documentation](modules/git.md) for git command aliases and shortcuts.
+
+---
+
+## Adding Module Shortcuts
+
+When adding new modules with keybindings:
+
+1. Document shortcuts in the module's documentation (`docs/modules/<module>.md`)
+2. Add a reference section here linking to that documentation
+3. For complex keybinding sets, create a dedicated section in this file
+
+---
+
+**Configuration Location**: `~/.config/hypr/hyprland.conf`  
+**Helper Scripts**: `~/.config/hypr/scripts/`  
+**Last Updated**: 2026-02-06

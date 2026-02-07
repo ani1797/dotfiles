@@ -1,3 +1,9 @@
+---
+layout: default
+title: "WayVNC Server"
+parent: Modules
+---
+
 # WayVNC Remote Desktop Module
 
 Secure remote desktop access for Hyprland using WayVNC with PAM authentication and TLS encryption.

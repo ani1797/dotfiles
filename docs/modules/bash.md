@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Bash Shell"
+parent: Modules
+---
+
 # Bash Configuration Module
 
 Basic bash shell configuration for interactive shells.

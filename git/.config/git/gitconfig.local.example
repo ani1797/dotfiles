@@ -1,0 +1,17 @@
+# Machine-specific Git Configuration Example
+# Copy this file to ~/.gitconfig.local and customize for your machine
+# Or use the configure-git-machine script to generate it automatically
+#
+# This file is NOT version controlled in dotfiles
+# Contains 1Password-specific settings and other machine-specific overrides
+
+[user]
+    signingKey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOBfSIwTxtDsEPmyK4DdkFYYa74PWPU2ItKBqsV85uCo
+
+[gpg]
+    format = ssh
+
+[gpg "ssh"]
+    program = /opt/1Password/op-ssh-sign
+    # Fallback for machines without 1Password
+    # program = /usr/bin/ssh-keygen

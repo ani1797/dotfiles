@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Kitty Terminal"
+parent: Modules
+---
+
 # Kitty Terminal Configuration
 
 Kitty terminal configuration with Tokyo Night color scheme and tiling window management.

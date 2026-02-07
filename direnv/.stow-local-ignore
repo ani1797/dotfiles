@@ -2,6 +2,7 @@
 # Documentation files that should stay in the repository
 
 README\.md
+1PASSWORD\.md
 .*\.md$
 
 # Common documentation and repository files

@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Fish Shell"
+parent: Modules
+---
+
 # Fish Shell Configuration Module
 
 Portable, modular fish shell configuration that works across multiple Linux distributions using fish-native features.

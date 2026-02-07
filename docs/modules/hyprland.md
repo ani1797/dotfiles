@@ -1,6 +1,14 @@
+---
+layout: default
+title: "Hyprland Compositor"
+parent: Modules
+---
+
 # Hyprland Configuration
 
 Dynamic tiling Wayland compositor configuration with enhanced window management and Tokyo Night aesthetics.
+
+**⚡ Quick Reference**: See [Keyboard Shortcuts](../keyboard-shortcuts.md) for complete keybindings and shortcuts.
 
 ## Features
 

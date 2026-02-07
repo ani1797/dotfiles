@@ -1,0 +1,15 @@
+# Dotfiles Repository - .gitignore
+# Files that should not be version controlled
+
+# Backup files
+*.backup.*
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Editor files
+.vscode/
+.idea/
+*.code-workspace

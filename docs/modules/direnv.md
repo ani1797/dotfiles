@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Direnv"
+parent: Modules
+---
+
 # Direnv Module
 
 Automated direnv configuration for per-directory environment management.

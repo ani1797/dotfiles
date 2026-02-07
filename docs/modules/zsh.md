@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Zsh Shell"
+parent: Modules
+---
+
 # Zsh Configuration Module
 
 Portable, modular zsh configuration that works across multiple Linux distributions with graceful degradation.

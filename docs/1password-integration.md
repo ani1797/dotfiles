@@ -1,3 +1,8 @@
+---
+layout: default
+title: "1Password Integration"
+---
+
 # 1Password Integration for Direnv
 
 Integration of 1Password CLI with direnv for automatic secret loading.

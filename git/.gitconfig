@@ -4,7 +4,6 @@
 [user]
     name = Anirudh Aggarwal
     email = 16053724+ani1797@users.noreply.github.com
-    signingKey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOBfSIwTxtDsEPmyK4DdkFYYa74PWPU2ItKBqsV85uCo
 
 [core]
     editor = vim
@@ -26,14 +25,6 @@
     template = ~/.config/git/message
     # Show diff in commit message editor
     verbose = true
-
-[gpg]
-    format = ssh
-
-[gpg "ssh"]
-    program = /opt/1Password/op-ssh-sign
-    # Fallback for machines without 1Password
-    # program = /usr/bin/ssh-keygen
 
 [init]
     # Default branch name for new repositories

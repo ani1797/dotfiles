@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Rofi Launcher"
+parent: Modules
+---
+
 # Rofi Configuration
 
 Tokyo Night themed application launcher for Wayland/X11.

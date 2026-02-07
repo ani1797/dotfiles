@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Git Configuration"
+parent: Modules
+---
+
 # Git Module
 
 Modern git configuration with best practices, useful aliases, and 1Password integration.
@@ -46,7 +52,21 @@ This module provides a comprehensive git configuration including:
   - Diff and merge settings
   - Language-specific settings
 
+- **`.config/git/gitconfig.local.example`** - Example machine-specific config
+  - Template for `.gitconfig.local`
+  - Shows 1Password configuration
+  - Reference for manual setup
+  - Not deployed (example only)
+
 ### Utility Scripts
+
+- **`.local/bin/configure-git-machine`** - Configure machine-specific settings
+  - Imports SSH keys from GitHub using ssh-import-id
+  - Detects 1Password installation automatically
+  - Configures GPG signing with appropriate program
+  - Generates `.gitconfig.local` with signing key
+  - Falls back to ssh-keygen if 1Password unavailable
+  - Verifies configuration after setup
 
 - **`.local/bin/git-setup-verify`** - Verify git configuration
   - Checks git installation
@@ -90,9 +110,10 @@ cd /home/anirudh/.local/share/dotfiles
 ```
 
 After deployment:
-1. Verify configuration: `git-setup-verify`
-2. Check user identity: `git config user.name && git config user.email`
-3. Test an alias: `git s` (short status)
+1. Configure machine-specific settings: `configure-git-machine <github-username>`
+2. Verify configuration: `git-setup-verify`
+3. Check user identity: `git config user.name && git config user.email`
+4. Test an alias: `git s` (short status)
 
 ## Key Features
 
@@ -117,10 +138,24 @@ Commits are signed using SSH keys managed by 1Password:
 - Integrated with 1Password
 - SSH keys you already use
 
-**Setup**:
+**Quick Setup**:
+```bash
+# Automated setup (recommended)
+configure-git-machine <your-github-username>
+```
+
+The script will:
+1. Import your SSH keys from GitHub
+2. Detect 1Password installation
+3. Configure signing automatically
+4. Generate `.gitconfig.local` with proper settings
+5. Fall back to ssh-keygen if 1Password is not available
+
+**Manual Setup**:
 1. Ensure 1Password is installed and configured
 2. Add your SSH key to 1Password
 3. Configure GitHub to recognize your signing key
+4. Create `.gitconfig.local` with your signing key
 
 ### Useful Git Aliases
 
@@ -231,22 +266,41 @@ incoming version
 
 ### Machine-Specific Overrides
 
-Create `~/.gitconfig.local` for machine-specific settings:
+The `.gitconfig.local` file contains machine-specific settings and is NOT version controlled. This is perfect for:
+- Different signing keys per machine
+- 1Password vs ssh-keygen configuration
+- Work vs personal email addresses
+- Machine-specific editor preferences
+
+**Automatic Generation**:
+```bash
+# Generate .gitconfig.local automatically
+configure-git-machine <github-username>
+```
+
+**Manual Creation**:
+Create `~/.gitconfig.local` manually (see `~/.config/git/gitconfig.local.example` for reference):
 
 ```ini
 # ~/.gitconfig.local
 
-[core]
-    editor = nvim  # Override default editor
+[user]
+    signingKey = ssh-ed25519 AAAAC3Nza...  # Your SSH public key
+
+[gpg]
+    format = ssh
 
 [gpg "ssh"]
-    program = /usr/bin/ssh-keygen  # Use ssh-keygen instead of 1Password
+    program = /opt/1Password/op-ssh-sign  # or /usr/bin/ssh-keygen
+
+[core]
+    editor = nvim  # Override default editor
 
 [user]
     email = work@example.com  # Override email for work machine
 ```
 
-This file is automatically included and not version controlled.
+An example file is provided at `~/.config/git/gitconfig.local.example` after deployment. This file is automatically included in the main `.gitconfig` and not version controlled.
 
 ### Add Custom Aliases
 
@@ -487,8 +541,10 @@ git/
 ├── .config/git/
 │   ├── ignore                           # Global gitignore
 │   ├── message                          # Commit template
-│   └── attributes                       # Git attributes
+│   ├── attributes                       # Git attributes
+│   └── gitconfig.local.example          # Example machine-specific config
 ├── .local/bin/
+│   ├── configure-git-machine            # Machine setup script
 │   ├── git-setup-verify                 # Configuration checker
 │   └── git-create-repo-template         # Repository creator
 └── README.md                            # This file

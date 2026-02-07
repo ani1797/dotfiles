@@ -28,7 +28,7 @@ Dynamic tiling Wayland compositor configuration with enhanced window management 
 - **Drop Shadows**: Subtle shadows for depth
 
 ### System Integration
-- **Idle Management**: Auto-lock after 5 minutes, suspend after 30 minutes
+- **Idle Management**: Auto-lock after 5 minutes, display off after 5.5 minutes (suspend disabled for SSH/VNC accessibility)
 - **Lock Screen**: Tokyo Night themed hyprlock with blurred background
 - **Screenshots**: Area selection with grim + slurp
 - **Media Controls**: Volume, brightness, and playback bindings
@@ -175,7 +175,7 @@ hyprctl keyword general:layout master
 Configured in `hypridle.conf`:
 - 5 minutes → Lock screen
 - 5.5 minutes → Turn off display
-- 30 minutes → Suspend
+- System suspend is **disabled** to maintain SSH/VNC accessibility
 
 Adjust timeouts:
 ```conf

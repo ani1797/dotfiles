@@ -511,10 +511,102 @@ show_next_steps() {
 }
 
 # ============================================================================
+# QUICK SWITCH
+# ============================================================================
+
+quick_switch() {
+    local address=$1
+    local description=$2
+
+    # Check if config exists
+    if [ ! -f "$CONFIG_FILE" ]; then
+        error "Config file not found: $CONFIG_FILE"
+        error "Run configure-wayvnc without arguments to create initial config"
+        exit 1
+    fi
+
+    info "Switching to $description ($address)..."
+
+    # Get current port
+    local port
+    port=$(grep -E '^port=' "$CONFIG_FILE" | cut -d'=' -f2 | tr -d ' ')
+    port=${port:-5900}
+
+    # Backup current config
+    cp "$CONFIG_FILE" "${CONFIG_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
+
+    # Update address in config
+    sed -i "s/^address=.*/address=$address/" "$CONFIG_FILE"
+
+    success "Configuration updated"
+
+    # Restart service if it's running
+    if systemctl --user is-active --quiet wayvnc.service 2>/dev/null; then
+        info "Restarting wayvnc service..."
+        if systemctl --user restart wayvnc.service; then
+            sleep 1
+            if systemctl --user is-active --quiet wayvnc.service; then
+                success "Service restarted successfully"
+                echo
+                info "WayVNC is now listening on: $address:$port"
+            else
+                error "Service failed to start. Check logs:"
+                echo "  journalctl --user -u wayvnc.service -n 20"
+                exit 1
+            fi
+        else
+            error "Failed to restart service"
+            exit 1
+        fi
+    else
+        warn "Service not running. Start it with:"
+        echo "  systemctl --user start wayvnc.service"
+    fi
+}
+
+# ============================================================================
 # MAIN
 # ============================================================================
 
 main() {
+    # Handle quick-switch arguments
+    case "${1:-}" in
+        --localhost|--local|-l)
+            quick_switch "127.0.0.1" "localhost only"
+            exit 0
+            ;;
+        --all|--any|-a)
+            quick_switch "0.0.0.0" "all interfaces"
+            exit 0
+            ;;
+        --help|-h)
+            cat << 'EOF'
+Usage: configure-wayvnc [OPTIONS]
+
+Setup WayVNC with PAM authentication and TLS encryption.
+
+Options:
+  --localhost, --local, -l    Quick switch to localhost (127.0.0.1)
+  --all, --any, -a           Quick switch to all interfaces (0.0.0.0)
+  --help, -h                 Show this help message
+  (no options)               Interactive setup wizard
+
+Examples:
+  configure-wayvnc              # Run interactive setup
+  configure-wayvnc --localhost  # Switch to localhost binding
+  configure-wayvnc --all        # Switch to all interfaces
+
+EOF
+            exit 0
+            ;;
+        --*)
+            error "Unknown option: $1"
+            echo "Run 'configure-wayvnc --help' for usage information"
+            exit 1
+            ;;
+    esac
+
+    # Interactive mode
     echo
     info "WayVNC Configuration Setup"
     info "=========================="

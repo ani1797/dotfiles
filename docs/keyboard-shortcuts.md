@@ -295,6 +295,116 @@ Understanding the modifier key combinations:
 
 ---
 
+## Neovim
+
+**Leader Key**: `Space`
+
+### File Navigation
+
+| Keybinding | Description |
+|------------|-------------|
+| `Ctrl+f` | Find files (Telescope) |
+| `Ctrl+l` | Live grep (Telescope) |
+| `Space+ff` | Find files (alt) |
+| `Space+fg` | Live grep (alt) |
+| `Space+fb` | Buffers |
+| `Space+fh` | Help tags |
+| `Ctrl+n` | Toggle Neo-tree |
+
+### LSP
+
+| Keybinding | Description |
+|------------|-------------|
+| `gd` | Go to definition |
+| `K` | Hover documentation |
+| `gi` | Go to implementation |
+| `Ctrl+k` | Signature help |
+| `gr` | References |
+| `Space+rn` | Rename symbol |
+| `Space+ca` | Code action |
+
+### Completion
+
+| Keybinding | Description |
+|------------|-------------|
+| `Ctrl+Space` | Trigger completion |
+| `CR` (Enter) | Confirm selection |
+| `Tab` / `Shift+Tab` | Navigate items |
+| `Ctrl+b` / `Ctrl+f` | Scroll docs |
+| `Ctrl+e` | Abort completion |
+
+### AI (Avante)
+
+| Keybinding | Description |
+|------------|-------------|
+| `Space+aa` | Ask AI |
+| `Space+ae` | Edit with AI |
+| `Space+ar` | Refresh AI |
+
+See [Neovim Module Documentation](modules/nvim.md) for full details.
+
+---
+
+## Tmux
+
+**Prefix Key**: `Ctrl+Space`
+
+### Splits & Windows
+
+| Keybinding | Description |
+|------------|-------------|
+| `prefix + \` | Horizontal split |
+| `prefix + -` | Vertical split |
+| `prefix + c` | New window (current path) |
+
+### Pane Navigation (no prefix needed)
+
+| Keybinding | Description |
+|------------|-------------|
+| `Alt+Left` | Navigate pane left |
+| `Alt+Right` | Navigate pane right |
+| `Alt+Up` | Navigate pane up |
+| `Alt+Down` | Navigate pane down |
+
+### Window Navigation
+
+| Keybinding | Description |
+|------------|-------------|
+| `Ctrl+Alt+Left` | Previous window |
+| `Ctrl+Alt+Right` | Next window |
+
+### Session Management
+
+| Keybinding | Description |
+|------------|-------------|
+| `prefix + r` | Reload config |
+| `prefix + m` | Edit config |
+| `prefix + b` | Toggle status bar |
+| `prefix + k` | Kill window (confirm) |
+| `prefix + K` | Kill server (confirm) |
+| `prefix + End` | Kill pane |
+
+### Vi Copy Mode
+
+| Keybinding | Description |
+|------------|-------------|
+| `v` | Begin selection |
+| `y` | Copy selection |
+| `r` | Rectangle toggle |
+
+### TPM Plugins
+
+| Keybinding | Description |
+|------------|-------------|
+| `prefix + I` | Install plugins |
+| `prefix + U` | Update plugins |
+| `prefix + Ctrl+s` | Save session (resurrect) |
+| `prefix + Ctrl+r` | Restore session (resurrect) |
+
+See [Tmux Module Documentation](modules/tmux.md) for full details.
+
+---
+
 ## Other Module Shortcuts
 
 ### Kitty Terminal

@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Configure SSH - set permissions and print setup guidance
+# Run after stowing the ssh module
+
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+print_info() {
+    echo -e "${BLUE}i${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}+${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}!${NC} $1" >&2
+}
+
+print_error() {
+    echo -e "${RED}x${NC} $1" >&2
+}
+
+SSH_DIR="$HOME/.ssh"
+
+# Ensure config.d directory exists (stow creates it, but be safe)
+if [[ ! -d "$SSH_DIR/config.d" ]]; then
+    mkdir -p "$SSH_DIR/config.d"
+    print_info "Created $SSH_DIR/config.d/"
+fi
+
+# Set permissions
+print_info "Setting SSH file permissions..."
+
+chmod 700 "$SSH_DIR"
+print_success "~/.ssh/ → 700"
+
+if [[ -f "$SSH_DIR/config" ]]; then
+    chmod 600 "$SSH_DIR/config"
+    print_success "~/.ssh/config → 600"
+fi
+
+# Set permissions on config.d files
+for f in "$SSH_DIR/config.d"/*; do
+    [[ -f "$f" ]] || continue
+    chmod 600 "$f"
+    print_success "~/.ssh/config.d/$(basename "$f") → 600"
+done
+
+# Set permissions on key files
+for key in "$SSH_DIR"/id_*; do
+    [[ -f "$key" ]] || continue
+    if [[ "$key" == *.pub ]]; then
+        chmod 644 "$key"
+        print_success "$(basename "$key") → 644"
+    else
+        chmod 600 "$key"
+        print_success "$(basename "$key") → 600"
+    fi
+done
+
+if [[ -f "$SSH_DIR/allowed_signers" ]]; then
+    chmod 644 "$SSH_DIR/allowed_signers"
+    print_success "allowed_signers → 644"
+fi
+
+echo ""
+print_success "SSH permissions configured!"
+echo ""
+print_info "Next steps:"
+echo "  1. Copy host entries from hosts.example to a new file:"
+echo "     cp ~/.ssh/config.d/hosts.example ~/.ssh/config.d/my-hosts"
+echo "     (Edit hostnames and IPs to match your environment)"
+echo ""
+echo "  2. Generate an SSH key (if you don't have one):"
+echo "     ssh-keygen -t ed25519 -C \"your_email@example.com\""
+echo ""
+echo "  3. For 1Password SSH agent, uncomment the appropriate"
+echo "     IdentityAgent line in ~/.ssh/config"
+echo ""
+echo "  4. Test GitHub connectivity:"
+echo "     ssh -T git@github.com"
+echo ""

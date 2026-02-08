@@ -79,7 +79,6 @@ Tools and configurations for software development.
 {: .d-inline-block }
 Essential
 {: .label .label-purple }
-⭐
 
 Comprehensive Git configuration with modern best practices.
 - **SSH-based commit signing** with 1Password
@@ -91,6 +90,44 @@ Comprehensive Git configuration with modern best practices.
   - `configure-git-machine` - Automated setup for new machines
   - `git-setup-verify` - Verify configuration
   - `git-create-repo-template` - Initialize new repositories
+
+#### [Neovim](modules/nvim)
+{: .d-inline-block }
+Advanced
+{: .label .label-green }
+
+Modern Neovim configuration with Lazy.nvim and modular plugins.
+- Lazy.nvim plugin manager
+- Telescope fuzzy finder, Neo-tree file explorer
+- LSP with Mason (auto-installs language servers)
+- nvim-cmp completion engine
+- Avante AI/Claude integration
+- Tokyo Night theme
+- Delete any plugin file to disable that feature
+
+#### [Tmux](modules/tmux)
+{: .d-inline-block }
+Essential
+{: .label .label-purple }
+
+Terminal multiplexer with intuitive keybindings and session persistence.
+- Ctrl+Space prefix key
+- Tokyo Night status bar theme
+- Alt+Arrow pane navigation (no prefix)
+- Vi copy-mode with clipboard integration
+- TPM plugin manager, tmux-resurrect
+
+#### [SSH](modules/ssh)
+{: .d-inline-block }
+Essential
+{: .label .label-purple }
+
+Structured SSH configuration with modular host management.
+- Base config with `Include config.d/*`
+- GitHub host entry (port 443 for firewalls)
+- Example host entries as reference
+- 1Password SSH agent support
+- Permissions setup via `configure-ssh`
 
 #### [Direnv](modules/direnv)
 {: .d-inline-block }
@@ -156,6 +193,8 @@ Complete keybinding reference for all modules.
 - Screenshot and multimedia
 
 **Other modules:**
+- Neovim keybindings (Telescope, LSP, completion, AI)
+- Tmux keybindings (splits, panes, windows, copy mode)
 - Kitty terminal keybindings
 - Rofi launcher shortcuts
 - Git command aliases
@@ -228,7 +267,10 @@ module-name/
 **Setting up a new machine:**
 1. Run `./bootstrap.sh` (automated)
 2. Configure git: `configure-git-machine <github-username>`
-3. Verify setup: `git-setup-verify`
+3. Configure neovim: `configure-nvim`
+4. Configure tmux: `configure-tmux`
+5. Configure ssh: `configure-ssh`
+6. Verify git setup: `git-setup-verify`
 
 **Adding a new module:**
 1. Create module directory with appropriate structure

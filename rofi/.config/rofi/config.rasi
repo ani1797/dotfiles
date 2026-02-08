@@ -2,7 +2,7 @@ configuration {
     modi: "drun,run,window";
     icon-theme: "Papirus-Dark";
     show-icons: true;
-    terminal: "alacritty";
+    terminal: "kitty";
     drun-display-format: "{name}";
     location: 0;
     disable-history: false;

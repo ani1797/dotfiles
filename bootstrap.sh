@@ -40,7 +40,9 @@ trap 'error "Script failed at line $LINENO. Exit code: $?"' ERR
 # ============================================================================
 
 detect_distro() {
-    if [[ -f /etc/os-release ]]; then
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        echo "macos"
+    elif [[ -f /etc/os-release ]]; then
         . /etc/os-release
         echo "${ID}"
     else
@@ -61,6 +63,9 @@ get_package_manager() {
         fedora|rhel|centos|rocky|almalinux)
             echo "dnf"
             ;;
+        macos)
+            echo "brew"
+            ;;
         *)
             # Fallback to binary detection
             if command -v pacman >/dev/null 2>&1; then
@@ -71,6 +76,8 @@ get_package_manager() {
                 echo "dnf"
             elif command -v yum >/dev/null 2>&1; then
                 echo "yum"
+            elif command -v brew >/dev/null 2>&1; then
+                echo "brew"
             else
                 echo "unknown"
             fi
@@ -84,9 +91,37 @@ is_codespace() {
     [[ -f "/workspaces/.codespaces/.id" ]]
 }
 
+is_macos() { [[ "$(uname -s)" == "Darwin" ]]; }
+
+is_wsl() {
+    [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]] || \
+    [[ -n "${WSL_DISTRO_NAME:-}" ]]
+}
+
 # ============================================================================
 # INSTALLATION FUNCTIONS
 # ============================================================================
+
+install_homebrew() {
+    if command -v brew >/dev/null 2>&1; then
+        info "Homebrew already installed"
+        return 0
+    fi
+
+    info "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+    # Add Homebrew to PATH for this session
+    if [[ -f /opt/homebrew/bin/brew ]]; then
+        # Apple Silicon
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [[ -f /usr/local/bin/brew ]]; then
+        # Intel Mac
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+
+    success "Homebrew installed"
+}
 
 install_dependencies() {
     local pkg_mgr="$1"
@@ -134,6 +169,9 @@ install_dependencies() {
         yum)
             sudo yum install -y -q "${missing_pkgs[@]}"
             ;;
+        brew)
+            brew install "${missing_pkgs[@]}"
+            ;;
         *)
             error "Unsupported package manager: $pkg_mgr"
             error "Please install manually: ${missing_pkgs[*]}"
@@ -153,10 +191,17 @@ backup_existing_configs() {
         "$HOME/.bashrc"
         "$HOME/.bash_profile"
         "$HOME/.vimrc"
+        "$HOME/.config/nvim"
+        "$HOME/.config/tmux"
+        "$HOME/.tmux.conf"
+        "$HOME/.ssh/config"
         "$HOME/.local/bin/configure-oh-my-zsh"
         "$HOME/.local/bin/configure-powerlevel10k"
         "$HOME/.local/bin/configure-zsh-plugins"
         "$HOME/.local/bin/configure-fzf"
+        "$HOME/.local/bin/configure-nvim"
+        "$HOME/.local/bin/configure-tmux"
+        "$HOME/.local/bin/configure-ssh"
     )
 
     local backed_up=false
@@ -292,6 +337,11 @@ set_default_shell() {
         return 0
     fi
 
+    if is_macos; then
+        info "macOS detected - zsh is the default shell since Catalina"
+        return 0
+    fi
+
     local current_shell
     current_shell="$(basename "$SHELL")"
 
@@ -413,13 +463,27 @@ main() {
         info "Running in GitHub Codespace"
     fi
 
+    if is_macos; then
+        info "Running on macOS"
+    fi
+
+    if is_wsl; then
+        info "Running in WSL"
+    fi
+
     if [[ "$pkg_mgr" == "unknown" ]]; then
         error "Could not detect package manager"
-        error "Supported: pacman (Arch), apt (Debian/Ubuntu), dnf/yum (Fedora/RHEL)"
+        error "Supported: pacman (Arch), apt (Debian/Ubuntu), dnf/yum (Fedora/RHEL), brew (macOS)"
         exit 1
     fi
 
     echo ""
+
+    # Install Homebrew on macOS if needed
+    if is_macos; then
+        install_homebrew
+        echo ""
+    fi
 
     # Install dependencies
     install_dependencies "$pkg_mgr"
@@ -464,7 +528,10 @@ main() {
             echo "  - Log out and back in (or run: exec zsh)"
         fi
         echo "  - Run: p10k configure (optional, to customize prompt)"
-        echo "  - Enjoy your configured shell! 🚀"
+        echo "  - Run: configure-nvim (install Neovim plugins)"
+        echo "  - Run: configure-tmux (install tmux plugins)"
+        echo "  - Run: configure-ssh (set SSH permissions)"
+        echo "  - Run: configure-git-machine <github-username> (configure git signing)"
         echo ""
     else
         echo ""

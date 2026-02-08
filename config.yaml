@@ -1,46 +1,86 @@
 modules:
   - name: "antigravity"
     path: "antigravity"
-    # target: "$HOME"  # Optional: specify default target for all hosts
     hosts:
-      - HOME-DESKTOP # Uses $HOME by default
+      - HOME-DESKTOP
   - name: "bashrc"
     path: "bash"
     hosts:
       - HOME-DESKTOP
-  - name: "vim"
-    path: "vim"
-    hosts:
-      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
   - name: "zsh"
     path: "zsh"
     hosts:
       - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
   - name: "fish"
     path: "fish"
     hosts:
       - HOME-DESKTOP
+      - ASUS-LAPTOP
   - name: "direnv"
     path: "direnv"
     hosts:
       - HOME-DESKTOP
-  - name: "kitty"
-    path: "kitty"
-    hosts:
-      - HOME-DESKTOP
-  - name: "rofi"
-    path: "rofi"
-    hosts:
-      - HOME-DESKTOP
-  - name: "hyprland"
-    path: "hyprland"
-    hosts:
-      - HOME-DESKTOP
-  - name: "wayvnc"
-    path: "wayvnc"
-    hosts:
-      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
   - name: "git"
     path: "git"
     hosts:
       - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
+  - name: "vim"
+    path: "vim"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
+  - name: "nvim"
+    path: "nvim"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
+  - name: "tmux"
+    path: "tmux"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
+  - name: "ssh"
+    path: "ssh"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
+  - name: "kitty"
+    path: "kitty"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+  - name: "rofi"
+    path: "rofi"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+  - name: "hyprland"
+    path: "hyprland"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+  - name: "wayvnc"
+    path: "wayvnc"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP

@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# Configure Neovim - install plugins via Lazy.nvim
+# Run after stowing the nvim module to bootstrap all plugins
+
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+print_info() {
+    echo -e "${BLUE}i${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}+${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}!${NC} $1" >&2
+}
+
+print_error() {
+    echo -e "${RED}x${NC} $1" >&2
+}
+
+# Check if nvim is installed
+if ! command -v nvim >/dev/null 2>&1; then
+    print_error "Neovim is not installed."
+    echo "  Arch Linux: sudo pacman -S neovim"
+    echo "  Debian/Ubuntu: sudo apt-get install neovim"
+    echo "  macOS: brew install neovim"
+    exit 1
+fi
+
+NVIM_VERSION=$(nvim --version | head -n1)
+print_info "Found: $NVIM_VERSION"
+
+# Check config exists
+if [[ ! -f "$HOME/.config/nvim/init.lua" ]]; then
+    print_error "Neovim config not found at ~/.config/nvim/init.lua"
+    print_info "Run 'stow nvim' from the dotfiles directory first."
+    exit 1
+fi
+
+# Install/sync plugins
+print_info "Syncing Lazy.nvim plugins (this may take a moment)..."
+if nvim --headless "+Lazy! sync" +qa 2>&1; then
+    print_success "Plugins installed successfully"
+else
+    print_warning "Plugin sync completed with warnings (check :Lazy in nvim)"
+fi
+
+echo ""
+print_success "Neovim configuration complete!"
+echo ""
+print_info "Keybinding reference:"
+echo "  Space        Leader key"
+echo "  Ctrl+f       Find files (Telescope)"
+echo "  Ctrl+l       Live grep (Telescope)"
+echo "  Ctrl+n       Toggle file explorer (Neo-tree)"
+echo "  gd           Go to definition (LSP)"
+echo "  K            Hover documentation (LSP)"
+echo "  gr           References (LSP)"
+echo "  Space+rn     Rename symbol (LSP)"
+echo "  Space+ca     Code action (LSP)"
+echo "  Space+aa     Ask AI (Avante)"
+echo "  Space+ae     Edit with AI (Avante)"
+echo ""
+print_info "Run :Mason in nvim to manage LSP servers"
+print_info "Run :Lazy in nvim to manage plugins"
+echo ""

@@ -1,0 +1,14 @@
+# Files and patterns to ignore when stowing this module
+# Documentation files that should stay in the repository
+
+README\.md
+.*\.md$
+
+# Common documentation and repository files
+LICENSE
+CHANGELOG
+\.git
+\.gitignore
+
+# Exclude example hosts file — Include config.d/* would parse it
+\.ssh/config\.d/hosts\.example$

@@ -272,7 +272,7 @@ port=$port
 enable_auth=true
 enable_pam=true
 
-# TLS certificates (absolute paths for systemd compatibility)
+# TLS certificates
 private_key_file=$TLS_KEY
 certificate_file=$TLS_CERT
 
@@ -453,119 +453,75 @@ setup_pam_config() {
 }
 
 # ============================================================================
-# SHADOW ACL SETUP
+# SUDOERS SETUP
 # ============================================================================
 
-setup_shadow_acl() {
-    info "Checking /etc/shadow access for PAM authentication..."
+setup_sudoers() {
+    info "Setting up sudoers rule for wayvnc..."
 
-    # pam_unix.so normally uses the unix_chkpwd setuid helper to verify passwords
-    # against /etc/shadow. However, this helper fails when forked from wayvnc's
-    # multi-threaded process. Granting the user direct read access to /etc/shadow
-    # via ACL lets pam_unix.so verify passwords without the helper.
+    local sudoers_file="/etc/sudoers.d/wayvnc"
+    local sudoers_content
+    sudoers_content="$(cat <<EOF
+# Allow user to run wayvnc as root without password for VNC server
+# Preserve Wayland session variables so wayvnc can connect to the compositor
+Defaults!/usr/bin/wayvnc env_keep += "WAYLAND_DISPLAY XDG_RUNTIME_DIR"
+${USER} ALL=(root) NOPASSWD: /usr/bin/wayvnc
+EOF
+)"
 
-    # Check if acl package is available
-    if ! command -v getfacl &>/dev/null; then
-        error "ACL utilities not found. Install the 'acl' package:"
-        error "  sudo pacman -S acl"
-        return 1
-    fi
-
-    # Check if user already has read access via ACL
-    if getfacl -p /etc/shadow 2>/dev/null | grep -q "user:${USER}:r"; then
-        success "Shadow ACL already set for user $USER"
+    # Check if sudoers file already exists with correct content
+    if [ -f "$sudoers_file" ] && [ "$(sudo cat "$sudoers_file" 2>/dev/null)" = "$sudoers_content" ]; then
+        success "Sudoers rule already configured for user $USER"
         return 0
     fi
 
     echo
-    warn "PAM authentication requires read access to /etc/shadow"
-    warn "The unix_chkpwd setuid helper fails from wayvnc's multi-threaded process."
-    warn "Setting an ACL grants your user direct read access as a workaround."
+    warn "WayVNC needs to run as root to read /etc/shadow for PAM authentication."
+    warn "This will create a sudoers rule allowing passwordless 'sudo wayvnc'."
+    warn "The rule is scoped to /usr/bin/wayvnc only."
     echo
-    read -rp "Set shadow ACL for user $USER? (Required for PAM auth) (Y/n): " response </dev/tty
+    read -rp "Install sudoers rule for user $USER? (Required for PAM auth) (Y/n): " response </dev/tty
     if [[ "$response" =~ ^[Nn]$ ]]; then
-        warn "Skipping shadow ACL setup"
-        warn "PAM authentication will likely fail without this!"
+        warn "Skipping sudoers setup"
+        warn "PAM authentication will not work without this!"
         return 1
     fi
 
-    if sudo setfacl -m "u:${USER}:r" /etc/shadow; then
-        success "Shadow ACL set: user:${USER}:r-- on /etc/shadow"
+    # Write to temp file and validate before installing
+    local tmpfile
+    tmpfile="$(mktemp)"
+    echo "$sudoers_content" > "$tmpfile"
 
-        # Verify
-        if getfacl -p /etc/shadow 2>/dev/null | grep -q "user:${USER}:r"; then
-            success "Shadow ACL verified"
-        else
-            error "Shadow ACL verification failed"
-            return 1
-        fi
+    if ! sudo visudo -c -f "$tmpfile" &>/dev/null; then
+        error "Sudoers syntax validation failed"
+        rm -f "$tmpfile"
+        return 1
+    fi
+
+    if sudo install -m 0440 -o root -g root "$tmpfile" "$sudoers_file"; then
+        rm -f "$tmpfile"
+        success "Sudoers rule installed: $sudoers_file"
     else
-        error "Failed to set shadow ACL"
+        rm -f "$tmpfile"
+        error "Failed to install sudoers rule"
         return 1
     fi
 }
 
 # ============================================================================
-# SYSTEMD SERVICE SETUP
+# EXEC-ONCE SETUP
 # ============================================================================
 
-setup_systemd_service() {
-    info "Setting up systemd user service..."
-
-    # Check if service file exists
-    if [ ! -f "$HOME/.config/systemd/user/wayvnc.service" ]; then
-        error "Service file not found. Did you deploy the wayvnc module?"
-        warn "Run: ./install.sh (from your dotfiles directory)"
-        return 1
-    fi
-
-    # Reload systemd user daemon
-    if systemctl --user daemon-reload; then
-        success "Reloaded systemd user daemon"
-    else
-        error "Failed to reload systemd daemon"
-        return 1
-    fi
-
-    # Prompt to enable service
+show_exec_once_setup() {
     echo
-    read -rp "Enable wayvnc service to start on login? (Y/n): " response </dev/tty
-    if [[ ! "$response" =~ ^[Nn]$ ]]; then
-        if systemctl --user enable wayvnc.service 2>/dev/null; then
-            success "Enabled wayvnc.service"
-        else
-            error "Failed to enable wayvnc.service"
-            return 1
-        fi
-    fi
-
-    # Prompt to start service now
+    info "Hyprland Integration"
+    info "===================="
     echo
-    read -rp "Start wayvnc service now? (Y/n): " response </dev/tty
-    if [[ ! "$response" =~ ^[Nn]$ ]]; then
-        if systemctl --user start wayvnc.service 2>/dev/null; then
-            success "Started wayvnc.service"
-
-            # Wait a moment and check status
-            sleep 2
-            if systemctl --user is-active --quiet wayvnc.service; then
-                success "WayVNC is running"
-                echo
-                info "Service status:"
-                systemctl --user status wayvnc.service --no-pager -l
-            else
-                warn "WayVNC failed to start. Check status:"
-                echo "  systemctl --user status wayvnc.service"
-                echo "  journalctl --user -u wayvnc.service -n 50"
-                return 1
-            fi
-        else
-            error "Failed to start wayvnc.service"
-            return 1
-        fi
-    fi
-
-    return 0
+    info "This module provides a drop-in config at ~/.config/hypr/conf.d/wayvnc.conf"
+    info "that starts wayvnc automatically via Hyprland's exec-once."
+    echo
+    info "If your hyprland.conf sources conf.d (source = ~/.config/hypr/conf.d/*.conf),"
+    info "no manual configuration is needed. Just reload Hyprland or login again."
 }
 
 # ============================================================================
@@ -574,7 +530,6 @@ setup_systemd_service() {
 
 show_next_steps() {
     local address=$1
-    local using_systemd=$2
 
     echo
     success "WayVNC configuration complete!"
@@ -582,52 +537,41 @@ show_next_steps() {
     info "Next steps:"
     echo
 
-    if [ "$using_systemd" = "1" ]; then
-        echo "1. Service management commands:"
-        echo "   systemctl --user status wayvnc.service   # Check status"
-        echo "   systemctl --user stop wayvnc.service     # Stop service"
-        echo "   systemctl --user restart wayvnc.service  # Restart service"
-        echo "   journalctl --user -u wayvnc.service -f   # View logs"
-        echo
-        echo "2. Verify wayvnc is running:"
-        echo "   systemctl --user is-active wayvnc.service"
-    else
-        echo "1. Restart Hyprland to apply changes:"
-        echo "   - Logout and login again, OR"
-        echo "   - Run: hyprctl reload"
-        echo
-        echo "2. Verify wayvnc is running:"
-        echo "   ps aux | grep wayvnc"
-    fi
+    echo "1. Deploy the module (stow) to install the Hyprland drop-in config:"
+    echo "   cd ~/.local/share/dotfiles && ./install.sh"
+    echo
+    echo "2. Reload Hyprland or logout and login again"
+    echo
+    echo "3. Verify wayvnc is running:"
+    echo "   pgrep -a wayvnc"
+    echo
+    echo "4. Stop wayvnc:"
+    echo "   sudo pkill -x wayvnc"
 
     echo
 
     if [ "$address" = "127.0.0.1" ]; then
-        echo "3. Connect from a remote machine using SSH tunnel:"
+        echo "5. Connect from a remote machine using SSH tunnel:"
         echo "   ssh -L 5900:localhost:5900 $USER@$(hostname)"
         echo
-        echo "4. Then connect your VNC client to:"
+        echo "6. Then connect your VNC client to:"
         echo "   localhost:5900"
     else
-        echo "3. Ensure firewall allows port 5900:"
+        echo "5. Ensure firewall allows port 5900:"
         echo "   sudo ufw allow 5900/tcp"
         echo
-        echo "4. Connect your VNC client to:"
+        echo "6. Connect your VNC client to:"
         echo "   $(hostname):5900"
     fi
 
     echo
-    echo "5. Authenticate with your system credentials:"
+    echo "7. Authenticate with your system credentials:"
     echo "   Username: $USER"
     echo "   Password: [your system password]"
     echo
 
     warn "Note: VNC clients may show certificate warnings (self-signed cert)"
     info "This is normal and expected. Accept the certificate to continue."
-    echo
-
-    info "For more information, see: ~/.config/wayvnc/config.example"
-    info "Or read: $(dirname "$(readlink -f "$0")")/../README.md"
 }
 
 # ============================================================================
@@ -660,27 +604,26 @@ quick_switch() {
 
     success "Configuration updated"
 
-    # Restart service if it's running
-    if systemctl --user is-active --quiet wayvnc.service 2>/dev/null; then
-        info "Restarting wayvnc service..."
-        if systemctl --user restart wayvnc.service; then
-            sleep 1
-            if systemctl --user is-active --quiet wayvnc.service; then
-                success "Service restarted successfully"
-                echo
-                info "WayVNC is now listening on: $address:$port"
-            else
-                error "Service failed to start. Check logs:"
-                echo "  journalctl --user -u wayvnc.service -n 20"
-                exit 1
-            fi
+    # Restart wayvnc if it's running
+    if pgrep -x wayvnc &>/dev/null; then
+        info "Restarting wayvnc..."
+        sudo pkill -x wayvnc || true
+        sleep 1
+        sudo /usr/bin/wayvnc --log-level=trace -C "$CONFIG_FILE" &
+        disown
+        sleep 2
+        if pgrep -x wayvnc &>/dev/null; then
+            success "WayVNC restarted successfully"
+            echo
+            info "WayVNC is now listening on: $address:$port"
         else
-            error "Failed to restart service"
+            error "WayVNC failed to start. Try running manually:"
+            echo "  sudo /usr/bin/wayvnc --log-level=trace -C $CONFIG_FILE"
             exit 1
         fi
     else
-        warn "Service not running. Start it with:"
-        echo "  systemctl --user start wayvnc.service"
+        warn "WayVNC not running. Start it with:"
+        echo "  start-wayvnc &"
     fi
 }
 
@@ -710,8 +653,8 @@ The setup wizard will:
   - Generate RSA key in PKCS#1 format (for RealVNC / Apple VNC)
   - Create wayvnc configuration file
   - Install PAM config to /etc/pam.d/wayvnc
-  - Set /etc/shadow ACL for PAM authentication
-  - Configure systemd user service
+  - Install sudoers rule for passwordless sudo wayvnc
+  - Show Hyprland exec-once configuration
 
 Options:
   --localhost, --local, -l    Quick switch to localhost (127.0.0.1)
@@ -777,30 +720,31 @@ EOF
     echo
     setup_pam_config
 
-    # Setup shadow ACL (required for PAM auth from wayvnc)
+    # Setup sudoers rule (required for running wayvnc as root)
     echo
-    setup_shadow_acl
+    setup_sudoers
 
-    # Setup systemd service (optional)
-    local using_systemd=0
-    if command -v systemctl &> /dev/null; then
-        echo
-        info "Systemd detected - can manage wayvnc as a user service"
-        echo
-        read -rp "Setup systemd service? (Recommended) (Y/n): " response </dev/tty
-        if [[ ! "$response" =~ ^[Nn]$ ]]; then
-            if setup_systemd_service; then
-                using_systemd=1
-            else
-                warn "Systemd setup failed, will use Hyprland exec-once instead"
-            fi
+    # Show Hyprland exec-once instructions
+    show_exec_once_setup
+
+    # Offer to start wayvnc now
+    echo
+    read -rp "Start wayvnc now? (Y/n): " response </dev/tty
+    if [[ ! "$response" =~ ^[Nn]$ ]]; then
+        info "Starting wayvnc..."
+        sudo /usr/bin/wayvnc --log-level=trace -C "$CONFIG_FILE" &
+        disown
+        sleep 2
+        if pgrep -x wayvnc &>/dev/null; then
+            success "WayVNC is running"
         else
-            info "Skipping systemd setup. Will use Hyprland exec-once."
+            warn "WayVNC may have failed to start. Try running manually:"
+            echo "  start-wayvnc"
         fi
     fi
 
     # Show next steps
-    show_next_steps "$address" "$using_systemd"
+    show_next_steps "$address"
 }
 
 # Run main function

@@ -66,109 +66,54 @@ configure-wayvnc
 The script will:
 1. Check that wayvnc and openssl are installed
 2. Verify PAM support in wayvnc
-3. Prompt for network binding preference (default: localhost)
+3. Prompt for network binding preference (default: all interfaces)
 4. Prompt for VNC port (default: 5900)
 5. Generate TLS certificates valid for 10 years
 6. Create the configuration file with secure permissions
 7. Install PAM authentication config (requires sudo)
-8. Optionally setup systemd user service
+8. Install sudoers rule for passwordless `sudo wayvnc` (scoped to `/usr/bin/wayvnc` only)
 9. Display next steps
 
-### 3. Choose Startup Method
+### 3. Startup via Hyprland
 
-WayVNC can be started in two ways:
+The wayvnc module provides a drop-in config at `~/.config/hypr/conf.d/wayvnc.conf` that is automatically sourced by Hyprland. It contains:
 
-**Option 1: Systemd Service (Recommended)**
+```conf
+exec-once = start-wayvnc
+monitor = wayvnc, 1920x1080@60, auto, 1
+```
 
-The configuration script will offer to setup a systemd user service. This is recommended because:
-- Service survives Hyprland crashes/reloads
-- Better service management and logging
-- Easy enable/disable without editing configs
-- Follows Linux service best practices
+The `start-wayvnc` script runs wayvnc as root via sudo, which is required for PAM authentication to read `/etc/shadow`. No manual Hyprland config editing is needed.
 
-If you chose to setup the systemd service during configuration, it's already running. Skip to step 4.
-
-**Option 2: Hyprland exec-once (Fallback)**
-
-If you prefer Hyprland to manage wayvnc:
-1. Disable the systemd service: `systemctl --user disable --now wayvnc.service`
-2. Edit `~/.config/hypr/hyprland.conf` and uncomment:
-   ```conf
-   exec-once = wayvnc -C ~/.config/wayvnc/config -o wayvnc
-   ```
-3. Restart Hyprland: `hyprctl reload` or logout/login
+After running `configure-wayvnc` and deploying the module, reload Hyprland or logout/login.
 
 ### 4. Verify WayVNC is Running
 
-**If using systemd service:**
 ```bash
-systemctl --user status wayvnc.service
-```
-
-**If using Hyprland exec-once:**
-```bash
-ps aux | grep wayvnc
+pgrep -a wayvnc
 ```
 
 You should see:
 ```
-wayvnc -C /home/user/.config/wayvnc/config -o wayvnc
+root ... /usr/bin/wayvnc --log-level=trace -C /home/user/.config/wayvnc/config
 ```
 
-## Systemd Service Management (Recommended)
-
-The wayvnc module includes a systemd user service for proper service management.
-
-### Enable and Start
+## Process Management
 
 ```bash
-# Enable service to start on login
-systemctl --user enable wayvnc.service
+# Check if running
+pgrep -a wayvnc
 
-# Start service now
-systemctl --user start wayvnc.service
+# Stop
+sudo pkill -x wayvnc
 
-# Check status
-systemctl --user status wayvnc.service
+# Start manually (normally handled by Hyprland exec-once)
+start-wayvnc &
+
+# Quick switch binding address
+configure-wayvnc --all        # Switch to all interfaces (0.0.0.0)
+configure-wayvnc --localhost   # Switch to localhost only (127.0.0.1)
 ```
-
-### Control Commands
-
-```bash
-# Stop service
-systemctl --user stop wayvnc.service
-
-# Restart service
-systemctl --user restart wayvnc.service
-
-# Disable autostart
-systemctl --user disable wayvnc.service
-
-# View logs
-journalctl --user -u wayvnc.service -f
-
-# View recent logs (last 50 lines)
-journalctl --user -u wayvnc.service -n 50
-```
-
-### Verify Service is Running
-
-```bash
-systemctl --user is-active wayvnc.service
-# Output: active (if running)
-
-systemctl --user is-enabled wayvnc.service
-# Output: enabled (if set to start on login)
-```
-
-### Benefits of Systemd Service
-
-1. **Reliability**: Service survives Hyprland crashes and reloads
-2. **Management**: Easy control via `systemctl --user` commands
-3. **Logging**: Centralized logging via `journalctl --user`
-4. **Auto-restart**: Systemd automatically restarts on failure
-5. **Status Monitoring**: Check service health independently
-6. **Enable/Disable**: No need to edit config files
 
 ## Quick Start
 
@@ -287,7 +232,7 @@ If you see invalid options like `deny=3` or `unlock_time=600` with `pam_unix.so`
 
 ```bash
 sudo cp /path/to/dotfiles/wayvnc/pam.d/wayvnc /etc/pam.d/wayvnc
-systemctl --user restart wayvnc.service
+sudo pkill -x wayvnc && start-wayvnc &
 ```
 
 **Problem: "User not known to the underlying authentication module"**
@@ -298,34 +243,23 @@ This means the username doesn't exist on the system. Use your actual system user
 
 ### WayVNC Not Starting
 
-**If using systemd service:**
-
 ```bash
-# Check service status
-systemctl --user status wayvnc.service
-
-# View logs
-journalctl --user -u wayvnc.service -n 50
-
-# Try to start manually
-systemctl --user start wayvnc.service
-```
-
-**If using Hyprland exec-once:**
-
-```bash
-# Check Hyprland logs
-journalctl --user -xe | grep wayvnc
+# Check if the process is running
+pgrep -a wayvnc
 
 # Try running manually to see errors
-wayvnc -C ~/.config/wayvnc/config -o wayvnc
+sudo /usr/bin/wayvnc --log-level=trace -C ~/.config/wayvnc/config
+
+# Check if the drop-in config is deployed
+ls -la ~/.config/hypr/conf.d/wayvnc.conf
 ```
 
 **Common issues:**
 - Config file doesn't exist: Run `configure-wayvnc`
 - Certificate files missing: Run `configure-wayvnc` to regenerate
 - Port already in use: Change port in config file or stop conflicting service
-- Service file not found: Run `./install.sh` to deploy the module
+- Sudoers rule missing: Run `configure-wayvnc` to reinstall
+- Drop-in not deployed: Run `./install.sh` from dotfiles directory
 
 ### Connection Refused
 
@@ -357,8 +291,8 @@ ssh -v -L 5900:localhost:5900 user@host
 # View PAM config
 cat /etc/pam.d/wayvnc
 
-# Check wayvnc logs for PAM errors
-journalctl --user -u wayvnc.service -n 20 | grep -i "pam\|auth"
+# Run wayvnc manually to see PAM errors in real time
+sudo /usr/bin/wayvnc --log-level=trace -C ~/.config/wayvnc/config
 ```
 
 If you see errors like "unrecognized option" or "Authentication service cannot retrieve authentication info", reinstall the PAM config:
@@ -478,29 +412,17 @@ openssl x509 -in ~/.config/wayvnc/tls_cert.pem -noout -enddate
 
 ### Disable VNC
 
-**If using systemd service:**
-
-```bash
-# Stop service immediately
-systemctl --user stop wayvnc.service
-
-# Disable autostart on login
-systemctl --user disable wayvnc.service
-
-# Both commands together
-systemctl --user disable --now wayvnc.service
-```
-
-**If using Hyprland exec-once:**
-
-1. Edit `~/.config/hypr/hyprland.conf`
-2. Comment out the wayvnc autostart line:
-   ```conf
-   # exec-once = wayvnc -C ~/.config/wayvnc/config -o wayvnc
-   ```
-3. Restart Hyprland or kill wayvnc process:
+1. Stop the running process:
    ```bash
-   pkill wayvnc
+   sudo pkill -x wayvnc
+   ```
+2. Remove the drop-in config to prevent autostart:
+   ```bash
+   rm ~/.config/hypr/conf.d/wayvnc.conf
+   ```
+3. Or comment out exec-once in the drop-in:
+   ```conf
+   # exec-once = start-wayvnc
    ```
 
 ## File Permissions
@@ -564,6 +486,7 @@ sudo dnf install wayvnc openssl tigervnc
 - **PAM password**: Same as system password, so compromise affects both
 - **No 2FA**: PAM authentication doesn't support 2FA by default
 - **Certificate validity**: 10-year certificates are convenient but long-lived
+- **Runs as root**: WayVNC runs via sudo for PAM `/etc/shadow` access; the sudoers rule is scoped to `/usr/bin/wayvnc` only
 
 ### Best Practices
 

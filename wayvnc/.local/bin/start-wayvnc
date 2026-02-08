@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# start-wayvnc - Start WayVNC as root via sudo
+# Used as: exec-once = start-wayvnc
+# Requires sudoers rule installed by configure-wayvnc
+
+exec sudo /usr/bin/wayvnc --log-level=trace -C "$HOME/.config/wayvnc/config"

@@ -192,47 +192,32 @@ Edit `hyprland.conf` exec-once section:
 exec-once = hyprpaper
 exec-once = waybar
 exec-once = hypridle
-# WayVNC is managed by systemd (see wayvnc module)
-# To use exec-once instead: disable systemd service and uncomment below
-# exec-once = wayvnc -C ~/.config/wayvnc/config -o wayvnc
 # Add more:
 # exec-once = dunst        # Notification daemon
 # exec-once = nm-applet    # Network manager
 ```
 
+Additional autostart entries can be added via drop-in configs in `~/.config/hypr/conf.d/`. For example, the wayvnc module provides `conf.d/wayvnc.conf` which is sourced automatically.
+
 ### Remote Desktop Access
 
-WayVNC can be started in two ways:
-
-**Option 1: Systemd Service (Recommended)**
-- Managed independently of Hyprland
-- Survives Hyprland crashes/reloads
-- Better logging and service management
-- See [wayvnc/README.md](../wayvnc/README.md) for setup
-
-**Option 2: Hyprland exec-once (Fallback)**
-- Started automatically with Hyprland
-- Stops when Hyprland exits
-- Simpler but less robust
-
-By default, the systemd service approach is recommended. The `exec-once` line for wayvnc in `hyprland.conf` is commented out in favor of the systemd service.
+WayVNC is started via a drop-in config (`~/.config/hypr/conf.d/wayvnc.conf`) that runs `start-wayvnc` through Hyprland's `exec-once`. The script runs wayvnc as root via sudo for PAM authentication.
 
 **Setup steps**:
 1. Deploy the wayvnc module (see main dotfiles README)
-2. Run `configure-wayvnc` to set up authentication and systemd service
-3. Service starts automatically on login
+2. Run `configure-wayvnc` to set up authentication and sudoers rule
+3. Reload Hyprland or login again
 
 **For detailed information**, see [wayvnc/README.md](../wayvnc/README.md) which covers:
 - Security model (PAM authentication, TLS encryption)
 - SSH tunneling for secure remote access
-- Systemd service management
 - Configuration options
 - Troubleshooting
 
 **Quick test** (after wayvnc module setup):
 ```bash
-# Check wayvnc service status
-systemctl --user status wayvnc.service
+# Check wayvnc is running
+pgrep -a wayvnc
 
 # Connect locally
 vncviewer localhost:5900

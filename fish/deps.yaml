@@ -1,0 +1,10 @@
+# fish module dependencies
+packages:
+  arch:
+    - fish
+    - starship
+  debian:
+    - fish
+  macos:
+    - fish
+    - starship

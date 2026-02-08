@@ -1,0 +1,8 @@
+# starship module dependencies
+packages:
+  arch:
+    - starship
+  debian: []
+  fedora: []
+  macos:
+    - starship

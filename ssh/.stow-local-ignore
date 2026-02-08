@@ -10,5 +10,8 @@ CHANGELOG
 \.git
 \.gitignore
 
+# Module metadata (not deployed to target)
+deps\.yaml
+
 # Exclude example files — Include config.d/* would parse them
 .*\.example

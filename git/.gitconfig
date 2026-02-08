@@ -6,7 +6,7 @@
     email = 16053724+ani1797@users.noreply.github.com
 
 [core]
-    editor = vim
+    editor = nvim
     # Use global gitignore
     excludesFile = ~/.config/git/ignore
     # Improve diff output
@@ -220,6 +220,11 @@
 
     # Show git aliases
     aliases = config --get-regexp alias
+
+# Safe directories (prevent "dubious ownership" errors)
+[safe]
+    directory = /workspace
+    directory = /workspaces
 
 # Include machine-specific overrides
 # This file is NOT version controlled - perfect for:

@@ -1,0 +1,9 @@
+# ssh module dependencies
+packages:
+  arch:
+    - openssh
+  debian:
+    - openssh-client
+  fedora:
+    - openssh-clients
+  macos: []

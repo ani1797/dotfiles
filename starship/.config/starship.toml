@@ -1,0 +1,138 @@
+# Starship Prompt Configuration
+# Theme: Tokyo Night
+# Docs: https://starship.rs/config/
+
+# General settings
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$git_state\
+$python\
+$nodejs\
+$rust\
+$golang\
+$terraform\
+$docker_context\
+$kubernetes\
+$cmd_duration\
+$line_break\
+$character"""
+
+# Timeout for commands (ms)
+command_timeout = 1000
+
+# Newline between prompts
+add_newline = true
+
+# ============================================================================
+# Prompt Character
+# ============================================================================
+
+[character]
+success_symbol = "[❯](bold #7aa2f7)"
+error_symbol = "[❯](bold #f7768e)"
+vimcmd_symbol = "[❮](bold #bb9af7)"
+
+# ============================================================================
+# Directory
+# ============================================================================
+
+[directory]
+style = "bold #7aa2f7"
+truncation_length = 3
+truncate_to_repo = true
+read_only = " "
+read_only_style = "bold #f7768e"
+
+# ============================================================================
+# Git
+# ============================================================================
+
+[git_branch]
+style = "bold #bb9af7"
+symbol = " "
+format = "on [$symbol$branch(:$remote_branch)]($style) "
+
+[git_status]
+style = "bold #e0af68"
+format = '([\[$all_status$ahead_behind\]]($style) )'
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?"
+stashed = "$"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = "✘"
+
+[git_state]
+style = "bold #e0af68"
+
+# ============================================================================
+# Languages & Tools
+# ============================================================================
+
+[python]
+style = "bold #e0af68"
+symbol = " "
+format = 'via [$symbol($version )(\($virtualenv\) )]($style)'
+
+[nodejs]
+style = "bold #9ece6a"
+symbol = " "
+format = 'via [$symbol($version )]($style)'
+
+[rust]
+style = "bold #f7768e"
+symbol = " "
+format = 'via [$symbol($version )]($style)'
+
+[golang]
+style = "bold #73daca"
+symbol = " "
+format = 'via [$symbol($version )]($style)'
+
+[terraform]
+style = "bold #bb9af7"
+symbol = "󱁢 "
+format = 'via [$symbol($version )]($style)'
+
+[docker_context]
+style = "bold #7dcfff"
+symbol = " "
+format = 'via [$symbol$context]($style) '
+only_with_files = true
+
+[kubernetes]
+style = "bold #7aa2f7"
+symbol = "☸ "
+format = '[$symbol$context( \($namespace\))]($style) '
+disabled = false
+detect_files = ['k8s']
+detect_folders = ['.kube']
+
+# ============================================================================
+# System Info
+# ============================================================================
+
+[username]
+style_user = "bold #9ece6a"
+style_root = "bold #f7768e"
+format = "[$user]($style)@"
+show_always = false
+
+[hostname]
+style = "bold #9ece6a"
+format = "[$ssh_symbol$hostname]($style) in "
+ssh_only = true
+ssh_symbol = " "
+
+[cmd_duration]
+style = "bold #565f89"
+min_time = 2_000
+format = "took [$duration]($style) "

@@ -1,0 +1,26 @@
+# zsh module dependencies
+packages:
+  arch:
+    - zsh
+    - zsh-syntax-highlighting
+    - zsh-autosuggestions
+    - zsh-history-substring-search
+    - fzf
+    - starship
+  debian:
+    - zsh
+    - zsh-syntax-highlighting
+    - zsh-autosuggestions
+    - fzf
+  fedora:
+    - zsh
+    - zsh-syntax-highlighting
+    - zsh-autosuggestions
+    - fzf
+  macos:
+    - zsh
+    - zsh-syntax-highlighting
+    - zsh-autosuggestions
+    - zsh-history-substring-search
+    - fzf
+    - starship

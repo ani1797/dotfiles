@@ -1,0 +1,10 @@
+# git module dependencies
+packages:
+  arch:
+    - git
+  debian:
+    - git
+  fedora:
+    - git
+  macos:
+    - git

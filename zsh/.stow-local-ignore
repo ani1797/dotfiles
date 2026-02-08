@@ -9,3 +9,9 @@ LICENSE
 CHANGELOG
 \.git
 \.gitignore
+
+# Module metadata (not deployed to target)
+deps\.yaml
+
+# Disabled configuration files
+.*\.disabled$

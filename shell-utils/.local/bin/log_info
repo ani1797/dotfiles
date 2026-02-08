@@ -1,0 +1,5 @@
+#!/bin/sh
+# log_info - Print an info message in blue
+# Usage: log_info "message"
+
+printf '\033[0;34m[INFO]\033[0m %s\n' "$*"

@@ -1,0 +1,7 @@
+# shell-utils module dependencies
+# No external dependencies - all POSIX sh scripts
+packages:
+  arch: []
+  debian: []
+  fedora: []
+  macos: []

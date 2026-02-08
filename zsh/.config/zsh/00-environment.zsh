@@ -4,9 +4,14 @@
 # Add user binary directories to PATH
 export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 
-# Set default editor
-export EDITOR="${EDITOR:-vim}"
-export VISUAL="${VISUAL:-vim}"
+# Set default editor (prefer nvim, fallback to vim)
+if command -v nvim &>/dev/null; then
+  export EDITOR="${EDITOR:-nvim}"
+  export VISUAL="${VISUAL:-nvim}"
+else
+  export EDITOR="${EDITOR:-vim}"
+  export VISUAL="${VISUAL:-vim}"
+fi
 
 # XDG Base Directory specification
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"

@@ -1,0 +1,13 @@
+#!/bin/sh
+# source_if_exists - Source a file if it exists
+# Usage: . source_if_exists <file>
+# Note: This is meant to be sourced, not executed directly
+
+if [ $# -eq 0 ]; then
+    echo "Usage: . source_if_exists <file>" >&2
+    return 1 2>/dev/null || exit 1
+fi
+
+if [ -f "$1" ]; then
+    . "$1"
+fi

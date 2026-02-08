@@ -22,6 +22,20 @@ modules:
     hosts:
       - HOME-DESKTOP
       - ASUS-LAPTOP
+  - name: "starship"
+    path: "starship"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
+  - name: "shell-utils"
+    path: "shell-utils"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
   - name: "direnv"
     path: "direnv"
     hosts:

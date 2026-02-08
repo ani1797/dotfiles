@@ -1,0 +1,18 @@
+# nvim module dependencies
+packages:
+  arch:
+    - neovim
+    - ripgrep
+    - fd
+  debian:
+    - neovim
+    - ripgrep
+    - fd-find
+  fedora:
+    - neovim
+    - ripgrep
+    - fd-find
+  macos:
+    - neovim
+    - ripgrep
+    - fd

@@ -1,0 +1,10 @@
+# vim module dependencies
+packages:
+  arch:
+    - vim
+  debian:
+    - vim
+  fedora:
+    - vim-enhanced
+  macos:
+    - vim

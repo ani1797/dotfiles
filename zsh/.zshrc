@@ -1,11 +1,12 @@
 # ~/.zshrc
 # Portable zsh configuration with graceful degradation
 
-# Enable Powerlevel10k instant prompt if available
-# Must be at the top for performance
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
+# Enable Powerlevel10k instant prompt if available (disabled by default - using Starship)
+# To re-enable: rename 30-powerlevel10k.zsh.disabled to 30-powerlevel10k.zsh
+# and uncomment the lines below:
+# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# fi
 
 # Source all config files in .config/zsh/
 ZSH_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"

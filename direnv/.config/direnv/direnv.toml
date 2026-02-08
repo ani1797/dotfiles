@@ -27,21 +27,19 @@ prefix = [
     "/tmp",
 ]
 
-# Exact directory matches (if you want specific directories only)
-# exact = [
-#     "/specific-project",
-# ]
-
 # ==============================================================================
 # GLOBAL SETTINGS
 # ==============================================================================
 
 [global]
+# Enable strict mode: errors in .envrc will prevent environment loading
+strict_env = true
+
+# Automatically load .env files in whitelisted directories
+load_dotenv = true
+
 # Don't warn about unloading environment when leaving directory
 # warn_timeout = "5s"
-
-# Disable hints about direnv allow
-# disable_stdin = false
 
 # ==============================================================================
 # NOTES

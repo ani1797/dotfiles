@@ -1,0 +1,5 @@
+#!/bin/sh
+# log_success - Print a success message in green
+# Usage: log_success "message"
+
+printf '\033[0;32m[SUCCESS]\033[0m %s\n' "$*"

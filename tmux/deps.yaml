@@ -1,0 +1,10 @@
+# tmux module dependencies
+packages:
+  arch:
+    - tmux
+  debian:
+    - tmux
+  fedora:
+    - tmux
+  macos:
+    - tmux

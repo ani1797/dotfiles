@@ -1,0 +1,10 @@
+# direnv module dependencies
+packages:
+  arch:
+    - direnv
+  debian:
+    - direnv
+  fedora:
+    - direnv
+  macos:
+    - direnv

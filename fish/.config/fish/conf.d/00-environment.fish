@@ -4,9 +4,14 @@
 # Add user binary directories to PATH
 fish_add_path $HOME/.local/bin $HOME/bin
 
-# Set default editor
-set -gx EDITOR vim
-set -gx VISUAL vim
+# Set default editor (prefer nvim, fallback to vim)
+if type -q nvim
+    set -gx EDITOR nvim
+    set -gx VISUAL nvim
+else
+    set -gx EDITOR vim
+    set -gx VISUAL vim
+end
 
 # XDG Base Directory specification
 set -q XDG_CONFIG_HOME; or set -gx XDG_CONFIG_HOME $HOME/.config

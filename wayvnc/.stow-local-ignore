@@ -16,3 +16,6 @@ pam\.d
 
 # Python bytecode cache
 __pycache__
+
+# Module metadata (not deployed to target)
+deps\.yaml

@@ -1,0 +1,10 @@
+# kitty module dependencies
+packages:
+  arch:
+    - kitty
+  debian:
+    - kitty
+  fedora:
+    - kitty
+  macos:
+    - kitty

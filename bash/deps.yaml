@@ -1,0 +1,20 @@
+# bash module dependencies
+packages:
+  arch:
+    - bash
+    - bash-completion
+    - fzf
+    - starship
+  debian:
+    - bash
+    - bash-completion
+    - fzf
+  fedora:
+    - bash
+    - bash-completion
+    - fzf
+  macos:
+    - bash
+    - bash-completion@2
+    - fzf
+    - starship

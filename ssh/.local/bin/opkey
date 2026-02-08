@@ -1,0 +1,50 @@
+#!/bin/sh
+# opkey - Load SSH keys from 1Password into the SSH agent
+# Usage: opkey [key_name]
+#
+# Without arguments: lists available SSH keys in 1Password
+# With argument: loads the specified key into ssh-agent
+#
+# Prerequisites:
+#   - 1Password CLI (op) must be installed and authenticated
+#   - SSH agent must be running
+
+set -e
+
+if ! command -v op >/dev/null 2>&1; then
+    echo "Error: 1Password CLI (op) not found" >&2
+    echo "Install from: https://developer.1password.com/docs/cli" >&2
+    exit 1
+fi
+
+# Check if signed in
+if ! op account list >/dev/null 2>&1; then
+    echo "Error: Not signed in to 1Password CLI" >&2
+    echo "Run: eval \$(op signin)" >&2
+    exit 1
+fi
+
+if [ $# -eq 0 ]; then
+    # List available SSH keys
+    echo "Available SSH keys in 1Password:"
+    op item list --categories "SSH Key" --format json 2>/dev/null | \
+        op item list --categories "SSH Key" 2>/dev/null || \
+        echo "  (no SSH keys found or unable to list)"
+    echo ""
+    echo "Usage: opkey <key_name>"
+    exit 0
+fi
+
+key_name="$1"
+
+# Get the private key from 1Password and add to agent
+echo "Loading SSH key '$key_name' from 1Password..."
+op read "op://Private/$key_name/private key" 2>/dev/null | ssh-add -
+
+if [ $? -eq 0 ]; then
+    echo "Successfully loaded '$key_name' into SSH agent"
+else
+    echo "Error: Failed to load key '$key_name'" >&2
+    echo "Check that the item exists: op item get '$key_name'" >&2
+    exit 1
+fi

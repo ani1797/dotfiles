@@ -1,5 +1,5 @@
 # ~/.config/zsh/40-plugins.zsh
-# Zsh plugins - loads if available
+# Zsh plugins - loads if available (sourced directly, no framework needed)
 
 # Syntax highlighting - try multiple common locations
 for plugin_path in \
@@ -37,10 +37,14 @@ done
 # FZF integration - check common locations
 if [[ -f "/usr/share/fzf/key-bindings.zsh" ]]; then
   source /usr/share/fzf/key-bindings.zsh
-  source /usr/share/fzf/completion.zsh
+  [[ -f "/usr/share/fzf/completion.zsh" ]] && source /usr/share/fzf/completion.zsh
 elif [[ -f "$HOME/.fzf.zsh" ]]; then
   source "$HOME/.fzf.zsh"
 fi
+
+# Completions initialization
+autoload -Uz compinit
+compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zcompdump"
 
 # pkgfile "command not found" handler (Arch-specific)
 [[ -f "/usr/share/doc/pkgfile/command-not-found.zsh" ]] && source /usr/share/doc/pkgfile/command-not-found.zsh

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # bootstrap.sh - Fully automated dotfiles setup
-# Works on Arch, Debian/Ubuntu, Fedora/RHEL, and GitHub Codespaces
+# Works on Arch, Debian/Ubuntu, Fedora/RHEL, macOS, and GitHub Codespaces
 
 set -euo pipefail
 
@@ -54,7 +54,7 @@ detect_distro() {
 get_package_manager() {
     local distro="$1"
     case "$distro" in
-        arch|manjaro|endeavouros)
+        arch|manjaro|endeavouros|cachyos)
             echo "pacman"
             ;;
         ubuntu|debian|pop|linuxmint)
@@ -82,6 +82,18 @@ get_package_manager() {
                 echo "unknown"
             fi
             ;;
+    esac
+}
+
+# Map package manager to deps.yaml OS key
+get_deps_os_key() {
+    local pkg_mgr="$1"
+    case "$pkg_mgr" in
+        pacman) echo "arch" ;;
+        apt)    echo "debian" ;;
+        dnf|yum) echo "fedora" ;;
+        brew)   echo "macos" ;;
+        *)      echo "" ;;
     esac
 }
 
@@ -123,37 +135,25 @@ install_homebrew() {
     success "Homebrew installed"
 }
 
-install_dependencies() {
+install_base_dependencies() {
     local pkg_mgr="$1"
     local -a missing_pkgs=()
 
-    info "Checking for required dependencies..."
+    info "Checking for base dependencies..."
 
     # Check which packages are missing
     for cmd in stow yq zsh git curl; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
-            case "$cmd" in
-                yq)
-                    # yq package name varies by distro
-                    case "$pkg_mgr" in
-                        pacman) missing_pkgs+=("yq") ;;
-                        apt) missing_pkgs+=("yq") ;;
-                        dnf|yum) missing_pkgs+=("yq") ;;
-                    esac
-                    ;;
-                *)
-                    missing_pkgs+=("$cmd")
-                    ;;
-            esac
+            missing_pkgs+=("$cmd")
         fi
     done
 
     if [[ ${#missing_pkgs[@]} -eq 0 ]]; then
-        success "All dependencies already installed"
+        success "All base dependencies already installed"
         return 0
     fi
 
-    info "Installing missing packages: ${missing_pkgs[*]}"
+    info "Installing missing base packages: ${missing_pkgs[*]}"
 
     case "$pkg_mgr" in
         pacman)
@@ -179,7 +179,89 @@ install_dependencies() {
             ;;
     esac
 
-    success "Dependencies installed successfully"
+    success "Base dependencies installed successfully"
+}
+
+install_module_dependencies() {
+    local pkg_mgr="$1"
+    local os_key
+    os_key="$(get_deps_os_key "$pkg_mgr")"
+
+    if [[ -z "$os_key" ]]; then
+        warn "Cannot determine OS key for package manager: $pkg_mgr"
+        return 0
+    fi
+
+    info "Reading module dependencies from deps.yaml files..."
+
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local current_host
+    current_host="$(hostname)"
+
+    # Collect all packages from active modules' deps.yaml
+    local -a all_packages=()
+    local modules
+    modules=$(yq -r '.modules[].name' "$script_dir/config.yaml")
+
+    while read -r module; do
+        # Check if this module applies to current host
+        local host_match
+        host_match=$(yq -r ".modules[] | select(.name == \"$module\") | .hosts[] | select(. == \"$current_host\" or .name == \"$current_host\")" "$script_dir/config.yaml" 2>/dev/null)
+
+        if [[ -z "$host_match" ]]; then
+            continue
+        fi
+
+        # Get module path
+        local module_path
+        module_path=$(yq -r ".modules[] | select(.name == \"$module\") | .path" "$script_dir/config.yaml")
+        local deps_file="$script_dir/$module_path/deps.yaml"
+
+        if [[ ! -f "$deps_file" ]]; then
+            continue
+        fi
+
+        # Read packages for current OS
+        local packages
+        packages=$(yq -r ".packages.$os_key[]? // empty" "$deps_file" 2>/dev/null)
+        if [[ -n "$packages" ]]; then
+            while read -r pkg; do
+                [[ -n "$pkg" ]] && all_packages+=("$pkg")
+            done <<< "$packages"
+        fi
+    done <<< "$modules"
+
+    if [[ ${#all_packages[@]} -eq 0 ]]; then
+        info "No additional module packages to install"
+        return 0
+    fi
+
+    # Deduplicate
+    local -a unique_packages
+    readarray -t unique_packages < <(printf '%s\n' "${all_packages[@]}" | sort -u)
+
+    info "Module packages to install: ${unique_packages[*]}"
+
+    case "$pkg_mgr" in
+        pacman)
+            sudo pacman -Sy --noconfirm --needed "${unique_packages[@]}"
+            ;;
+        apt)
+            sudo apt-get install -y -qq "${unique_packages[@]}" 2>/dev/null || \
+                warn "Some packages may not be available in apt repositories"
+            ;;
+        dnf)
+            sudo dnf install -y -q "${unique_packages[@]}" 2>/dev/null || \
+                warn "Some packages may not be available in dnf repositories"
+            ;;
+        brew)
+            brew install "${unique_packages[@]}" 2>/dev/null || \
+                warn "Some packages may not be available in Homebrew"
+            ;;
+    esac
+
+    success "Module dependencies installed"
 }
 
 backup_existing_configs() {
@@ -188,20 +270,15 @@ backup_existing_configs() {
         "$HOME/.zshrc"
         "$HOME/.config/zsh"
         "$HOME/.config/fish"
+        "$HOME/.config/bash"
         "$HOME/.bashrc"
         "$HOME/.bash_profile"
         "$HOME/.vimrc"
         "$HOME/.config/nvim"
         "$HOME/.config/tmux"
         "$HOME/.tmux.conf"
+        "$HOME/.config/starship.toml"
         "$HOME/.ssh/config"
-        "$HOME/.local/bin/configure-oh-my-zsh"
-        "$HOME/.local/bin/configure-powerlevel10k"
-        "$HOME/.local/bin/configure-zsh-plugins"
-        "$HOME/.local/bin/configure-fzf"
-        "$HOME/.local/bin/configure-nvim"
-        "$HOME/.local/bin/configure-tmux"
-        "$HOME/.local/bin/configure-ssh"
     )
 
     local backed_up=false
@@ -238,30 +315,21 @@ backup_existing_configs() {
     fi
 }
 
-install_zsh_tools() {
-    info "Installing zsh tools..."
-
-    # Oh-My-Zsh
-    local omz_dir="$HOME/.oh-my-zsh"
-    if [[ -d "$omz_dir" ]]; then
-        info "Oh-My-Zsh already installed"
-    else
-        info "Installing Oh-My-Zsh..."
-        RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-        success "Oh-My-Zsh installed"
+install_starship() {
+    if command -v starship >/dev/null 2>&1; then
+        info "Starship already installed"
+        return 0
     fi
 
-    # Powerlevel10k
-    local p10k_dir="$HOME/.powerlevel10k"
-    if [[ -d "$p10k_dir" ]]; then
-        info "Powerlevel10k already installed"
-    else
-        info "Installing Powerlevel10k..."
-        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir"
-        success "Powerlevel10k installed"
-    fi
+    info "Installing Starship prompt..."
+    curl -sS https://starship.rs/install.sh | sh -s -- -y
+    success "Starship installed"
+}
 
-    # Zsh plugins
+install_zsh_plugins() {
+    info "Installing zsh plugins..."
+
+    # Zsh plugins (only if not available system-wide)
     local plugin_dir="$HOME/.zsh"
     mkdir -p "$plugin_dir"
 
@@ -272,6 +340,13 @@ install_zsh_tools() {
     )
 
     for plugin_name in "${!plugins[@]}"; do
+        # Skip if available system-wide
+        if [[ -d "/usr/share/zsh/plugins/$plugin_name" ]] || \
+           [[ -d "/usr/share/$plugin_name" ]]; then
+            info "$plugin_name available system-wide, skipping user install"
+            continue
+        fi
+
         local plugin_path="$plugin_dir/$plugin_name"
         if [[ -d "$plugin_path" ]]; then
             info "$plugin_name already installed"
@@ -282,18 +357,55 @@ install_zsh_tools() {
         fi
     done
 
-    # FZF
-    local fzf_dir="$HOME/.fzf"
-    if [[ -d "$fzf_dir" ]]; then
-        info "FZF already installed"
-    else
-        info "Installing FZF..."
-        git clone --depth=1 https://github.com/junegunn/fzf.git "$fzf_dir"
-        "$fzf_dir/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
-        success "FZF installed"
+    # FZF (if not installed via package manager)
+    if ! command -v fzf >/dev/null 2>&1; then
+        local fzf_dir="$HOME/.fzf"
+        if [[ -d "$fzf_dir" ]]; then
+            info "FZF already installed"
+        else
+            info "Installing FZF..."
+            git clone --depth=1 https://github.com/junegunn/fzf.git "$fzf_dir"
+            "$fzf_dir/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
+            success "FZF installed"
+        fi
     fi
 
-    success "All zsh tools installed"
+    success "All zsh plugins installed"
+}
+
+install_nerd_fonts() {
+    info "Checking for Nerd Fonts..."
+
+    # Check if any Nerd Font is installed
+    if fc-list 2>/dev/null | grep -qi "nerd\|NF\|Nerd Font"; then
+        info "Nerd Font already installed"
+        return 0
+    fi
+
+    info "Installing JetBrainsMono Nerd Font..."
+    local font_dir
+    if is_macos; then
+        font_dir="$HOME/Library/Fonts"
+    else
+        font_dir="$HOME/.local/share/fonts"
+    fi
+    mkdir -p "$font_dir"
+
+    local tmp_dir
+    tmp_dir="$(mktemp -d)"
+    local font_url="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz"
+
+    if curl -fsSL "$font_url" -o "$tmp_dir/JetBrainsMono.tar.xz"; then
+        tar -xf "$tmp_dir/JetBrainsMono.tar.xz" -C "$font_dir"
+        if ! is_macos; then
+            fc-cache -f "$font_dir" 2>/dev/null || true
+        fi
+        success "JetBrainsMono Nerd Font installed"
+    else
+        warn "Could not download Nerd Fonts (non-critical)"
+    fi
+
+    rm -rf "$tmp_dir"
 }
 
 deploy_dotfiles() {
@@ -312,8 +424,10 @@ deploy_dotfiles() {
             "$HOME/.zshrc"
             "$HOME/.config/zsh"
             "$HOME/.config/fish"
+            "$HOME/.config/bash"
             "$HOME/.bashrc"
             "$HOME/.vimrc"
+            "$HOME/.config/starship.toml"
         )
 
         for file in "${conflicts[@]}"; do
@@ -377,36 +491,69 @@ verify_installation() {
     local all_ok=true
 
     # Check symlinks
-    if [[ -L "$HOME/.zshrc" ]]; then
-        checks+=("✓ .zshrc symlink")
-    else
-        checks+=("✗ .zshrc symlink MISSING")
-        all_ok=false
-    fi
+    local -a expected_symlinks=(
+        "$HOME/.zshrc:.zshrc"
+        "$HOME/.bashrc:.bashrc"
+        "$HOME/.config/starship.toml:starship.toml"
+    )
 
-    if [[ -L "$HOME/.config/zsh" ]]; then
-        checks+=("✓ .config/zsh symlink")
-    else
-        checks+=("✗ .config/zsh symlink MISSING")
-        all_ok=false
-    fi
+    for entry in "${expected_symlinks[@]}"; do
+        IFS=':' read -r path label <<< "$entry"
+        if [[ -L "$path" ]]; then
+            checks+=("+ $label symlink")
+        else
+            checks+=("- $label symlink MISSING")
+            all_ok=false
+        fi
+    done
+
+    # Check directories
+    local -a expected_dirs=(
+        "$HOME/.config/zsh:.config/zsh"
+        "$HOME/.config/bash:.config/bash"
+    )
+
+    for entry in "${expected_dirs[@]}"; do
+        IFS=':' read -r path label <<< "$entry"
+        if [[ -d "$path" ]]; then
+            checks+=("+ $label directory")
+        else
+            checks+=("- $label directory MISSING")
+            all_ok=false
+        fi
+    done
 
     # Check tools
     local -a tools=(
-        "$HOME/.oh-my-zsh:Oh-My-Zsh"
-        "$HOME/.powerlevel10k:Powerlevel10k"
-        "$HOME/.zsh/zsh-syntax-highlighting:zsh-syntax-highlighting"
-        "$HOME/.zsh/zsh-autosuggestions:zsh-autosuggestions"
-        "$HOME/.zsh/zsh-history-substring-search:zsh-history-substring-search"
-        "$HOME/.fzf:FZF"
+        "starship:Starship"
+        "fzf:FZF"
+        "stow:GNU Stow"
     )
 
     for tool in "${tools[@]}"; do
-        IFS=':' read -r path name <<< "$tool"
-        if [[ -d "$path" ]]; then
-            checks+=("✓ $name")
+        IFS=':' read -r cmd name <<< "$tool"
+        if command -v "$cmd" >/dev/null 2>&1; then
+            checks+=("+ $name")
         else
-            checks+=("✗ $name MISSING")
+            checks+=("- $name MISSING")
+            all_ok=false
+        fi
+    done
+
+    # Check zsh plugins
+    local -a plugin_checks=(
+        "zsh-syntax-highlighting"
+        "zsh-autosuggestions"
+        "zsh-history-substring-search"
+    )
+
+    for plugin in "${plugin_checks[@]}"; do
+        if [[ -d "/usr/share/zsh/plugins/$plugin" ]] || \
+           [[ -d "/usr/share/$plugin" ]] || \
+           [[ -d "$HOME/.zsh/$plugin" ]]; then
+            checks+=("+ $plugin")
+        else
+            checks+=("- $plugin MISSING")
             all_ok=false
         fi
     done
@@ -442,11 +589,9 @@ verify_installation() {
 
 main() {
     echo ""
-    echo "╔════════════════════════════════════════════════════════╗"
-    echo "║                                                        ║"
-    echo "║          Dotfiles Bootstrap Script                    ║"
-    echo "║                                                        ║"
-    echo "╚════════════════════════════════════════════════════════╝"
+    echo "============================================================"
+    echo "                Dotfiles Bootstrap Script                    "
+    echo "============================================================"
     echo ""
 
     # Detect environment
@@ -485,8 +630,12 @@ main() {
         echo ""
     fi
 
-    # Install dependencies
-    install_dependencies "$pkg_mgr"
+    # Install base dependencies (stow, yq, zsh, git, curl)
+    install_base_dependencies "$pkg_mgr"
+    echo ""
+
+    # Install module-specific dependencies from deps.yaml
+    install_module_dependencies "$pkg_mgr"
     echo ""
 
     # Backup existing configs
@@ -494,8 +643,16 @@ main() {
     backup_location="$(backup_existing_configs)"
     echo ""
 
-    # Install zsh tools
-    install_zsh_tools
+    # Install Starship prompt
+    install_starship
+    echo ""
+
+    # Install zsh plugins
+    install_zsh_plugins
+    echo ""
+
+    # Install Nerd Fonts
+    install_nerd_fonts
     echo ""
 
     # Deploy dotfiles
@@ -509,11 +666,9 @@ main() {
     # Verify installation
     if verify_installation; then
         echo ""
-        echo "╔════════════════════════════════════════════════════════╗"
-        echo "║                                                        ║"
-        echo "║          Bootstrap Complete! 🎉                       ║"
-        echo "║                                                        ║"
-        echo "╚════════════════════════════════════════════════════════╝"
+        echo "============================================================"
+        echo "                Bootstrap Complete!                          "
+        echo "============================================================"
         echo ""
 
         if [[ -n "$backup_location" ]]; then
@@ -527,7 +682,6 @@ main() {
         else
             echo "  - Log out and back in (or run: exec zsh)"
         fi
-        echo "  - Run: p10k configure (optional, to customize prompt)"
         echo "  - Run: configure-nvim (install Neovim plugins)"
         echo "  - Run: configure-tmux (install tmux plugins)"
         echo "  - Run: configure-ssh (set SSH permissions)"

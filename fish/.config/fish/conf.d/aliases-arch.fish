@@ -30,6 +30,7 @@ if test -f /etc/arch-release; or test -f /etc/cachyos-release
 
     # Help for people new to Arch
     alias apt='man pacman'
+    alias apt-get='man pacman'
     alias yum='man pacman'
     alias dnf='man pacman'
 

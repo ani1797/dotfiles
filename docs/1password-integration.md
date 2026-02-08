@@ -16,7 +16,6 @@ The 1Password integration allows you to store secret references (like `op://vaul
 ### Core Layout
 - **`layout-1password.sh`** - Main 1Password integration layout library
   - `layout_op` - Load secrets from .oprc or .env with op:// references
-  - `layout_env_op` - Combined regular env vars (.env) + secrets (.oprc)
 
 ### Helper Script
 - **`direnv-init-1password`** - Quick setup script
@@ -104,7 +103,7 @@ DATABASE_PASSWORD=op://dev/postgres/password
 API_KEY=op://dev/external-api/key
 
 # .envrc
-layout env_op      # Load .env first, then .oprc secrets
+layout auto        # Load .env, .oprc secrets, and .envrc.local
 ```
 
 ### With Language Layouts
@@ -113,12 +112,8 @@ Combine with Python, Node.js, or other layouts:
 
 ```bash
 # .envrc
-layout python      # Set up Python virtual environment
-layout op          # Load 1Password secrets
-
-# Or
 layout uv          # Python with UV
-layout env_op      # Load .env + .oprc secrets
+layout auto        # Load .env, .oprc secrets, and .envrc.local
 ```
 
 ### Using .env with op:// References
@@ -298,7 +293,7 @@ EOF
 
 cat > .envrc << 'EOF'
 layout nodejs
-layout env_op
+layout auto
 EOF
 
 echo '.oprc' >> .gitignore
@@ -311,7 +306,7 @@ cd .  # Reload
 ### Multi-Environment Setup
 ```bash
 # .envrc
-layout env_op
+layout auto
 
 # Load environment-specific secrets
 if [[ "$ENVIRONMENT" == "production" ]]; then
@@ -329,7 +324,7 @@ The 1Password layout integrates seamlessly with existing direnv layouts:
 - **Node.js**: `layout nodejs` + `layout op`
 - **Go**: `layout golang` + `layout op`
 - **Rust**: `layout rust` + `layout op`
-- **Auto**: `layout env_op` (combines env loading + secrets)
+- **Auto**: `layout auto` (combines env loading + secrets + local overrides)
 
 ## Implementation Details
 
@@ -342,12 +337,6 @@ The 1Password layout integrates seamlessly with existing direnv layouts:
 - Processes each line for `op://` references
 - Exports secrets as environment variables
 - Handles both secrets and regular env vars
-
-**`layout_env_op`**:
-- Calls `dotenv_if_exists .env` to load regular vars
-- Calls `layout_op` to load secrets from `.oprc`
-- Sources `.envrc.local` for machine-specific overrides
-- Provides combined loading pattern
 
 ### File Processing
 
@@ -362,7 +351,7 @@ The 1Password layout integrates seamlessly with existing direnv layouts:
 
 The layout is automatically available because:
 1. `direnvrc` sources all `layout-*.sh` files in `lib/`
-2. `layout-1password.sh` defines `layout_op` and `layout_env_op`
+2. `layout-1password.sh` defines `layout_op`
 3. Functions are available in any `.envrc` file
 
 ## Documentation Updates

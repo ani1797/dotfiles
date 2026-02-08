@@ -383,7 +383,7 @@ DATABASE_PASSWORD=op://dev/postgres/password
 API_KEY=op://dev/external-api/key
 
 # .envrc
-layout env_op      # Load .env first, then .oprc secrets
+layout auto        # Load .env, .oprc secrets, and .envrc.local
 ```
 
 **With other layouts**:
@@ -394,7 +394,7 @@ layout op          # Load 1Password secrets
 
 # Or for combined env + secrets
 layout python
-layout env_op
+layout auto
 ```
 
 **Quick setup**:

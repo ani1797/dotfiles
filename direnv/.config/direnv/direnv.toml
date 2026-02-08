@@ -12,13 +12,13 @@
 # Home directory projects (trusted locations)
 prefix = [
     # User project directories
-    "/home/anirudh/Projects",
-    "/home/anirudh/Documents",
-    "/home/anirudh/workspace",
-    "/home/anirudh/dev",
+    "~/Projects",
+    "~/Documents",
+    "/workspace",
+    "~/dev",
 
     # Dotfiles repository (this repo)
-    "/home/anirudh/.local/share/dotfiles",
+    "~/.local/share/dotfiles",
 
     # GitHub Codespaces workspace
     "/workspaces",
@@ -29,7 +29,7 @@ prefix = [
 
 # Exact directory matches (if you want specific directories only)
 # exact = [
-#     "/home/anirudh/specific-project",
+#     "/specific-project",
 # ]
 
 # ==============================================================================

@@ -7,11 +7,11 @@ Uses only Python standard library and existing system utilities.
 
 Tests:
 1. Setup Verification - Binary PAM support, RSA key format, TLS SANs
-2. Service Health - Process and systemd service status
+2. Service Health - Process status and Hyprland exec-once config
 3. Network Connectivity - Port binding and TCP connections
 4. VNC Protocol - RFB handshake and protocol validation
 5. TLS Security - Certificate validation and TLS handshake
-6. Authentication Config - PAM config, shadow ACL, auth settings
+6. Authentication Config - PAM config, sudoers rule, auth settings
 7. Configuration - wayvnc config file validation
 8. PAM Authentication - Live authentication test (optional)
 9. Display Output - Display detection verification
@@ -159,33 +159,41 @@ class ServiceHealthTest(BaseTest):
         # Check process running
         self._check_process()
 
-        # Check systemd service
-        self._check_systemd()
+        # Check Hyprland exec-once config
+        self._check_hyprland_config()
 
         return self.results
 
     def _check_process(self):
-        """Check if wayvnc process is running"""
+        """Check if wayvnc process is running (may run as root via sudo)"""
         success, stdout, stderr = self._run_command(['ps', 'aux'])
 
         if success:
-            if 'wayvnc' in stdout:
-                # Extract process info
-                lines = [l for l in stdout.split('\n') if 'wayvnc' in l and 'grep' not in l]
-                if lines:
+            # Filter for wayvnc lines, excluding this test script and grep
+            lines = [
+                l for l in stdout.split('\n')
+                if 'wayvnc' in l
+                and 'grep' not in l
+                and 'vnc-connectivity-test' not in l
+            ]
+            if lines:
+                # Check if running as root (via sudo)
+                root_lines = [l for l in lines if l.startswith('root')]
+                if root_lines:
+                    self.results.append(TestResult(
+                        'Process Running',
+                        'PASS',
+                        'ps aux | grep wayvnc',
+                        'wayvnc process found (running as root via sudo)',
+                        process_info=root_lines[0].strip()
+                    ))
+                else:
                     self.results.append(TestResult(
                         'Process Running',
                         'PASS',
                         'ps aux | grep wayvnc',
                         'wayvnc process found',
                         process_info=lines[0].strip()
-                    ))
-                else:
-                    self.results.append(TestResult(
-                        'Process Running',
-                        'FAIL',
-                        'ps aux | grep wayvnc',
-                        'wayvnc process not found'
                     ))
             else:
                 self.results.append(TestResult(
@@ -202,32 +210,56 @@ class ServiceHealthTest(BaseTest):
                 f'Failed to check process: {stderr}'
             ))
 
-    def _check_systemd(self):
-        """Check systemd service status"""
-        success, stdout, stderr = self._run_command(
-            ['systemctl', '--user', 'is-active', 'wayvnc.service']
-        )
+    def _check_hyprland_config(self):
+        """Check Hyprland drop-in config for wayvnc exec-once"""
+        config_path = os.path.expanduser('~/.config/hypr/conf.d/wayvnc.conf')
 
-        if success and stdout.strip() == 'active':
+        if not os.path.exists(config_path):
+            # Fall back to checking systemd as a secondary option
+            success, stdout, stderr = self._run_command(
+                ['systemctl', '--user', 'is-active', 'wayvnc.service']
+            )
+            if success and stdout.strip() == 'active':
+                self.results.append(TestResult(
+                    'Launch Config',
+                    'WARN',
+                    f'os.path.exists({config_path})',
+                    'Hyprland drop-in not found, but systemd service is active (legacy setup)'
+                ))
+            else:
+                self.results.append(TestResult(
+                    'Launch Config',
+                    'FAIL',
+                    f'os.path.exists({config_path})',
+                    'Hyprland drop-in config not found. '
+                    'Deploy wayvnc module with install.sh to create it.'
+                ))
+            return
+
+        try:
+            with open(config_path, 'r') as f:
+                content = f.read()
+
+            if 'exec-once' in content and 'start-wayvnc' in content:
+                self.results.append(TestResult(
+                    'Launch Config',
+                    'PASS',
+                    f'read {config_path}',
+                    'Hyprland exec-once = start-wayvnc configured'
+                ))
+            else:
+                self.results.append(TestResult(
+                    'Launch Config',
+                    'WARN',
+                    f'read {config_path}',
+                    'Hyprland drop-in exists but missing exec-once = start-wayvnc'
+                ))
+        except Exception as e:
             self.results.append(TestResult(
-                'Systemd Service',
-                'PASS',
-                'systemctl --user is-active wayvnc.service',
-                'Service is active'
-            ))
-        elif 'Failed to connect to bus' in stderr or 'not found' in stderr.lower():
-            self.results.append(TestResult(
-                'Systemd Service',
-                'WARN',
-                'systemctl --user is-active wayvnc.service',
-                'Systemd unavailable (container or no systemd)'
-            ))
-        else:
-            self.results.append(TestResult(
-                'Systemd Service',
+                'Launch Config',
                 'FAIL',
-                'systemctl --user is-active wayvnc.service',
-                f'Service not active: {stdout.strip() or stderr}'
+                f'read {config_path}',
+                f'Failed to read Hyprland config: {str(e)}'
             ))
 
 
@@ -666,7 +698,7 @@ class TLSSecurityTest(BaseTest):
 
 
 class AuthenticationConfigTest(BaseTest):
-    """Test 5: PAM authentication configuration"""
+    """Test 5: PAM authentication and sudoers configuration"""
 
     def run(self) -> List[TestResult]:
         self.results = []
@@ -674,8 +706,8 @@ class AuthenticationConfigTest(BaseTest):
         # Check PAM config file
         self._check_pam_config()
 
-        # Check shadow ACL
-        self._check_shadow_acl()
+        # Check sudoers rule for running wayvnc as root
+        self._check_sudoers()
 
         # Check wayvnc config for auth settings
         self._check_wayvnc_auth_config()
@@ -734,45 +766,68 @@ class AuthenticationConfigTest(BaseTest):
                 f'Failed to read PAM config: {str(e)}'
             ))
 
-    def _check_shadow_acl(self):
-        """Check if user has read ACL on /etc/shadow (required for PAM from wayvnc)"""
-        import getpass
-        username = getpass.getuser()
+    def _check_sudoers(self):
+        """Check if sudoers rule exists for running wayvnc as root"""
+        sudoers_path = '/etc/sudoers.d/wayvnc'
 
-        success, stdout, stderr = self._run_command(['getfacl', '-p', '/etc/shadow'])
+        if not os.path.exists(sudoers_path):
+            self.results.append(TestResult(
+                'Sudoers Rule',
+                'FAIL',
+                f'os.path.exists({sudoers_path})',
+                'Sudoers rule not found (wayvnc cannot run as root for PAM). '
+                'Fix: run configure-wayvnc to install the sudoers rule.'
+            ))
+            return
 
-        if not success:
-            if 'command not found' in stderr or 'No such file' in stderr:
+        try:
+            with open(sudoers_path, 'r') as f:
+                content = f.read()
+
+            if 'NOPASSWD' in content and '/usr/bin/wayvnc' in content:
                 self.results.append(TestResult(
-                    'Shadow ACL',
-                    'WARN',
-                    'getfacl /etc/shadow',
-                    'ACL utilities not installed (install acl package)'
+                    'Sudoers Rule',
+                    'PASS',
+                    f'read {sudoers_path}',
+                    'Sudoers NOPASSWD rule for /usr/bin/wayvnc is configured'
                 ))
             else:
                 self.results.append(TestResult(
-                    'Shadow ACL',
+                    'Sudoers Rule',
                     'WARN',
-                    'getfacl /etc/shadow',
-                    f'Cannot check shadow ACL: {stderr.strip()}'
+                    f'read {sudoers_path}',
+                    'Sudoers file exists but missing NOPASSWD rule for /usr/bin/wayvnc. '
+                    'Fix: run configure-wayvnc to regenerate the sudoers rule.'
                 ))
-            return
-
-        if f'user:{username}:r' in stdout:
-            self.results.append(TestResult(
-                'Shadow ACL',
-                'PASS',
-                'getfacl /etc/shadow',
-                f'User {username} has read ACL on /etc/shadow'
-            ))
-        else:
-            self.results.append(TestResult(
-                'Shadow ACL',
-                'FAIL',
-                'getfacl /etc/shadow',
-                f'User {username} lacks read ACL on /etc/shadow (PAM auth will fail). '
-                f'Fix: sudo setfacl -m u:{username}:r /etc/shadow'
-            ))
+        except PermissionError:
+            # Can't read sudoers directly; use sudo -l to verify
+            import getpass
+            username = getpass.getuser()
+            success, stdout, stderr = self._run_command(
+                ['sudo', '-n', '-l', '/usr/bin/wayvnc']
+            )
+            if success and 'NOPASSWD' in stdout:
+                self.results.append(TestResult(
+                    'Sudoers Rule',
+                    'PASS',
+                    'sudo -n -l /usr/bin/wayvnc',
+                    f'User {username} can run /usr/bin/wayvnc via sudo without password'
+                ))
+            elif success:
+                self.results.append(TestResult(
+                    'Sudoers Rule',
+                    'WARN',
+                    'sudo -n -l /usr/bin/wayvnc',
+                    'sudo wayvnc allowed but may require password (expected NOPASSWD)'
+                ))
+            else:
+                self.results.append(TestResult(
+                    'Sudoers Rule',
+                    'FAIL',
+                    'sudo -n -l /usr/bin/wayvnc',
+                    f'Cannot verify sudoers rule: {stderr.strip()}. '
+                    'Fix: run configure-wayvnc to install the sudoers rule.'
+                ))
 
     def _check_wayvnc_auth_config(self):
         """Check wayvnc config for authentication settings"""

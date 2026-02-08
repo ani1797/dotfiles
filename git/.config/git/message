@@ -55,7 +55,7 @@
 #
 #   - Checks for op CLI and authentication
 #   - Processes op:// references line by line
-#   - Provides layout_op and layout_env_op functions
+#   - Provides layout_op function (layout_auto handles combined loading)
 #
 #   Closes #42
 #

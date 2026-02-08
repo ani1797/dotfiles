@@ -1,0 +1,37 @@
+# hyprland module dependencies
+# Compositor + autostarted services + keybind tools
+packages:
+  arch:
+    - hyprland
+    - hyprlock
+    - hypridle
+    - hyprpaper
+    - waybar
+    - grim
+    - slurp
+    - wl-clipboard
+    - brightnessctl
+    - playerctl
+  debian:
+    - hyprland
+    - hyprlock
+    - hypridle
+    - hyprpaper
+    - waybar
+    - grim
+    - slurp
+    - wl-clipboard
+    - brightnessctl
+    - playerctl
+  fedora:
+    - hyprland
+    - hyprlock
+    - hypridle
+    - hyprpaper
+    - waybar
+    - grim
+    - slurp
+    - wl-clipboard
+    - brightnessctl
+    - playerctl
+  macos: []

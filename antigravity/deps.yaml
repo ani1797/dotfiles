@@ -1,0 +1,13 @@
+# antigravity module dependencies
+# curl and binutils (provides ar) needed by configure-antigravity-application
+packages:
+  arch:
+    - curl
+    - binutils
+  debian:
+    - curl
+    - binutils
+  fedora:
+    - curl
+    - binutils
+  macos: []

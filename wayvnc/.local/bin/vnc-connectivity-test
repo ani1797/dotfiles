@@ -1,0 +1,1454 @@
+#!/usr/bin/env python3
+"""
+VNC Connectivity Automated Test Script
+
+Standalone test suite for verifying wayvnc server configuration and connectivity.
+Uses only Python standard library and existing system utilities.
+
+Tests:
+1. Setup Verification - Binary PAM support, RSA key format, TLS SANs
+2. Service Health - Process and systemd service status
+3. Network Connectivity - Port binding and TCP connections
+4. VNC Protocol - RFB handshake and protocol validation
+5. TLS Security - Certificate validation and TLS handshake
+6. Authentication Config - PAM config, shadow ACL, auth settings
+7. Configuration - wayvnc config file validation
+8. PAM Authentication - Live authentication test (optional)
+9. Display Output - Display detection verification
+"""
+
+import socket
+import ssl
+import struct
+import subprocess
+import os
+import sys
+import json
+import argparse
+import datetime
+from typing import Dict, List, Any, Optional, Tuple
+
+def _load_wayvnc_config():
+    """Load settings from wayvnc config file for auto-detection."""
+    config_path = os.path.expanduser('~/.config/wayvnc/config')
+    settings = {}
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    settings[key.strip()] = value.strip()
+    return settings
+
+_wayvnc_settings = _load_wayvnc_config()
+_bind_address = _wayvnc_settings.get('address', '0.0.0.0')
+# When testing locally, connect to localhost if binding to all interfaces
+_test_host = '127.0.0.1' if _bind_address in ('0.0.0.0', '') else _bind_address
+
+# Configuration
+CONFIG = {
+    'vnc': {
+        'host': _test_host,
+        'port': int(_wayvnc_settings.get('port', 5900)),
+        'config_path': os.path.expanduser('~/.config/wayvnc/config'),
+        'tls_cert': os.path.expanduser('~/.config/wayvnc/tls_cert.pem'),
+        'tls_key': os.path.expanduser('~/.config/wayvnc/tls_key.pem'),
+        'rsa_key': os.path.expanduser('~/.config/wayvnc/rsa_key.pem'),
+        'pam_config': '/etc/pam.d/wayvnc',
+    },
+    'timeouts': {
+        'socket_connect': 3,
+        'socket_recv': 2,
+        'tls_handshake': 5,
+    },
+    'expected': {
+        'rfb_version': b'RFB 003.008\n',
+        'bind_address': _bind_address,
+    }
+}
+
+# ANSI Color codes
+COLORS = {
+    'RED': '\033[91m',
+    'GREEN': '\033[92m',
+    'YELLOW': '\033[93m',
+    'BLUE': '\033[94m',
+    'CYAN': '\033[96m',
+    'RESET': '\033[0m',
+    'BOLD': '\033[1m',
+}
+
+# Security type mappings
+SECURITY_TYPES = {
+    1: 'None',
+    2: 'VNC Authentication',
+    18: 'TLS',
+    19: 'VeNCrypt',
+    129: 'Apple Diffie-Hellman',
+}
+
+# VeNCrypt subtypes
+VENCRYPT_SUBTYPES = {
+    256: 'Plain',
+    257: 'TLSNone',
+    258: 'TLSVnc',
+    259: 'TLSPlain',
+    260: 'X509None',
+    261: 'X509Vnc',
+    262: 'X509Plain',
+}
+
+
+class TestResult:
+    """Container for individual check results"""
+    def __init__(self, name: str, status: str, method: str, details: str, **kwargs):
+        self.name = name
+        self.status = status  # PASS, FAIL, WARN
+        self.method = method
+        self.details = details
+        self.extra = kwargs
+
+    def to_dict(self) -> Dict[str, Any]:
+        result = {
+            'name': self.name,
+            'status': self.status,
+            'method': self.method,
+            'details': self.details,
+        }
+        result.update(self.extra)
+        return result
+
+
+class BaseTest:
+    """Base class for all tests"""
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.results: List[TestResult] = []
+
+    @property
+    def name(self) -> str:
+        return self.__class__.__name__.replace('Test', ' Test')
+
+    def run(self) -> List[TestResult]:
+        """Override in subclasses"""
+        raise NotImplementedError
+
+    def _run_command(self, cmd: List[str], timeout: int = 3) -> Tuple[bool, str, str]:
+        """Run shell command and return success, stdout, stderr"""
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout
+            )
+            return result.returncode == 0, result.stdout, result.stderr
+        except subprocess.TimeoutExpired:
+            return False, '', 'Command timeout'
+        except Exception as e:
+            return False, '', str(e)
+
+
+class ServiceHealthTest(BaseTest):
+    """Test 1: Service health and process status"""
+
+    def run(self) -> List[TestResult]:
+        self.results = []
+
+        # Check process running
+        self._check_process()
+
+        # Check systemd service
+        self._check_systemd()
+
+        return self.results
+
+    def _check_process(self):
+        """Check if wayvnc process is running"""
+        success, stdout, stderr = self._run_command(['ps', 'aux'])
+
+        if success:
+            if 'wayvnc' in stdout:
+                # Extract process info
+                lines = [l for l in stdout.split('\n') if 'wayvnc' in l and 'grep' not in l]
+                if lines:
+                    self.results.append(TestResult(
+                        'Process Running',
+                        'PASS',
+                        'ps aux | grep wayvnc',
+                        'wayvnc process found',
+                        process_info=lines[0].strip()
+                    ))
+                else:
+                    self.results.append(TestResult(
+                        'Process Running',
+                        'FAIL',
+                        'ps aux | grep wayvnc',
+                        'wayvnc process not found'
+                    ))
+            else:
+                self.results.append(TestResult(
+                    'Process Running',
+                    'FAIL',
+                    'ps aux | grep wayvnc',
+                    'wayvnc process not found'
+                ))
+        else:
+            self.results.append(TestResult(
+                'Process Running',
+                'FAIL',
+                'ps aux',
+                f'Failed to check process: {stderr}'
+            ))
+
+    def _check_systemd(self):
+        """Check systemd service status"""
+        success, stdout, stderr = self._run_command(
+            ['systemctl', '--user', 'is-active', 'wayvnc.service']
+        )
+
+        if success and stdout.strip() == 'active':
+            self.results.append(TestResult(
+                'Systemd Service',
+                'PASS',
+                'systemctl --user is-active wayvnc.service',
+                'Service is active'
+            ))
+        elif 'Failed to connect to bus' in stderr or 'not found' in stderr.lower():
+            self.results.append(TestResult(
+                'Systemd Service',
+                'WARN',
+                'systemctl --user is-active wayvnc.service',
+                'Systemd unavailable (container or no systemd)'
+            ))
+        else:
+            self.results.append(TestResult(
+                'Systemd Service',
+                'FAIL',
+                'systemctl --user is-active wayvnc.service',
+                f'Service not active: {stdout.strip() or stderr}'
+            ))
+
+
+class NetworkConnectivityTest(BaseTest):
+    """Test 2: Network port availability and binding"""
+
+    def run(self) -> List[TestResult]:
+        self.results = []
+
+        # Check port listening
+        self._check_port_listening()
+
+        # Check TCP connection
+        self._check_tcp_connection()
+
+        return self.results
+
+    def _check_port_listening(self):
+        """Verify port 5900 is listening"""
+        success, stdout, stderr = self._run_command(['ss', '-tlnp'])
+
+        if success:
+            port_str = f':{self.config["vnc"]["port"]}'
+            if port_str in stdout:
+                # Extract bind address
+                lines = [l for l in stdout.split('\n') if port_str in l]
+                bind_info = lines[0] if lines else ''
+
+                # Check if bound to 0.0.0.0
+                if '0.0.0.0' in bind_info:
+                    self.results.append(TestResult(
+                        'Port Listening',
+                        'PASS',
+                        'ss -tlnp | grep 5900',
+                        f'Port {self.config["vnc"]["port"]} listening on 0.0.0.0',
+                        bind_info=bind_info.strip()
+                    ))
+                else:
+                    self.results.append(TestResult(
+                        'Port Listening',
+                        'WARN',
+                        'ss -tlnp | grep 5900',
+                        f'Port listening but not on 0.0.0.0',
+                        bind_info=bind_info.strip()
+                    ))
+            else:
+                self.results.append(TestResult(
+                    'Port Listening',
+                    'FAIL',
+                    'ss -tlnp',
+                    f'Port {self.config["vnc"]["port"]} not listening'
+                ))
+        else:
+            self.results.append(TestResult(
+                'Port Listening',
+                'FAIL',
+                'ss -tlnp',
+                f'Failed to check ports: {stderr}'
+            ))
+
+    def _check_tcp_connection(self):
+        """Attempt TCP connection to VNC port"""
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(self.config['timeouts']['socket_connect'])
+            sock.connect((self.config['vnc']['host'], self.config['vnc']['port']))
+            sock.close()
+
+            self.results.append(TestResult(
+                'TCP Connection',
+                'PASS',
+                f'socket.connect({self.config["vnc"]["host"]}:{self.config["vnc"]["port"]})',
+                'TCP connection successful'
+            ))
+        except socket.timeout:
+            self.results.append(TestResult(
+                'TCP Connection',
+                'FAIL',
+                f'socket.connect({self.config["vnc"]["host"]}:{self.config["vnc"]["port"]})',
+                'Connection timeout'
+            ))
+        except Exception as e:
+            self.results.append(TestResult(
+                'TCP Connection',
+                'FAIL',
+                f'socket.connect({self.config["vnc"]["host"]}:{self.config["vnc"]["port"]})',
+                f'Connection failed: {str(e)}'
+            ))
+
+
+class VNCProtocolTest(BaseTest):
+    """Test 3: VNC RFB protocol handshake"""
+
+    def run(self) -> List[TestResult]:
+        self.results = []
+
+        try:
+            # Connect to VNC server
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(self.config['timeouts']['socket_recv'])
+            sock.connect((self.config['vnc']['host'], self.config['vnc']['port']))
+
+            # Read RFB version from server
+            self._check_rfb_version(sock)
+
+            # Read security types
+            self._check_security_types(sock)
+
+            sock.close()
+
+        except Exception as e:
+            self.results.append(TestResult(
+                'VNC Protocol',
+                'FAIL',
+                'VNC RFB handshake',
+                f'Protocol test failed: {str(e)}'
+            ))
+
+        return self.results
+
+    def _check_rfb_version(self, sock: socket.socket):
+        """Read and verify RFB version string"""
+        try:
+            server_version = sock.recv(12)
+
+            if server_version == self.config['expected']['rfb_version']:
+                self.results.append(TestResult(
+                    'RFB Version',
+                    'PASS',
+                    'Read 12 bytes from socket',
+                    f'Server sent correct RFB version: {server_version.decode().strip()}',
+                    version=server_version.decode().strip()
+                ))
+
+                # Send client version
+                sock.sendall(self.config['expected']['rfb_version'])
+            else:
+                self.results.append(TestResult(
+                    'RFB Version',
+                    'FAIL',
+                    'Read 12 bytes from socket',
+                    f'Unexpected RFB version: {server_version}',
+                    version=server_version.decode() if server_version else 'none'
+                ))
+        except Exception as e:
+            self.results.append(TestResult(
+                'RFB Version',
+                'FAIL',
+                'Read 12 bytes from socket',
+                f'Failed to read RFB version: {str(e)}'
+            ))
+
+    def _check_security_types(self, sock: socket.socket):
+        """Read and parse security types"""
+        try:
+            # Read number of security types
+            count_byte = sock.recv(1)
+            count = struct.unpack('!B', count_byte)[0]
+
+            if count == 0:
+                # Connection failed
+                reason_length = struct.unpack('!I', sock.recv(4))[0]
+                reason = sock.recv(reason_length).decode()
+                self.results.append(TestResult(
+                    'Security Types',
+                    'FAIL',
+                    'Read security types',
+                    f'Connection failed: {reason}'
+                ))
+                return
+
+            # Read security types
+            security_types_bytes = sock.recv(count)
+            security_types = list(security_types_bytes)
+
+            # Map to names
+            type_names = [SECURITY_TYPES.get(t, f'Unknown ({t})') for t in security_types]
+
+            # Check for encryption - VeNCrypt (19) or TLS (18)
+            has_vencrypt = 19 in security_types
+            has_tls = 18 in security_types
+            has_encryption = has_vencrypt or has_tls
+
+            if has_encryption:
+                encryption_type = 'VeNCrypt (TLS + Auth)' if has_vencrypt else 'TLS'
+                self.results.append(TestResult(
+                    'Security Types',
+                    'PASS',
+                    'Read and parse security types',
+                    f'{encryption_type} security available',
+                    count=count,
+                    types=type_names,
+                    type_codes=security_types
+                ))
+            else:
+                self.results.append(TestResult(
+                    'Security Types',
+                    'WARN',
+                    'Read and parse security types',
+                    f'No encryption available in security types',
+                    count=count,
+                    types=type_names,
+                    type_codes=security_types
+                ))
+
+        except Exception as e:
+            self.results.append(TestResult(
+                'Security Types',
+                'FAIL',
+                'Read and parse security types',
+                f'Failed to read security types: {str(e)}'
+            ))
+
+
+class TLSSecurityTest(BaseTest):
+    """Test 4: TLS encryption and certificate validity"""
+
+    def run(self) -> List[TestResult]:
+        self.results = []
+
+        # Check certificate file
+        self._check_certificate_file()
+
+        # Check private key file
+        self._check_private_key()
+
+        # Perform TLS handshake
+        self._check_tls_handshake()
+
+        return self.results
+
+    def _check_certificate_file(self):
+        """Validate certificate file"""
+        cert_path = self.config['vnc']['tls_cert']
+
+        if not os.path.exists(cert_path):
+            self.results.append(TestResult(
+                'Certificate File',
+                'FAIL',
+                f'os.path.exists({cert_path})',
+                'Certificate file does not exist'
+            ))
+            return
+
+        # Validate with openssl
+        success, stdout, stderr = self._run_command([
+            'openssl', 'x509', '-in', cert_path, '-noout', '-text'
+        ])
+
+        if success:
+            # Extract some details
+            subject_line = [l for l in stdout.split('\n') if 'Subject:' in l]
+            issuer_line = [l for l in stdout.split('\n') if 'Issuer:' in l]
+            not_after_line = [l for l in stdout.split('\n') if 'Not After' in l]
+
+            self.results.append(TestResult(
+                'Certificate File',
+                'PASS',
+                f'openssl x509 -in {cert_path} -noout -text',
+                'Certificate is valid',
+                subject=subject_line[0].strip() if subject_line else 'N/A',
+                issuer=issuer_line[0].strip() if issuer_line else 'N/A',
+                not_after=not_after_line[0].strip() if not_after_line else 'N/A'
+            ))
+        else:
+            self.results.append(TestResult(
+                'Certificate File',
+                'FAIL',
+                f'openssl x509 -in {cert_path} -noout -text',
+                f'Certificate validation failed: {stderr}'
+            ))
+
+    def _check_private_key(self):
+        """Check private key file exists and has secure permissions"""
+        key_path = self.config['vnc']['tls_key']
+
+        if not os.path.exists(key_path):
+            self.results.append(TestResult(
+                'Private Key',
+                'FAIL',
+                f'os.path.exists({key_path})',
+                'Private key file does not exist'
+            ))
+            return
+
+        # Check permissions
+        stat_info = os.stat(key_path)
+        perms = oct(stat_info.st_mode)[-3:]
+
+        if perms in ['600', '400']:
+            self.results.append(TestResult(
+                'Private Key',
+                'PASS',
+                f'os.stat({key_path})',
+                f'Private key exists with secure permissions ({perms})',
+                permissions=perms
+            ))
+        else:
+            self.results.append(TestResult(
+                'Private Key',
+                'WARN',
+                f'os.stat({key_path})',
+                f'Private key has insecure permissions ({perms}), should be 600 or 400',
+                permissions=perms
+            ))
+
+    def _check_tls_handshake(self):
+        """Perform full TLS handshake"""
+        try:
+            # Connect to VNC server
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(self.config['timeouts']['tls_handshake'])
+            sock.connect((self.config['vnc']['host'], self.config['vnc']['port']))
+
+            # RFB version exchange
+            server_version = sock.recv(12)
+            sock.sendall(self.config['expected']['rfb_version'])
+
+            # Read security types
+            count = struct.unpack('!B', sock.recv(1))[0]
+            if count == 0:
+                self.results.append(TestResult(
+                    'TLS Handshake',
+                    'FAIL',
+                    'VNC + TLS handshake',
+                    'Server rejected connection'
+                ))
+                sock.close()
+                return
+
+            security_types = list(sock.recv(count))
+
+            # Check if encryption is available (prefer VeNCrypt over plain TLS)
+            has_vencrypt = 19 in security_types
+            has_tls = 18 in security_types
+
+            if not (has_vencrypt or has_tls):
+                self.results.append(TestResult(
+                    'TLS Handshake',
+                    'FAIL',
+                    'VNC + TLS handshake',
+                    'No encryption security type offered by server',
+                    available_types=[SECURITY_TYPES.get(t, f'Unknown ({t})') for t in security_types]
+                ))
+                sock.close()
+                return
+
+            # Select security type (prefer VeNCrypt)
+            selected_type = 19 if has_vencrypt else 18
+            security_name = 'VeNCrypt' if has_vencrypt else 'TLS'
+            sock.sendall(struct.pack('!B', selected_type))
+
+            # Handle VeNCrypt negotiation
+            if has_vencrypt:
+                # Read VeNCrypt version (2 bytes: major, minor)
+                vencrypt_version = sock.recv(2)
+                major, minor = struct.unpack('!BB', vencrypt_version)
+
+                # Send our supported version (0.2)
+                sock.sendall(struct.pack('!BB', 0, 2))
+
+                # Read server's ACK
+                ack = struct.unpack('!B', sock.recv(1))[0]
+                if ack != 0:
+                    self.results.append(TestResult(
+                        'TLS Handshake',
+                        'FAIL',
+                        'VeNCrypt negotiation',
+                        f'VeNCrypt version negotiation failed (ACK={ack})'
+                    ))
+                    sock.close()
+                    return
+
+                # Read number of subtypes
+                subtype_count = struct.unpack('!B', sock.recv(1))[0]
+
+                # Read subtypes (4 bytes each)
+                subtypes = []
+                for _ in range(subtype_count):
+                    subtype = struct.unpack('!I', sock.recv(4))[0]
+                    subtypes.append(subtype)
+
+                # Select TLS+Plain (259) if available, otherwise first TLS subtype
+                selected_subtype = None
+                for subtype in [259, 258, 262, 261, 260, 257]:  # Prefer order
+                    if subtype in subtypes:
+                        selected_subtype = subtype
+                        break
+
+                if not selected_subtype:
+                    selected_subtype = subtypes[0] if subtypes else 256
+
+                sock.sendall(struct.pack('!I', selected_subtype))
+
+                # Read server ACK
+                ack = struct.unpack('!B', sock.recv(1))[0]
+                if ack != 1:
+                    self.results.append(TestResult(
+                        'TLS Handshake',
+                        'FAIL',
+                        'VeNCrypt subtype selection',
+                        f'VeNCrypt subtype selection failed (ACK={ack})'
+                    ))
+                    sock.close()
+                    return
+
+            # Wrap socket with TLS (for both TLS and VeNCrypt)
+            context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+
+            tls_sock = context.wrap_socket(sock, server_hostname='localhost')
+
+            # Get cipher info
+            cipher = tls_sock.cipher()
+
+            self.results.append(TestResult(
+                'TLS Handshake',
+                'PASS',
+                f'{security_name} + TLS handshake',
+                f'{security_name} handshake and TLS encryption successful',
+                cipher_name=cipher[0] if cipher else 'unknown',
+                tls_version=cipher[1] if cipher else 'unknown',
+                security_type=security_name
+            ))
+
+            tls_sock.close()
+
+        except Exception as e:
+            self.results.append(TestResult(
+                'TLS Handshake',
+                'FAIL',
+                'VNC + TLS handshake',
+                f'TLS handshake failed: {str(e)}'
+            ))
+
+
+class AuthenticationConfigTest(BaseTest):
+    """Test 5: PAM authentication configuration"""
+
+    def run(self) -> List[TestResult]:
+        self.results = []
+
+        # Check PAM config file
+        self._check_pam_config()
+
+        # Check shadow ACL
+        self._check_shadow_acl()
+
+        # Check wayvnc config for auth settings
+        self._check_wayvnc_auth_config()
+
+        return self.results
+
+    def _check_pam_config(self):
+        """Verify PAM configuration file"""
+        pam_path = self.config['vnc']['pam_config']
+
+        if not os.path.exists(pam_path):
+            self.results.append(TestResult(
+                'PAM Config File',
+                'WARN',
+                f'os.path.exists({pam_path})',
+                'PAM config file does not exist (may not be needed)'
+            ))
+            return
+
+        try:
+            with open(pam_path, 'r') as f:
+                content = f.read()
+
+            # Check for valid auth configuration
+            has_pam_unix = 'pam_unix.so' in content
+            has_system_auth = 'include' in content and 'system-auth' in content
+            if has_pam_unix or has_system_auth:
+                method = 'system-auth include' if has_system_auth else 'pam_unix.so'
+                self.results.append(TestResult(
+                    'PAM Config File',
+                    'PASS',
+                    f'read {pam_path}',
+                    f'PAM config exists and uses {method}',
+                    config_lines=len(content.split('\n'))
+                ))
+            else:
+                self.results.append(TestResult(
+                    'PAM Config File',
+                    'WARN',
+                    f'read {pam_path}',
+                    'PAM config exists but has no recognized auth module',
+                    config_lines=len(content.split('\n'))
+                ))
+        except PermissionError:
+            self.results.append(TestResult(
+                'PAM Config File',
+                'WARN',
+                f'read {pam_path}',
+                'Permission denied reading PAM config (may require sudo)'
+            ))
+        except Exception as e:
+            self.results.append(TestResult(
+                'PAM Config File',
+                'FAIL',
+                f'read {pam_path}',
+                f'Failed to read PAM config: {str(e)}'
+            ))
+
+    def _check_shadow_acl(self):
+        """Check if user has read ACL on /etc/shadow (required for PAM from wayvnc)"""
+        import getpass
+        username = getpass.getuser()
+
+        success, stdout, stderr = self._run_command(['getfacl', '-p', '/etc/shadow'])
+
+        if not success:
+            if 'command not found' in stderr or 'No such file' in stderr:
+                self.results.append(TestResult(
+                    'Shadow ACL',
+                    'WARN',
+                    'getfacl /etc/shadow',
+                    'ACL utilities not installed (install acl package)'
+                ))
+            else:
+                self.results.append(TestResult(
+                    'Shadow ACL',
+                    'WARN',
+                    'getfacl /etc/shadow',
+                    f'Cannot check shadow ACL: {stderr.strip()}'
+                ))
+            return
+
+        if f'user:{username}:r' in stdout:
+            self.results.append(TestResult(
+                'Shadow ACL',
+                'PASS',
+                'getfacl /etc/shadow',
+                f'User {username} has read ACL on /etc/shadow'
+            ))
+        else:
+            self.results.append(TestResult(
+                'Shadow ACL',
+                'FAIL',
+                'getfacl /etc/shadow',
+                f'User {username} lacks read ACL on /etc/shadow (PAM auth will fail). '
+                f'Fix: sudo setfacl -m u:{username}:r /etc/shadow'
+            ))
+
+    def _check_wayvnc_auth_config(self):
+        """Check wayvnc config for authentication settings"""
+        config_path = self.config['vnc']['config_path']
+
+        if not os.path.exists(config_path):
+            self.results.append(TestResult(
+                'Auth Settings',
+                'FAIL',
+                f'read {config_path}',
+                'wayvnc config file does not exist'
+            ))
+            return
+
+        try:
+            with open(config_path, 'r') as f:
+                content = f.read()
+
+            # Simple parsing - look for enable_auth and enable_pam
+            has_enable_auth = 'enable_auth' in content
+            has_enable_pam = 'enable_pam' in content
+
+            if has_enable_auth and has_enable_pam:
+                self.results.append(TestResult(
+                    'Auth Settings',
+                    'PASS',
+                    f'parse {config_path}',
+                    'Authentication settings found in config',
+                    enable_auth=has_enable_auth,
+                    enable_pam=has_enable_pam
+                ))
+            else:
+                self.results.append(TestResult(
+                    'Auth Settings',
+                    'WARN',
+                    f'parse {config_path}',
+                    'Authentication settings not found or incomplete',
+                    enable_auth=has_enable_auth,
+                    enable_pam=has_enable_pam
+                ))
+        except Exception as e:
+            self.results.append(TestResult(
+                'Auth Settings',
+                'FAIL',
+                f'read {config_path}',
+                f'Failed to read config: {str(e)}'
+            ))
+
+
+class ConfigurationTest(BaseTest):
+    """Test 6: wayvnc configuration file validation"""
+
+    def run(self) -> List[TestResult]:
+        self.results = []
+
+        config_path = self.config['vnc']['config_path']
+
+        if not os.path.exists(config_path):
+            self.results.append(TestResult(
+                'Config File',
+                'FAIL',
+                f'os.path.exists({config_path})',
+                'wayvnc config file does not exist'
+            ))
+            return self.results
+
+        try:
+            with open(config_path, 'r') as f:
+                content = f.read()
+
+            # Parse config (simple key=value parser)
+            config_dict = {}
+            for line in content.split('\n'):
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    if '=' in line:
+                        key, value = line.split('=', 1)
+                        config_dict[key.strip()] = value.strip()
+
+            # Check critical settings
+            critical_keys = ['address', 'port', 'private_key_file', 'certificate_file']
+            missing_keys = [k for k in critical_keys if k not in config_dict]
+
+            if not missing_keys:
+                self.results.append(TestResult(
+                    'Config Validation',
+                    'PASS',
+                    f'parse {config_path}',
+                    'All critical settings present',
+                    settings=config_dict,
+                    critical_keys=critical_keys
+                ))
+            else:
+                self.results.append(TestResult(
+                    'Config Validation',
+                    'FAIL',
+                    f'parse {config_path}',
+                    f'Missing critical settings: {", ".join(missing_keys)}',
+                    settings=config_dict,
+                    missing_keys=missing_keys
+                ))
+
+        except Exception as e:
+            self.results.append(TestResult(
+                'Config Validation',
+                'FAIL',
+                f'read {config_path}',
+                f'Failed to parse config: {str(e)}'
+            ))
+
+        return self.results
+
+
+class PAMAuthenticationTest(BaseTest):
+    """Test 7: PAM Authentication (optional, requires credentials)"""
+
+    def __init__(self, config: Dict[str, Any], credentials: Optional[Tuple[str, str]] = None):
+        super().__init__(config)
+        self.credentials = credentials
+
+    def run(self) -> List[TestResult]:
+        self.results = []
+
+        if not self.credentials:
+            self.results.append(TestResult(
+                'PAM Authentication',
+                'WARN',
+                'Skipped',
+                'No credentials provided. Use --username to test authentication.'
+            ))
+            return self.results
+
+        username, password = self.credentials
+
+        try:
+            # Perform full VeNCrypt + PAM authentication
+            self._test_authentication(username, password)
+        except Exception as e:
+            self.results.append(TestResult(
+                'PAM Authentication',
+                'FAIL',
+                'Full authentication handshake',
+                f'Authentication test failed: {str(e)}'
+            ))
+
+        return self.results
+
+    def _test_authentication(self, username: str, password: str):
+        """Attempt full VNC authentication"""
+        # Connect
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(self.config['timeouts']['tls_handshake'])
+        sock.connect((self.config['vnc']['host'], self.config['vnc']['port']))
+
+        try:
+            # RFB handshake
+            server_version = sock.recv(12)
+            sock.sendall(self.config['expected']['rfb_version'])
+
+            # Get security types
+            count = struct.unpack('!B', sock.recv(1))[0]
+            if count == 0:
+                reason_length = struct.unpack('!I', sock.recv(4))[0]
+                reason = sock.recv(reason_length).decode()
+                raise Exception(f'Connection rejected: {reason}')
+
+            security_types = list(sock.recv(count))
+
+            # Check for VeNCrypt
+            if 19 not in security_types:
+                raise Exception('VeNCrypt not available')
+
+            # Select VeNCrypt
+            sock.sendall(struct.pack('!B', 19))
+
+            # VeNCrypt version negotiation
+            vencrypt_version = sock.recv(2)
+            sock.sendall(struct.pack('!BB', 0, 2))
+
+            ack = struct.unpack('!B', sock.recv(1))[0]
+            if ack != 0:
+                raise Exception(f'VeNCrypt version negotiation failed')
+
+            # Read subtypes
+            subtype_count = struct.unpack('!B', sock.recv(1))[0]
+            subtypes = []
+            for _ in range(subtype_count):
+                subtype = struct.unpack('!I', sock.recv(4))[0]
+                subtypes.append(subtype)
+
+            # Select Plain authentication subtype (prefer TLS+Plain or X509Plain for PAM)
+            selected_subtype = None
+            # Prefer order: TLSPlain (259), X509Plain (262), other plain subtypes
+            for subtype in [259, 262, 256]:
+                if subtype in subtypes:
+                    selected_subtype = subtype
+                    break
+
+            if not selected_subtype:
+                available_names = [VENCRYPT_SUBTYPES.get(s, f'Unknown({s})') for s in subtypes]
+                raise Exception(f'No Plain authentication subtype available. Available: {available_names}')
+
+            sock.sendall(struct.pack('!I', selected_subtype))
+
+            # Read ACK
+            ack = struct.unpack('!B', sock.recv(1))[0]
+            if ack != 1:
+                raise Exception('Subtype selection rejected')
+
+            # TLS handshake
+            context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+
+            tls_sock = context.wrap_socket(sock, server_hostname='localhost')
+
+            # Now send username and password (VeNCrypt Plain authentication)
+            # Format: u32 username_len + u32 password_len + username + password
+            username_bytes = username.encode('utf-8')
+            password_bytes = password.encode('utf-8')
+
+            auth_data = struct.pack('!II', len(username_bytes), len(password_bytes))
+            auth_data += username_bytes + password_bytes
+
+            tls_sock.sendall(auth_data)
+
+            # Read authentication result (4 bytes)
+            result = struct.unpack('!I', tls_sock.recv(4))[0]
+
+            if result == 0:
+                self.results.append(TestResult(
+                    'PAM Authentication',
+                    'PASS',
+                    'Full VeNCrypt + PAM handshake',
+                    f'Successfully authenticated as {username}',
+                    username=username
+                ))
+            else:
+                # Read error message if available
+                try:
+                    error_len = struct.unpack('!I', tls_sock.recv(4))[0]
+                    error_msg = tls_sock.recv(error_len).decode('utf-8') if error_len > 0 else 'Authentication failed'
+                except:
+                    error_msg = 'Authentication failed'
+
+                self.results.append(TestResult(
+                    'PAM Authentication',
+                    'FAIL',
+                    'VeNCrypt + PAM authentication',
+                    f'Authentication failed: {error_msg}',
+                    username=username
+                ))
+
+            tls_sock.close()
+
+        finally:
+            try:
+                sock.close()
+            except:
+                pass
+
+
+class DisplayOutputTest(BaseTest):
+    """Test 8: Display output detection"""
+
+    def run(self) -> List[TestResult]:
+        self.results = []
+
+        # First try wayvncctl (most reliable method)
+        success, stdout, stderr = self._run_command(['wayvncctl', 'output-list'])
+
+        if success and stdout.strip():
+            # Parse output list
+            outputs = []
+            for line in stdout.strip().split('\n'):
+                if line.strip():
+                    # Parse format: * OUTPUT-NAME: "Description" (WxH)
+                    if ':' in line:
+                        # Extract output name (first word after optional *)
+                        parts = line.split(':', 1)
+                        output_name = parts[0].strip().lstrip('*').strip()
+                        description = parts[1].strip() if len(parts) > 1 else ''
+                        outputs.append({'name': output_name, 'description': description})
+
+            if outputs:
+                output_names = ', '.join([o['name'] for o in outputs])
+                self.results.append(TestResult(
+                    'Display Detection',
+                    'PASS',
+                    'wayvncctl output-list',
+                    f'Found {len(outputs)} output(s): {output_names}',
+                    outputs=outputs,
+                    count=len(outputs)
+                ))
+                return self.results
+
+        # Fallback to journal logs if wayvncctl fails
+        success, stdout, stderr = self._run_command([
+            'journalctl', '--user', '-u', 'wayvnc.service', '-n', '100', '--no-pager'
+        ])
+
+        if not success:
+            self.results.append(TestResult(
+                'Display Detection',
+                'WARN',
+                'wayvncctl + journalctl',
+                f'Cannot detect displays: wayvncctl failed and logs unavailable'
+            ))
+            return self.results
+
+        # Look for display-related messages (including Wayland output messages)
+        display_keywords = ['HDMI', 'display', 'output', 'DP-', 'DVI-', 'eDP-', 'monitor']
+        display_lines = []
+
+        for line in stdout.split('\n'):
+            line_lower = line.lower()
+            if any(keyword.lower() in line_lower for keyword in display_keywords):
+                display_lines.append(line.strip())
+
+        if display_lines:
+            # Try to extract display name
+            display_name = 'detected'
+            for line in display_lines:
+                for keyword in ['HDMI-', 'DP-', 'DVI-', 'eDP-']:
+                    if keyword in line:
+                        # Extract display name (simple heuristic)
+                        parts = line.split()
+                        for part in parts:
+                            if keyword in part:
+                                display_name = part.strip(',:;')
+                                break
+                if display_name != 'detected':
+                    break
+
+            self.results.append(TestResult(
+                'Display Detection',
+                'PASS',
+                'journalctl log analysis',
+                f'Display output detected in logs',
+                display_name=display_name,
+                relevant_lines=len(display_lines)
+            ))
+        else:
+            self.results.append(TestResult(
+                'Display Detection',
+                'WARN',
+                'wayvncctl + journalctl',
+                'No displays detected via wayvncctl or logs'
+            ))
+
+        return self.results
+
+
+class SetupVerificationTest(BaseTest):
+    """Test 9: Setup prerequisites verification"""
+
+    def run(self) -> List[TestResult]:
+        self.results = []
+
+        self._check_binary_pam()
+        self._check_rsa_key()
+        self._check_tls_sans()
+
+        return self.results
+
+    def _check_binary_pam(self):
+        """Verify wayvnc is built with PAM support"""
+        success, stdout, stderr = self._run_command(['which', 'wayvnc'])
+        if not success:
+            self.results.append(TestResult(
+                'WayVNC Binary',
+                'FAIL',
+                'which wayvnc',
+                'wayvnc not found in PATH'
+            ))
+            return
+
+        wayvnc_path = stdout.strip()
+        success, stdout, stderr = self._run_command(['ldd', wayvnc_path])
+        if success and 'libpam' in stdout:
+            self.results.append(TestResult(
+                'PAM Support',
+                'PASS',
+                f'ldd {wayvnc_path}',
+                'wayvnc linked against libpam'
+            ))
+        else:
+            self.results.append(TestResult(
+                'PAM Support',
+                'FAIL',
+                f'ldd {wayvnc_path}',
+                'wayvnc not built with PAM support'
+            ))
+
+    def _check_rsa_key(self):
+        """Verify RSA key exists and is in PKCS#1 format (required by neatvnc)"""
+        rsa_path = self.config['vnc']['rsa_key']
+
+        if not os.path.exists(rsa_path):
+            self.results.append(TestResult(
+                'RSA Key',
+                'WARN',
+                f'os.path.exists({rsa_path})',
+                'RSA key missing (RealVNC / Apple VNC clients will not work). '
+                'Generate: openssl genrsa -traditional -out rsa_key.pem 4096'
+            ))
+            return
+
+        try:
+            with open(rsa_path, 'r') as f:
+                header = f.readline().strip()
+        except PermissionError:
+            self.results.append(TestResult(
+                'RSA Key',
+                'FAIL',
+                f'read {rsa_path}',
+                'Permission denied reading RSA key'
+            ))
+            return
+
+        if 'BEGIN RSA PRIVATE KEY' in header:
+            self.results.append(TestResult(
+                'RSA Key',
+                'PASS',
+                f'read header of {rsa_path}',
+                'RSA key in PKCS#1 format (correct for neatvnc)'
+            ))
+        elif 'BEGIN PRIVATE KEY' in header:
+            self.results.append(TestResult(
+                'RSA Key',
+                'FAIL',
+                f'read header of {rsa_path}',
+                'RSA key in PKCS#8 format (neatvnc requires PKCS#1). '
+                'Fix: openssl rsa -traditional -in rsa_key.pem -out rsa_key.pem'
+            ))
+        else:
+            self.results.append(TestResult(
+                'RSA Key',
+                'FAIL',
+                f'read header of {rsa_path}',
+                f'Unrecognized RSA key format: {header}'
+            ))
+
+        # Check permissions
+        stat_info = os.stat(rsa_path)
+        perms = oct(stat_info.st_mode)[-3:]
+        if perms not in ('600', '400'):
+            self.results.append(TestResult(
+                'RSA Key Permissions',
+                'WARN',
+                f'os.stat({rsa_path})',
+                f'RSA key has permissions {perms} (should be 600)'
+            ))
+
+    def _check_tls_sans(self):
+        """Check if TLS certificate includes LAN IPs in SANs"""
+        cert_path = self.config['vnc']['tls_cert']
+        if not os.path.exists(cert_path):
+            return  # Already reported by TLSSecurityTest
+
+        success, stdout, stderr = self._run_command([
+            'openssl', 'x509', '-in', cert_path, '-noout', '-ext', 'subjectAltName'
+        ])
+        if not success:
+            return
+
+        # Get current LAN IPs
+        ip_success, ip_stdout, _ = self._run_command(
+            ['ip', '-4', 'addr', 'show']
+        )
+        if not ip_success:
+            return
+
+        import re
+        lan_ips = set()
+        for match in re.finditer(r'inet (\d+\.\d+\.\d+\.\d+)', ip_stdout):
+            ip = match.group(1)
+            if not ip.startswith('127.'):
+                lan_ips.add(ip)
+
+        if not lan_ips:
+            return
+
+        missing_ips = [ip for ip in lan_ips if f'IP Address:{ip}' not in stdout]
+        if missing_ips:
+            self.results.append(TestResult(
+                'TLS Certificate SANs',
+                'WARN',
+                f'openssl x509 -ext subjectAltName',
+                f'Certificate missing LAN IPs: {", ".join(missing_ips)}. '
+                'Regenerate with configure-wayvnc for direct IP connections.'
+            ))
+        else:
+            self.results.append(TestResult(
+                'TLS Certificate SANs',
+                'PASS',
+                f'openssl x509 -ext subjectAltName',
+                f'Certificate includes all LAN IPs: {", ".join(lan_ips)}'
+            ))
+
+
+class TestRunner:
+    """Orchestrates test execution and reporting"""
+
+    def __init__(self, config: Dict[str, Any], use_color: bool = True, auth_credentials: Optional[Tuple[str, str]] = None):
+        self.config = config
+        self.use_color = use_color
+        self.auth_credentials = auth_credentials
+        self.tests = [
+            SetupVerificationTest(config),
+            ServiceHealthTest(config),
+            NetworkConnectivityTest(config),
+            VNCProtocolTest(config),
+            TLSSecurityTest(config),
+            AuthenticationConfigTest(config),
+            ConfigurationTest(config),
+            PAMAuthenticationTest(config, credentials=auth_credentials),
+            DisplayOutputTest(config),
+        ]
+        self.all_results: List[Dict[str, Any]] = []
+
+    def _colorize(self, text: str, color: str) -> str:
+        """Apply color if enabled"""
+        if self.use_color and color in COLORS:
+            return f"{COLORS[color]}{text}{COLORS['RESET']}"
+        return text
+
+    def _status_symbol(self, status: str) -> str:
+        """Get colored status symbol"""
+        symbols = {
+            'PASS': self._colorize('✓', 'GREEN'),
+            'FAIL': self._colorize('✗', 'RED'),
+            'WARN': self._colorize('⚠', 'YELLOW'),
+        }
+        return symbols.get(status, status)
+
+    def run_all(self) -> bool:
+        """Run all tests and return overall success"""
+        print(self._colorize('\n' + '=' * 70, 'BOLD'))
+        print(self._colorize('VNC CONNECTIVITY TEST SUITE', 'BOLD'))
+        print(self._colorize('=' * 70 + '\n', 'BOLD'))
+
+        overall_pass = True
+
+        for test in self.tests:
+            print(self._colorize(f'\n{test.name}', 'CYAN'))
+            print(self._colorize('-' * 70, 'CYAN'))
+
+            results = test.run()
+
+            test_status = {
+                'test_name': test.name,
+                'checks': [r.to_dict() for r in results]
+            }
+
+            # Determine overall test status
+            if any(r.status == 'FAIL' for r in results):
+                test_status['status'] = 'FAIL'
+                overall_pass = False
+            elif any(r.status == 'WARN' for r in results):
+                test_status['status'] = 'WARN'
+            else:
+                test_status['status'] = 'PASS'
+
+            self.all_results.append(test_status)
+
+            # Print individual check results
+            for result in results:
+                status_symbol = self._status_symbol(result.status)
+                print(f'  {status_symbol} {result.name}: {result.details}')
+
+                if result.status == 'FAIL':
+                    overall_pass = False
+
+        # Print summary
+        self._print_summary()
+
+        return overall_pass
+
+    def _print_summary(self):
+        """Print test summary"""
+        print(self._colorize('\n' + '=' * 70, 'BOLD'))
+        print(self._colorize('SUMMARY', 'BOLD'))
+        print(self._colorize('=' * 70, 'BOLD'))
+
+        total_tests = len(self.all_results)
+        passed = sum(1 for t in self.all_results if t['status'] == 'PASS')
+        warned = sum(1 for t in self.all_results if t['status'] == 'WARN')
+        failed = sum(1 for t in self.all_results if t['status'] == 'FAIL')
+
+        print(f'\nTotal Tests: {total_tests}')
+        print(f'{self._colorize("Passed:", "GREEN")} {passed}')
+        if warned > 0:
+            print(f'{self._colorize("Warnings:", "YELLOW")} {warned}')
+        if failed > 0:
+            print(f'{self._colorize("Failed:", "RED")} {failed}')
+
+        if failed == 0:
+            print(self._colorize('\n✓ All tests passed!', 'GREEN'))
+        else:
+            print(self._colorize(f'\n✗ {failed} test(s) failed', 'RED'))
+
+        print()
+
+    def export_json(self, filepath: str):
+        """Export results to JSON file"""
+        report = {
+            'timestamp': datetime.datetime.now().isoformat(),
+            'config': self.config,
+            'results': self.all_results,
+            'summary': {
+                'total': len(self.all_results),
+                'passed': sum(1 for t in self.all_results if t['status'] == 'PASS'),
+                'warned': sum(1 for t in self.all_results if t['status'] == 'WARN'),
+                'failed': sum(1 for t in self.all_results if t['status'] == 'FAIL'),
+            }
+        }
+
+        try:
+            with open(filepath, 'w') as f:
+                json.dump(report, f, indent=2)
+            print(f'JSON report exported to: {filepath}')
+        except Exception as e:
+            print(f'Failed to export JSON: {str(e)}', file=sys.stderr)
+
+
+def main():
+    """Main entry point"""
+    parser = argparse.ArgumentParser(
+        description='VNC connectivity automated test script',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        '--no-color',
+        action='store_true',
+        help='Disable colored output'
+    )
+    parser.add_argument(
+        '--json',
+        metavar='FILE',
+        help='Export results to JSON file'
+    )
+    parser.add_argument(
+        '--skip-auth',
+        action='store_true',
+        help='Skip PAM authentication test (default: always test)'
+    )
+    parser.add_argument(
+        '--username',
+        metavar='USER',
+        help='Username for authentication test (default: current user)'
+    )
+
+    args = parser.parse_args()
+
+    # Setup authentication test credentials (always run unless skipped)
+    auth_credentials = None
+    if not args.skip_auth:
+        import getpass
+        username = args.username or getpass.getuser()
+        print(f'\nPAM Authentication Test will run for user: {username}')
+        password = getpass.getpass(f'Enter password: ')
+        auth_credentials = (username, password)
+        print()  # Add newline for better formatting
+
+    # Run tests
+    runner = TestRunner(CONFIG, use_color=not args.no_color, auth_credentials=auth_credentials)
+    success = runner.run_all()
+
+    # Export JSON if requested
+    if args.json:
+        runner.export_json(args.json)
+
+    # Exit with appropriate code
+    sys.exit(0 if success else 1)
+
+
+if __name__ == '__main__':
+    main()

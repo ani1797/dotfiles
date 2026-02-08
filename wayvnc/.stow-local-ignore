@@ -9,3 +9,10 @@ LICENSE
 CHANGELOG
 \.git
 \.gitignore
+
+# PAM config must be installed to /etc/pam.d/ with sudo, not stowed to ~/pam.d/
+# The configure-wayvnc script handles installation
+pam\.d
+
+# Python bytecode cache
+__pycache__

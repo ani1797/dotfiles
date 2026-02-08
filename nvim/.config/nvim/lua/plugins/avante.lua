@@ -5,9 +5,13 @@ return {
   version = false,
   opts = {
     provider = "claude",
-    claude = {
-      model = "claude-sonnet-4-20250514",
-      max_tokens = 4096,
+    providers = {
+      claude = {
+        model = "claude-sonnet-4-20250514",
+        extra_request_body = {
+          max_tokens = 4096,
+        },
+      },
     },
     behaviour = {
       auto_suggestions = false,

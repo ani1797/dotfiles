@@ -10,5 +10,5 @@ CHANGELOG
 \.git
 \.gitignore
 
-# Exclude example hosts file — Include config.d/* would parse it
-\.ssh/config\.d/hosts\.example$
+# Exclude example files — Include config.d/* would parse them
+.*\.example

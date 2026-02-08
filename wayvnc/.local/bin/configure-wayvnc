@@ -13,6 +13,7 @@ readonly CONFIG_FILE="${CONFIG_DIR}/config"
 readonly EXAMPLE_FILE="${CONFIG_DIR}/config.example"
 readonly TLS_KEY="${CONFIG_DIR}/tls_key.pem"
 readonly TLS_CERT="${CONFIG_DIR}/tls_cert.pem"
+readonly RSA_KEY="${CONFIG_DIR}/rsa_key.pem"
 readonly GITIGNORE_FILE="${CONFIG_DIR}/.gitignore"
 
 # Color codes
@@ -141,20 +142,21 @@ prompt_network_config() {
     info "Network Configuration" >&2
     echo >&2
     echo "Choose binding address:" >&2
-    echo "  1) 127.0.0.1 (localhost only - RECOMMENDED)" >&2
-    echo "     Remote access via SSH tunnel: ssh -L 5900:localhost:5900 user@host" >&2
-    echo "  2) 0.0.0.0 (all interfaces - allows direct remote access)" >&2
-    echo "     Requires firewall configuration, less secure" >&2
+    echo "  1) 0.0.0.0 (all interfaces - RECOMMENDED for LAN access)" >&2
+    echo "     Allows VNC connections from other machines on the network" >&2
+    echo "  2) 127.0.0.1 (localhost only)" >&2
+    echo "     Remote access only via SSH tunnel: ssh -L 5900:localhost:5900 user@host" >&2
     echo >&2
 
-    local address="127.0.0.1"
+    local address="0.0.0.0"
     read -rp "Enter choice [1]: " choice </dev/tty
 
     if [ "$choice" = "2" ]; then
-        address="0.0.0.0"
-        warn "Binding to all interfaces. Ensure your firewall is configured properly!" >&2
+        address="127.0.0.1"
+        info "Using localhost binding (SSH tunnel required for remote access)" >&2
     else
-        success "Using localhost binding (most secure)" >&2
+        success "Binding to all interfaces for LAN access" >&2
+        warn "Ensure your firewall is configured properly!" >&2
     fi
 
     echo >&2
@@ -174,13 +176,33 @@ generate_certificates() {
     # Ensure config directory exists
     mkdir -p "$CONFIG_DIR"
 
+    # Build SAN list including local network IPs for LAN access
+    local san_list="DNS:localhost,IP:127.0.0.1"
+
+    if command -v ip &>/dev/null; then
+        local local_ips
+        local_ips=$(ip -4 addr show 2>/dev/null | grep -oP 'inet \K[\d.]+' | grep -v '^127\.' | sort -u)
+        if [ -n "$local_ips" ]; then
+            while IFS= read -r addr; do
+                san_list="${san_list},IP:${addr}"
+                info "  Including LAN IP in certificate: $addr"
+            done <<< "$local_ips"
+        fi
+    fi
+
+    local hostname_fqdn
+    hostname_fqdn=$(hostname -f 2>/dev/null || hostname)
+    if [ "$hostname_fqdn" != "localhost" ]; then
+        san_list="${san_list},DNS:${hostname_fqdn}"
+    fi
+
     # Generate elliptic curve certificate (modern, secure, fast)
     if openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:secp384r1 \
         -sha384 -days 3650 -nodes \
         -keyout "$TLS_KEY" \
         -out "$TLS_CERT" \
         -subj /CN=localhost \
-        -addext subjectAltName=DNS:localhost,IP:127.0.0.1 2>/dev/null; then
+        -addext "subjectAltName=${san_list}" 2>/dev/null; then
 
         success "TLS certificates generated successfully"
         success "  Private key: $TLS_KEY"
@@ -189,6 +211,38 @@ generate_certificates() {
     else
         error "Failed to generate TLS certificates"
         exit 1
+    fi
+}
+
+# ============================================================================
+# RSA KEY GENERATION
+# ============================================================================
+
+generate_rsa_key() {
+    info "Generating RSA key for RSA-AES encryption..."
+
+    if [ -f "$RSA_KEY" ]; then
+        # Check if existing key is in the correct PKCS#1 format
+        if head -1 "$RSA_KEY" | grep -q "BEGIN RSA PRIVATE KEY"; then
+            success "RSA key already exists in correct format: $RSA_KEY"
+            return 0
+        else
+            warn "Existing RSA key is in wrong format (PKCS#8), regenerating..."
+            local backup="${RSA_KEY}.backup.$(date +%Y%m%d_%H%M%S)"
+            cp "$RSA_KEY" "$backup"
+        fi
+    fi
+
+    # Generate RSA key in PKCS#1 format (required by neatvnc)
+    # OpenSSL 3.x defaults to PKCS#8 format, -traditional forces PKCS#1
+    if openssl genrsa -traditional -out "$RSA_KEY" 4096 2>/dev/null; then
+        chmod 600 "$RSA_KEY"
+        success "RSA key generated: $RSA_KEY"
+        success "  Format: PKCS#1 (required by neatvnc)"
+        success "  Size: 4096-bit"
+    else
+        error "Failed to generate RSA key"
+        return 1
     fi
 }
 
@@ -218,10 +272,12 @@ port=$port
 enable_auth=true
 enable_pam=true
 
-# TLS certificates
-use_relative_paths=true
-private_key_file=tls_key.pem
-certificate_file=tls_cert.pem
+# TLS certificates (absolute paths for systemd compatibility)
+private_key_file=$TLS_KEY
+certificate_file=$TLS_CERT
+
+# RSA key for RSA-AES encryption (RealVNC / Apple VNC compatibility)
+rsa_private_key_file=$RSA_KEY
 
 # Optional: Uncomment to customize keyboard layout
 # xkb_layout=us
@@ -244,7 +300,13 @@ set_permissions() {
 
     # Private key: owner read/write only
     chmod 600 "$TLS_KEY"
-    success "Set private key permissions: 600 (owner read/write)"
+    success "Set TLS key permissions: 600 (owner read/write)"
+
+    # RSA key: owner read/write only
+    if [ -f "$RSA_KEY" ]; then
+        chmod 600 "$RSA_KEY"
+        success "Set RSA key permissions: 600 (owner read/write)"
+    fi
 
     # Certificate: readable by all (certificates are public)
     chmod 644 "$TLS_CERT"
@@ -296,8 +358,16 @@ verify_config() {
         return 1
     fi
 
-    # Try to parse config with wayvnc (dry run if possible)
-    # Note: wayvnc doesn't have a --check option, but it will fail early if config is invalid
+    # Check RSA key exists and is in correct format
+    if [ -f "$RSA_KEY" ]; then
+        if head -1 "$RSA_KEY" | grep -q "BEGIN RSA PRIVATE KEY"; then
+            success "RSA key exists and is in PKCS#1 format"
+        else
+            warn "RSA key exists but may be in wrong format (expected PKCS#1)"
+        fi
+    else
+        warn "RSA key not found (needed for RealVNC / Apple VNC clients)"
+    fi
 
     success "Configuration appears valid"
 }
@@ -332,10 +402,7 @@ setup_pam_config() {
         # Check if it has known problematic configs
         local needs_update=0
         if grep -q "deny=3\|unlock_time=600" /etc/pam.d/wayvnc 2>/dev/null; then
-            warn "Existing PAM config has invalid options (deny=3, unlock_time=600)"
-            needs_update=1
-        elif grep -q "include system-auth\|pam_faillock" /etc/pam.d/wayvnc 2>/dev/null; then
-            warn "Existing PAM config uses system-auth/pam_faillock (incompatible with systemd security)"
+            warn "Existing PAM config has invalid inline pam_faillock options"
             needs_update=1
         fi
 
@@ -370,8 +437,8 @@ setup_pam_config() {
     if sudo cp "$pam_source" /etc/pam.d/wayvnc; then
         success "PAM config installed to /etc/pam.d/wayvnc"
 
-        # Verify it was installed correctly (check for pam_unix.so)
-        if grep -q "pam_unix.so" /etc/pam.d/wayvnc; then
+        # Verify it was installed correctly
+        if grep -q "pam_unix.so\|include.*system-auth" /etc/pam.d/wayvnc; then
             success "PAM config verified"
         else
             error "PAM config installation may have failed"
@@ -383,6 +450,59 @@ setup_pam_config() {
     fi
 
     return 0
+}
+
+# ============================================================================
+# SHADOW ACL SETUP
+# ============================================================================
+
+setup_shadow_acl() {
+    info "Checking /etc/shadow access for PAM authentication..."
+
+    # pam_unix.so normally uses the unix_chkpwd setuid helper to verify passwords
+    # against /etc/shadow. However, this helper fails when forked from wayvnc's
+    # multi-threaded process. Granting the user direct read access to /etc/shadow
+    # via ACL lets pam_unix.so verify passwords without the helper.
+
+    # Check if acl package is available
+    if ! command -v getfacl &>/dev/null; then
+        error "ACL utilities not found. Install the 'acl' package:"
+        error "  sudo pacman -S acl"
+        return 1
+    fi
+
+    # Check if user already has read access via ACL
+    if getfacl -p /etc/shadow 2>/dev/null | grep -q "user:${USER}:r"; then
+        success "Shadow ACL already set for user $USER"
+        return 0
+    fi
+
+    echo
+    warn "PAM authentication requires read access to /etc/shadow"
+    warn "The unix_chkpwd setuid helper fails from wayvnc's multi-threaded process."
+    warn "Setting an ACL grants your user direct read access as a workaround."
+    echo
+    read -rp "Set shadow ACL for user $USER? (Required for PAM auth) (Y/n): " response </dev/tty
+    if [[ "$response" =~ ^[Nn]$ ]]; then
+        warn "Skipping shadow ACL setup"
+        warn "PAM authentication will likely fail without this!"
+        return 1
+    fi
+
+    if sudo setfacl -m "u:${USER}:r" /etc/shadow; then
+        success "Shadow ACL set: user:${USER}:r-- on /etc/shadow"
+
+        # Verify
+        if getfacl -p /etc/shadow 2>/dev/null | grep -q "user:${USER}:r"; then
+            success "Shadow ACL verified"
+        else
+            error "Shadow ACL verification failed"
+            return 1
+        fi
+    else
+        error "Failed to set shadow ACL"
+        return 1
+    fi
 }
 
 # ============================================================================
@@ -583,7 +703,15 @@ main() {
             cat << 'EOF'
 Usage: configure-wayvnc [OPTIONS]
 
-Setup WayVNC with PAM authentication and TLS encryption.
+Setup WayVNC with PAM authentication, TLS encryption, and RSA-AES support.
+
+The setup wizard will:
+  - Generate TLS certificates (with LAN IP SANs)
+  - Generate RSA key in PKCS#1 format (for RealVNC / Apple VNC)
+  - Create wayvnc configuration file
+  - Install PAM config to /etc/pam.d/wayvnc
+  - Set /etc/shadow ACL for PAM authentication
+  - Configure systemd user service
 
 Options:
   --localhost, --local, -l    Quick switch to localhost (127.0.0.1)
@@ -630,6 +758,9 @@ EOF
         generate_certificates
     fi
 
+    # Generate RSA key for RSA-AES encryption (RealVNC compatibility)
+    generate_rsa_key
+
     # Create configuration
     create_config "$address" "$port"
 
@@ -645,6 +776,10 @@ EOF
     # Setup PAM configuration (required for authentication)
     echo
     setup_pam_config
+
+    # Setup shadow ACL (required for PAM auth from wayvnc)
+    echo
+    setup_shadow_acl
 
     # Setup systemd service (optional)
     local using_systemd=0

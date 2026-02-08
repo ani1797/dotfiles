@@ -4,7 +4,8 @@
 # Use: sudo cp wayvnc/pam.d/wayvnc /etc/pam.d/wayvnc
 # Or run: configure-wayvnc (which will offer to install it)
 #
-# Simplified configuration for basic authentication
+# Uses the system auth stack for compatibility with pam_unix, pam_systemd_home,
+# pam_faillock, and any other modules configured on the system.
 
-auth       required     pam_unix.so
-account    required     pam_unix.so
+auth       include      system-auth
+account    include      system-auth

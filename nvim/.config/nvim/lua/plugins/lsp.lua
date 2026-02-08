@@ -12,14 +12,6 @@ return {
       "neovim/nvim-lspconfig",
     },
     config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = {
-          "lua_ls", "pyright", "ts_ls",
-          "rust_analyzer", "gopls", "bashls",
-        },
-        automatic_installation = true,
-      })
-
       -- Build capabilities (with optional cmp integration)
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       local ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
@@ -39,14 +31,21 @@ return {
         vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
       end
 
-      -- Auto-setup all Mason-installed servers
-      require("mason-lspconfig").setup_handlers({
-        function(server_name)
-          require("lspconfig")[server_name].setup({
-            capabilities = capabilities,
-            on_attach = on_attach,
-          })
-        end,
+      require("mason-lspconfig").setup({
+        ensure_installed = {
+          "lua_ls", "pyright", "ts_ls",
+          "rust_analyzer", "gopls", "bashls",
+        },
+        automatic_installation = true,
+        -- Auto-setup all Mason-installed servers
+        handlers = {
+          function(server_name)
+            require("lspconfig")[server_name].setup({
+              capabilities = capabilities,
+              on_attach = on_attach,
+            })
+          end,
+        },
       })
     end,
   },

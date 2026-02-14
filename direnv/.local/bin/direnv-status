@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# direnv-status - Check direnv configuration and setup
+# Shows installation status, shell hooks, and allowed directories
+
+set -euo pipefail
+
+# shellcheck source=direnv-lib
+source "$(dirname "$0")/direnv-lib"
+
+echo "=== Direnv Configuration Status ==="
+echo
+
+# Check if direnv is installed
+if command -v direnv >/dev/null 2>&1; then
+    success "Direnv installed: $(direnv version)"
+else
+    error "Direnv not installed"
+    echo
+    info "Install direnv:"
+    echo "  • Debian/Ubuntu: sudo apt-get install direnv"
+    echo "  • Arch: sudo pacman -S direnv"
+    echo "  • macOS: brew install direnv"
+    exit 1
+fi
+
+echo
+
+# Check shell hooks
+echo "Shell Hooks:"
+hooks_ok=true
+
+# Check Bash
+if [[ -f ~/.bashrc ]]; then
+    if grep -q "direnv hook bash" ~/.bashrc; then
+        success "Bash: Hook configured in ~/.bashrc"
+    else
+        warn "Bash: Hook not found in ~/.bashrc"
+        hooks_ok=false
+    fi
+else
+    info "Bash: ~/.bashrc not found"
+fi
+
+# Check Zsh
+if [[ -f ~/.config/zsh/60-direnv.zsh ]] || [[ -f ~/.zshrc ]]; then
+    if [[ -f ~/.config/zsh/60-direnv.zsh ]]; then
+        if grep -q "direnv hook zsh" ~/.config/zsh/60-direnv.zsh; then
+            success "Zsh: Hook configured in ~/.config/zsh/60-direnv.zsh"
+        else
+            warn "Zsh: Hook file exists but hook not configured"
+            hooks_ok=false
+        fi
+    elif grep -q "direnv hook zsh" ~/.zshrc 2>/dev/null; then
+        success "Zsh: Hook configured in ~/.zshrc"
+    else
+        warn "Zsh: Hook not found"
+        hooks_ok=false
+    fi
+else
+    info "Zsh: Configuration files not found"
+fi
+
+# Check Fish
+if [[ -f ~/.config/fish/conf.d/60-direnv.fish ]]; then
+    if grep -q "direnv hook fish" ~/.config/fish/conf.d/60-direnv.fish; then
+        success "Fish: Hook configured in ~/.config/fish/conf.d/60-direnv.fish"
+    else
+        warn "Fish: Hook file exists but hook not configured"
+        hooks_ok=false
+    fi
+else
+    info "Fish: Hook file not found (~/.config/fish/conf.d/60-direnv.fish)"
+fi
+
+echo
+
+# Check custom direnvrc
+if [[ -f ~/.config/direnv/direnvrc ]]; then
+    success "Custom direnvrc found: ~/.config/direnv/direnvrc"
+
+    # Count custom layouts
+    layout_count=$(grep -c "^layout_" ~/.config/direnv/direnvrc || true)
+    if [[ $layout_count -gt 0 ]]; then
+        info "Custom layouts available: $layout_count"
+        grep "^layout_" ~/.config/direnv/direnvrc | sed 's/().*//' | sed 's/^/  • /'
+    fi
+else
+    info "Custom direnvrc not found (using defaults)"
+fi
+
+echo
+
+# Check for machine-specific overrides
+if [[ -f ~/.config/direnv/direnvrc.local ]]; then
+    success "Machine-specific overrides: ~/.config/direnv/direnvrc.local"
+else
+    info "No machine-specific overrides (optional)"
+fi
+
+echo
+
+# Show allowed directories
+echo "Allowed Directories:"
+if [[ -d ~/.config/direnv/allow ]]; then
+    allowed_count=$(find ~/.config/direnv/allow -type f 2>/dev/null | wc -l)
+    if [[ $allowed_count -gt 0 ]]; then
+        success "$allowed_count directories allowed"
+        info "Run 'direnv status' in a directory for details"
+    else
+        info "No directories allowed yet"
+        info "Use 'direnv allow' in a directory with .envrc"
+    fi
+else
+    info "No directories allowed yet"
+fi
+
+echo
+
+# Overall status
+if [[ $hooks_ok == true ]]; then
+    success "Configuration looks good!"
+else
+    warn "Some shell hooks are missing"
+    echo
+    info "To enable direnv in a shell, add the appropriate hook:"
+    echo "  • Bash:  eval \"\$(direnv hook bash)\""
+    echo "  • Zsh:   eval \"\$(direnv hook zsh)\""
+    echo "  • Fish:  direnv hook fish | source"
+fi
+
+echo
+
+# Quick usage guide
+info "Quick Start:"
+echo "  1. Create .envrc in a project directory"
+echo "  2. Add environment variables or use a layout:"
+echo "     export PROJECT_ENV=development"
+echo "     layout python python3"
+echo "  3. Run 'direnv allow' to authorize the file"
+echo "  4. cd into the directory to automatically load the environment"
+echo
+info "Documentation: https://direnv.net/"

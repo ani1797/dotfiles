@@ -1,0 +1,17 @@
+# theme module dependencies
+# GTK, QT, and cursor theme packages
+packages:
+  arch:
+    - kvantum
+    - qt5ct
+    - tokyonight-gtk-theme-git   # AUR
+    - papirus-icon-theme
+    - bibata-cursor-theme         # AUR
+  debian:
+    - qt5ct
+    - papirus-icon-theme
+  fedora:
+    - kvantum
+    - qt5ct
+    - papirus-icon-theme
+  macos: []

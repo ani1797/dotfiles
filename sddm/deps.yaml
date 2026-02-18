@@ -1,0 +1,12 @@
+# sddm module dependencies
+# Display manager with custom theme
+packages:
+  arch:
+    - sddm
+    - qt6-5compat
+    - qt6-svg
+  debian:
+    - sddm
+  fedora:
+    - sddm
+  macos: []

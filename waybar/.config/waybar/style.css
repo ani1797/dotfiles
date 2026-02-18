@@ -1,0 +1,183 @@
+/* ═══════════════════════════════════════════════════════════
+   Waybar — Tokyo Night Floating Pills
+   Palette: night=#1a1b26 storm=#24283b bg_hover=#292e42
+            fg=#c0caf5 fg_dim=#a9b1d6 comment=#565f89
+            blue=#7aa2f7 magenta=#bb9af7 cyan=#7dcfff
+            green=#9ece6a red=#f7768e orange=#ff9e64
+            yellow=#e0af68 teal=#73daca
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Global ───────────────────────────────────────────── */
+
+* {
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 12px;
+    min-height: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: #c0caf5;
+}
+
+tooltip {
+    background: #1a1b26;
+    border: 1px solid #7aa2f7;
+    border-radius: 10px;
+    color: #c0caf5;
+}
+
+tooltip label {
+    color: #c0caf5;
+    padding: 4px 8px;
+}
+
+/* ── Pill Base ────────────────────────────────────────── */
+
+#custom-arch,
+#clock,
+#custom-updates,
+#mpris,
+#custom-weather,
+#workspaces,
+#wireplumber,
+#network,
+#battery,
+#custom-sysinfo,
+#custom-notification,
+#custom-power {
+    background: rgba(36, 40, 59, 0.85);
+    border-radius: 20px;
+    padding: 4px 14px;
+    margin: 2px 3px;
+    transition: all 0.3s ease;
+}
+
+#custom-arch:hover,
+#clock:hover,
+#custom-updates:hover,
+#mpris:hover,
+#custom-weather:hover,
+#wireplumber:hover,
+#network:hover,
+#battery:hover,
+#custom-sysinfo:hover,
+#custom-notification:hover,
+#custom-power:hover {
+    background: rgba(41, 46, 66, 0.95);
+}
+
+/* ── Left Modules ─────────────────────────────────────── */
+
+#custom-arch {
+    color: #7aa2f7;
+    font-size: 16px;
+    padding: 4px 12px;
+}
+
+#clock {
+    color: #c0caf5;
+}
+
+#custom-updates {
+    color: #9ece6a;
+}
+
+#mpris {
+    color: #bb9af7;
+    max-width: 250px;
+}
+
+#custom-weather {
+    color: #7dcfff;
+}
+
+/* ── Center — Workspaces ──────────────────────────────── */
+
+#workspaces {
+    padding: 2px 6px;
+}
+
+#workspaces button {
+    color: #565f89;
+    background: transparent;
+    border-radius: 14px;
+    padding: 2px 10px;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+#workspaces button:hover {
+    color: #c0caf5;
+    background: rgba(41, 46, 66, 0.6);
+}
+
+#workspaces button.active {
+    color: #1a1b26;
+    background: #7aa2f7;
+    font-weight: bold;
+}
+
+#workspaces button.urgent {
+    color: #1a1b26;
+    background: #f7768e;
+}
+
+/* ── Right Modules ────────────────────────────────────── */
+
+#wireplumber {
+    color: #e0af68;
+}
+
+#wireplumber.muted {
+    color: #565f89;
+}
+
+#network {
+    color: #73daca;
+}
+
+#network.disconnected {
+    color: #565f89;
+}
+
+#battery {
+    color: #9ece6a;
+}
+
+#battery.charging {
+    color: #73daca;
+}
+
+#battery.warning:not(.charging) {
+    color: #ff9e64;
+}
+
+#battery.critical:not(.charging) {
+    color: #f7768e;
+    animation: blink 1s ease infinite alternate;
+}
+
+@keyframes blink {
+    to {
+        color: #1a1b26;
+        background: #f7768e;
+    }
+}
+
+#custom-sysinfo {
+    color: #7dcfff;
+}
+
+#custom-notification {
+    color: #c0caf5;
+}
+
+#custom-power {
+    color: #f7768e;
+}
+
+#custom-power:hover {
+    background: rgba(247, 118, 142, 0.2);
+}

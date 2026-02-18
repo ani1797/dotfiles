@@ -1,0 +1,169 @@
+/* ═══════════════════════════════════════════════════════════
+   Swaync — Tokyo Night Theme
+   ═══════════════════════════════════════════════════════════ */
+
+* {
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+}
+
+/* ── Notification Window ──────────────────────────────── */
+
+.notification-row {
+    outline: none;
+}
+
+.notification {
+    background: #24283b;
+    border: 1px solid #7aa2f7;
+    border-radius: 10px;
+    margin: 6px;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+.notification:hover {
+    border-color: #bb9af7;
+}
+
+.notification-content {
+    padding: 8px 12px;
+}
+
+.summary {
+    color: #c0caf5;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.body {
+    color: #a9b1d6;
+}
+
+.time {
+    color: #565f89;
+    font-size: 11px;
+}
+
+.notification.critical {
+    border-color: #f7768e;
+}
+
+.notification.low {
+    border-color: #565f89;
+}
+
+.close-button {
+    background: #292e42;
+    color: #c0caf5;
+    border-radius: 50%;
+    padding: 2px;
+    margin: 4px;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.close-button:hover {
+    background: #f7768e;
+    color: #1a1b26;
+}
+
+/* ── Control Center ───────────────────────────────────── */
+
+.control-center {
+    background: rgba(26, 27, 38, 0.95);
+    border: 1px solid #7aa2f7;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.control-center .notification {
+    background: #24283b;
+}
+
+/* ── Title Widget ─────────────────────────────────────── */
+
+.widget-title {
+    color: #c0caf5;
+    font-size: 15px;
+    font-weight: bold;
+    margin: 8px;
+}
+
+.widget-title > button {
+    background: #24283b;
+    color: #f7768e;
+    border: 1px solid #565f89;
+    border-radius: 8px;
+    padding: 4px 12px;
+    transition: all 0.2s ease;
+}
+
+.widget-title > button:hover {
+    background: rgba(247, 118, 142, 0.2);
+    border-color: #f7768e;
+}
+
+/* ── Buttons Grid ─────────────────────────────────────── */
+
+.widget-buttons-grid {
+    padding: 4px 8px;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button {
+    background: #24283b;
+    color: #c0caf5;
+    border: 1px solid #565f89;
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin: 4px;
+    transition: all 0.2s ease;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {
+    background: #292e42;
+    border-color: #7aa2f7;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked {
+    background: rgba(122, 162, 247, 0.2);
+    border-color: #7aa2f7;
+    color: #7aa2f7;
+}
+
+/* ── MPRIS Widget ─────────────────────────────────────── */
+
+.widget-mpris {
+    background: #24283b;
+    border-radius: 10px;
+    padding: 8px;
+    margin: 4px 8px;
+}
+
+.widget-mpris-title {
+    color: #c0caf5;
+    font-weight: bold;
+}
+
+.widget-mpris-subtitle {
+    color: #a9b1d6;
+}
+
+/* ── Volume Widget ────────────────────────────────────── */
+
+.widget-volume {
+    background: #24283b;
+    border-radius: 10px;
+    padding: 8px;
+    margin: 4px 8px;
+}
+
+.widget-volume trough {
+    background: #1a1b26;
+    border-radius: 4px;
+}
+
+.widget-volume highlight {
+    background: #7aa2f7;
+    border-radius: 4px;
+}

@@ -1,0 +1,10 @@
+[SddmGreeterTheme]
+Name=Tokyo Night Minimal
+Description=Minimal Tokyo Night themed SDDM login screen
+Author=dotfiles
+Version=1.0
+Website=
+Screenshot=
+MainScript=Main.qml
+ConfigFile=theme.conf
+TranslationsDirectory=translations

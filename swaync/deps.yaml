@@ -1,0 +1,10 @@
+# swaync module dependencies
+# Notification daemon for Wayland
+packages:
+  arch:
+    - swaync
+  debian:
+    - sway-notification-center
+  fedora:
+    - SwayNotificationCenter
+  macos: []

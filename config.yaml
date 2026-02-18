@@ -115,6 +115,26 @@ modules:
     hosts:
       - HOME-DESKTOP
       - ASUS-LAPTOP
+  - name: "waybar"
+    path: "waybar"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+  - name: "theme"
+    path: "theme"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+  - name: "sddm"
+    path: "sddm"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+  - name: "swaync"
+    path: "swaync"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
   - name: "wayvnc"
     path: "wayvnc"
     hosts:

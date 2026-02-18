@@ -1,0 +1,15 @@
+# waybar module dependencies
+# Status bar + supporting tools for widgets
+packages:
+  arch:
+    - waybar
+    - wttrbar
+    - playerctl
+    - swaync
+  debian:
+    - waybar
+    - playerctl
+  fedora:
+    - waybar
+    - playerctl
+  macos: []

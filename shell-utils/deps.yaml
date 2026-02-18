@@ -1,7 +1,21 @@
 # shell-utils module dependencies
-# No external dependencies - all POSIX sh scripts
+# K8s tooling used by k8s alias files in bash/zsh/fish
 packages:
-  arch: []
-  debian: []
-  fedora: []
-  macos: []
+  arch:
+    - kubectl
+    - helm
+    - k9s
+    - fluxcd
+  debian:
+    - kubectl
+    - helm
+    - k9s
+  fedora:
+    - kubectl
+    - helm
+    - k9s
+  macos:
+    - kubectl
+    - helm
+    - k9s
+    - fluxcd/tap/flux

@@ -1,0 +1,15 @@
+# .npmrc.local.example
+# Machine-specific npm overrides
+#
+# npm doesn't support config file concatenation, so machine-specific
+# settings (like custom CA certificates) should be set via environment
+# variables rather than a separate .npmrc file.
+#
+# Add to your shell's local config (.bashrc.local, .zshrc.local) or
+# project .envrc:
+#
+#   export NPM_CONFIG_CAFILE=/path/to/corporate-ca-bundle.pem
+#   export NPM_CONFIG_REGISTRY=https://npm.corp.example.com/
+#
+# All npm config keys can be set as env vars with the NPM_CONFIG_ prefix.
+# See: https://docs.npmjs.com/cli/v10/using-npm/config#environment-variables

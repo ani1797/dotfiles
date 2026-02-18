@@ -1,0 +1,7 @@
+# npm module dependencies
+# npm comes bundled with Node.js; no extra packages needed
+packages:
+  arch: []
+  debian: []
+  fedora: []
+  macos: []

@@ -6,7 +6,7 @@ A modular, well-documented dotfiles repository using GNU Stow for flexible deplo
 
 - **🔧 Modular Design** - Pick and choose which configurations to deploy
 - **🔐 1Password Integration** - SSH agent and git signing with 1Password
-- **🐚 Multiple Shells** - Bash, Zsh (with Oh-My-Zsh), and Fish configurations
+- **🐚 Multiple Shells** - Bash, Zsh (with Starship prompt), and Fish configurations
 - **⚡ Modern Tools** - Git, direnv, Hyprland, Kitty, Rofi, and more
 - **📦 Easy Deployment** - GNU Stow for safe, reversible installations
 - **📚 Comprehensive Documentation** - Every module fully documented
@@ -28,7 +28,7 @@ The bootstrap script will:
 - Auto-detect your Linux distribution
 - Install required dependencies (stow, yq, zsh, git, curl)
 - Backup any existing configuration files
-- Install Oh-My-Zsh, Powerlevel10k, zsh plugins, and FZF
+- Install zsh plugins and FZF
 - Deploy your dotfiles using GNU Stow
 - Set zsh as your default shell
 
@@ -56,8 +56,9 @@ exec zsh
 ### Shell Configuration
 
 - **[Bash](docs/modules/bash.md)** - Basic Bash configuration with sensible defaults
-- **[Zsh](docs/modules/zsh.md)** - Advanced Zsh with Oh-My-Zsh, Powerlevel10k, plugins, and FZF
-- **[Fish](docs/modules/fish.md)** - Modern Fish shell with Fisher plugins and Tide prompt
+- **[Zsh](docs/modules/zsh.md)** - Advanced Zsh with Starship prompt, plugins, and FZF
+- **[Fish](docs/modules/fish.md)** - Modern Fish shell with Fisher plugins and Starship prompt
+- **[Starship](docs/modules/starship.md)** - Unified prompt with cyberpunk Tokyo Night theme
 
 ### Development Tools
 
@@ -120,6 +121,7 @@ dotfiles/
 ├── bash/                 # Bash configuration
 ├── zsh/                  # Zsh configuration
 ├── fish/                 # Fish shell configuration
+├── starship/             # Starship prompt (cyberpunk Tokyo Night)
 ├── git/                  # Git configuration
 │   ├── .gitconfig        # Main git config
 │   ├── .config/git/      # Global gitignore, templates
@@ -185,8 +187,6 @@ cd zsh && stow -t "$HOME" .
 configure-git-machine <github-username>
 
 # Or install Zsh tools manually
-~/.local/bin/configure-oh-my-zsh
-~/.local/bin/configure-powerlevel10k
 ~/.local/bin/configure-zsh-plugins
 ~/.local/bin/configure-fzf
 ```

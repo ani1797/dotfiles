@@ -1,7 +1,12 @@
 # ~/.config/bash/52-aliases-docker.bash
 # Docker aliases (only if docker is installed)
 
-if command -v docker &>/dev/null; then
+# Podman fallback (alias docker to podman if docker is absent)
+if command -v podman &>/dev/null && ! command -v docker &>/dev/null; then
+  alias docker="podman"
+fi
+
+if command -v docker &>/dev/null || command -v podman &>/dev/null; then
   alias d="docker"
   alias dp="docker ps"
   alias dc="docker compose"

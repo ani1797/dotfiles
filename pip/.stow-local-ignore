@@ -1,0 +1,20 @@
+# Files and patterns to ignore when stowing this module
+# Documentation files that should stay in the repository
+
+README\.md
+.*\.md$
+
+# Common documentation and repository files
+LICENSE
+CHANGELOG
+\.git
+\.gitignore
+
+# Module metadata (not deployed to target)
+deps\.yaml
+
+# Example files (not deployed)
+.*\.example$
+
+# Disabled configuration files
+.*\.disabled$

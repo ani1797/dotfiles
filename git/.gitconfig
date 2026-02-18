@@ -28,7 +28,7 @@
 
 [init]
     # Default branch name for new repositories
-    defaultBranch = main
+	defaultBranch = main
 
 [pull]
     # Rebase by default instead of merge

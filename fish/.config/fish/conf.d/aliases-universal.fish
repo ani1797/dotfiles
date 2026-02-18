@@ -15,8 +15,15 @@ else
 end
 alias n='ninja'
 
-# Safe ls aliases (if GNU coreutils available)
-if ls --color=auto &>/dev/null
+# Directory listing (prefer eza over ls)
+if type -q eza
+    alias ls='eza --icons --group-directories-first'
+    alias ll='eza -l --icons --group-directories-first --git'
+    alias la='eza -la --icons --group-directories-first --git'
+    alias l='eza -1 --icons'
+    alias lt='eza --tree --icons --level=2'
+    alias lg='eza -l --icons --git --git-ignore'
+else if ls --color=auto &>/dev/null
     alias ls='ls --color=auto'
     alias ll='ls -lh'
     alias la='ls -lha'
@@ -54,3 +61,15 @@ alias psg='ps aux | grep -v grep | grep -i -e VSZ -e'
 # Network
 alias ports='netstat -tulanp'
 alias listening='lsof -i -P | grep LISTEN'
+
+# Dotfiles quick access
+set -gx DOT "$HOME/.local/share/dotfiles"
+alias dot='cd $DOT'
+
+# Set a temporary environment variable in the current session
+function set_env --description "Set a temporary environment variable"
+    if test (count $argv) -ne 2
+        echo "Usage: set_env KEY VALUE" >&2; return 1
+    end
+    set -gx $argv[1] $argv[2]
+end

@@ -1,0 +1,16 @@
+# podman module dependencies
+packages:
+  arch:
+    - podman
+    - buildah
+    - skopeo
+  debian:
+    - podman
+    - buildah
+    - skopeo
+  fedora:
+    - podman
+    - buildah
+    - skopeo
+  macos:
+    - podman

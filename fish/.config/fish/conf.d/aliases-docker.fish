@@ -1,7 +1,12 @@
 # ~/.config/fish/conf.d/aliases-docker.fish
 # Docker aliases (only if docker is installed)
 
-if type -q docker
+# Podman fallback (alias docker to podman if docker is absent)
+if type -q podman; and not type -q docker
+    alias docker='podman'
+end
+
+if type -q docker; or type -q podman
     alias d='docker'
     alias dp='docker ps'
     alias dc='docker compose'

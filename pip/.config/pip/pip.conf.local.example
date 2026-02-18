@@ -1,0 +1,26 @@
+# pip.conf.local.example
+# Machine-specific pip overrides
+#
+# pip uses a layered config system (each level overrides the previous):
+#   1. /etc/pip.conf          (site-wide)
+#   2. ~/.config/pip/pip.conf  (user — managed by this dotfiles module)
+#   3. $VIRTUAL_ENV/pip.conf   (per-virtualenv)
+#
+# Since this dotfiles module manages ~/.config/pip/pip.conf via stow,
+# prefer these approaches for machine-specific settings:
+#
+# Option A: Environment variables (recommended for direnv/.envrc)
+#   export PIP_INDEX_URL=https://pypi.corp.example.com/simple/
+#   export PIP_TRUSTED_HOST=pypi.corp.example.com
+#   export PIP_CERT=/path/to/corporate-ca-bundle.pem
+#   export PIP_EXTRA_INDEX_URL=https://pypi.org/simple/
+#
+# Option B: Site-level config (/etc/pip.conf)
+#   Useful for system-wide corporate mirrors on managed machines.
+#   [global]
+#   index-url = https://pypi.corp.example.com/simple/
+#   trusted-host = pypi.corp.example.com
+#   cert = /path/to/corporate-ca-bundle.pem
+#
+# All pip config keys can be set as env vars with the PIP_ prefix.
+# See: https://pip.pypa.io/en/stable/topics/configuration/

@@ -12,8 +12,25 @@ This is a dotfiles repository that uses GNU Stow for managing configuration file
 - **config.yaml**: Configuration file that defines which modules to install and for which hosts
 - **Module directories**:
   - `bash/` - Contains Bash configuration files (e.g., .bashrc)
+  - `zsh/` - Contains Zsh configuration files (e.g., .zshrc)
+  - `fish/` - Contains Fish shell configuration files
+  - `starship/` - Unified prompt config (cyberpunk Tokyo Night theme)
+  - `kitty/` - GPU-accelerated terminal emulator config
+  - `git/` - Git configuration with SSH signing
   - `vim/` - Contains Vim configuration files (e.g., .vimrc)
-  - `antigravity/` - Contains antigravity application configuration
+  - `nvim/` - Neovim configuration with Lazy.nvim
+  - `direnv/` - Environment variable management
+  - `hyprland/` - Wayland compositor configuration
+  - `tmux/` - Terminal multiplexer configuration
+  - `ssh/` - SSH configuration
+  - `rofi/` - Application launcher
+  - `wayvnc/` - VNC server for Wayland
+  - And more: `fonts/`, `npm/`, `pip/`, `podman/`, `uv/`, `shell-utils/`, `antigravity/`
+
+## Shell Utilities
+
+- **`~dot` / `dot`**: Quick navigation to `~/.local/share/dotfiles`. In zsh, `~dot` expands everywhere (named directory). In bash/fish, use `$DOT` or the `dot` alias.
+- **`set_env KEY VALUE`**: Sets a temporary environment variable in the current shell session. Works in bash, zsh, and fish.
 
 ## Installation Process
 

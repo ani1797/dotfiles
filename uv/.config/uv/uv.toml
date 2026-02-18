@@ -1,0 +1,12 @@
+native-tls = true
+link-mode = "symlink"
+
+# Machine-specific overrides:
+# uv reads config from: project pyproject.toml -> user ~/.config/uv/uv.toml
+# For machine-specific settings, use environment variables:
+#   UV_INDEX_URL=https://pypi.corp.example.com/simple/
+#   UV_EXTRA_INDEX_URL=https://pypi.org/simple/
+#   UV_NATIVE_TLS=true  (already set above)
+#   UV_CERT=/path/to/corporate-ca-bundle.pem (custom CA cert)
+#
+# See uv.toml.local.example for patterns.

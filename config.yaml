@@ -10,6 +10,8 @@ modules:
       - ASUS-LAPTOP
       - WORK-MACBOOK
       - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "zsh"
     path: "zsh"
     hosts:
@@ -17,11 +19,15 @@ modules:
       - ASUS-LAPTOP
       - WORK-MACBOOK
       - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "fish"
     path: "fish"
     hosts:
       - HOME-DESKTOP
       - ASUS-LAPTOP
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "starship"
     path: "starship"
     hosts:
@@ -29,6 +35,8 @@ modules:
       - ASUS-LAPTOP
       - WORK-MACBOOK
       - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "shell-utils"
     path: "shell-utils"
     hosts:
@@ -36,6 +44,8 @@ modules:
       - ASUS-LAPTOP
       - WORK-MACBOOK
       - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "direnv"
     path: "direnv"
     hosts:
@@ -43,6 +53,8 @@ modules:
       - ASUS-LAPTOP
       - WORK-MACBOOK
       - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "git"
     path: "git"
     hosts:
@@ -50,6 +62,8 @@ modules:
       - ASUS-LAPTOP
       - WORK-MACBOOK
       - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "vim"
     path: "vim"
     hosts:
@@ -57,6 +71,8 @@ modules:
       - ASUS-LAPTOP
       - WORK-MACBOOK
       - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "nvim"
     path: "nvim"
     hosts:
@@ -64,6 +80,8 @@ modules:
       - ASUS-LAPTOP
       - WORK-MACBOOK
       - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "tmux"
     path: "tmux"
     hosts:
@@ -71,6 +89,8 @@ modules:
       - ASUS-LAPTOP
       - WORK-MACBOOK
       - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "ssh"
     path: "ssh"
     hosts:
@@ -78,6 +98,8 @@ modules:
       - ASUS-LAPTOP
       - WORK-MACBOOK
       - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
   - name: "kitty"
     path: "kitty"
     hosts:
@@ -98,3 +120,43 @@ modules:
     hosts:
       - HOME-DESKTOP
       - ASUS-LAPTOP
+  - name: "pip"
+    path: "pip"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
+  - name: "uv"
+    path: "uv"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
+  - name: "npm"
+    path: "npm"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S
+  - name: "podman"
+    path: "podman"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+  - name: "fonts"
+    path: "fonts"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - asus-vivobook
+      - DESKTOP-OKTKL4S

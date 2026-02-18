@@ -1,0 +1,10 @@
+# fonts module dependencies
+packages:
+  arch:
+    - fontconfig
+    - ttf-jetbrains-mono-nerd
+  debian:
+    - fontconfig
+  fedora:
+    - fontconfig
+  macos: []

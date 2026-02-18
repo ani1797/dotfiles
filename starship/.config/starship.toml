@@ -1,15 +1,25 @@
 # Starship Prompt Configuration
-# Theme: Tokyo Night
+# Theme: Cyberpunk Tokyo Night — neon pills on dark backgrounds
+# Font: JetBrainsMono Nerd Font
 # Docs: https://starship.rs/config/
 
-# General settings
+# ============================================================================
+# Layout
+# ============================================================================
+
 format = """
+[](storm)\
 $username\
 $hostname\
 $directory\
+[](fg:storm)\
+[ ]()\
+[](storm)\
 $git_branch\
 $git_status\
 $git_state\
+[](fg:storm)\
+[ ]()\
 $python\
 $nodejs\
 $rust\
@@ -17,9 +27,12 @@ $golang\
 $terraform\
 $docker_context\
 $kubernetes\
-$cmd_duration\
 $line_break\
 $character"""
+
+right_format = """
+$cmd_duration\
+$time"""
 
 # Timeout for commands (ms)
 command_timeout = 1000
@@ -27,38 +40,60 @@ command_timeout = 1000
 # Newline between prompts
 add_newline = true
 
+# Named palette
+palette = "tokyo-night"
+
+# ============================================================================
+# Color Palette
+# ============================================================================
+
+[palettes.tokyo-night]
+night = "#1a1b26"
+storm = "#24283b"
+fg = "#c0caf5"
+comment = "#565f89"
+selection = "#33467c"
+red = "#f7768e"
+orange = "#ff9e64"
+yellow = "#e0af68"
+green = "#9ece6a"
+teal = "#73daca"
+blue = "#7aa2f7"
+cyan = "#7dcfff"
+magenta = "#bb9af7"
+
 # ============================================================================
 # Prompt Character
 # ============================================================================
 
 [character]
-success_symbol = "[❯](bold #7aa2f7)"
-error_symbol = "[❯](bold #f7768e)"
-vimcmd_symbol = "[❮](bold #bb9af7)"
+success_symbol = "[❯](bold blue)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold magenta)"
 
 # ============================================================================
 # Directory
 # ============================================================================
 
 [directory]
-style = "bold #7aa2f7"
+format = "[ $path$read_only ]($style)"
+style = "blue bg:storm"
 truncation_length = 3
 truncate_to_repo = true
-read_only = " "
-read_only_style = "bold #f7768e"
+read_only = " 󰌾"
+read_only_style = "red bg:storm"
 
 # ============================================================================
 # Git
 # ============================================================================
 
 [git_branch]
-style = "bold #bb9af7"
-symbol = " "
-format = "on [$symbol$branch(:$remote_branch)]($style) "
+format = "[  $branch(:$remote_branch) ]($style)"
+style = "magenta bg:storm"
 
 [git_status]
-style = "bold #e0af68"
-format = '([\[$all_status$ahead_behind\]]($style) )'
+format = "([\\[$all_status$ahead_behind\\] ]($style))"
+style = "yellow bg:storm"
 conflicted = "="
 ahead = "⇡${count}"
 behind = "⇣${count}"
@@ -71,47 +106,47 @@ renamed = "»"
 deleted = "✘"
 
 [git_state]
-style = "bold #e0af68"
+style = "yellow bg:storm"
 
 # ============================================================================
 # Languages & Tools
 # ============================================================================
 
 [python]
-style = "bold #e0af68"
+format = "[](storm)[ $symbol$version( \\($virtualenv\\)) ](yellow bg:storm)[](fg:storm) "
 symbol = " "
-format = 'via [$symbol($version )(\($virtualenv\) )]($style)'
+style = "yellow bg:storm"
 
 [nodejs]
-style = "bold #9ece6a"
+format = "[](storm)[  $version ](green bg:storm)[](fg:storm) "
 symbol = " "
-format = 'via [$symbol($version )]($style)'
+style = "green bg:storm"
 
 [rust]
-style = "bold #f7768e"
+format = "[](storm)[ $symbol$version ](red bg:storm)[](fg:storm) "
 symbol = " "
-format = 'via [$symbol($version )]($style)'
+style = "red bg:storm"
 
 [golang]
-style = "bold #73daca"
+format = "[](storm)[ $symbol$version ](teal bg:storm)[](fg:storm) "
 symbol = " "
-format = 'via [$symbol($version )]($style)'
+style = "teal bg:storm"
 
 [terraform]
-style = "bold #bb9af7"
+format = "[](storm)[ 󱁢 $version ](magenta bg:storm)[](fg:storm) "
 symbol = "󱁢 "
-format = 'via [$symbol($version )]($style)'
+style = "magenta bg:storm"
 
 [docker_context]
-style = "bold #7dcfff"
+format = "[](storm)[  $context ](cyan bg:storm)[](fg:storm) "
 symbol = " "
-format = 'via [$symbol$context]($style) '
+style = "cyan bg:storm"
 only_with_files = true
 
 [kubernetes]
-style = "bold #7aa2f7"
+format = "[](storm)[ ☸ $context( \\($namespace\\)) ](blue bg:storm)[](fg:storm) "
 symbol = "☸ "
-format = '[$symbol$context( \($namespace\))]($style) '
+style = "blue bg:storm"
 disabled = false
 detect_files = ['k8s']
 detect_folders = ['.kube']
@@ -121,18 +156,28 @@ detect_folders = ['.kube']
 # ============================================================================
 
 [username]
-style_user = "bold #9ece6a"
-style_root = "bold #f7768e"
-format = "[$user]($style)@"
+format = "[ $user]($style)"
+style_user = "green bg:storm"
+style_root = "red bg:storm"
 show_always = false
 
 [hostname]
-style = "bold #9ece6a"
-format = "[$ssh_symbol$hostname]($style) in "
+format = "[@$ssh_symbol$hostname ](green bg:storm)"
+style = "green bg:storm"
 ssh_only = true
 ssh_symbol = " "
 
+# ============================================================================
+# Right Prompt
+# ============================================================================
+
 [cmd_duration]
-style = "bold #565f89"
+format = "[ $duration ](comment)"
 min_time = 2_000
-format = "took [$duration]($style) "
+style = "comment"
+
+[time]
+format = "[  $time ](comment)"
+disabled = false
+time_format = "%H:%M"
+style = "comment"

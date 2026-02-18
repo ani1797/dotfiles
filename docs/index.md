@@ -23,18 +23,16 @@ Complete documentation for all modules, guides, and configurations in this dotfi
 New to this repository? Start here:
 
 1. **[Repository README](../README.md)** - Installation instructions and quick start
-2. **[Repository Structure](structure)** - How the dotfiles are organized
+2. **[Repository Structure](structure)** - All 21 modules at a glance
 3. **[Config.yaml Format](../config.yaml)** - Module configuration reference
 
 ---
 
 ## Module Documentation
 
-Detailed documentation for each dotfiles module.
+### Shell & Prompt
 
-### Shell Configuration
-
-Modern shell environments with powerful features and integrations.
+Shells, prompt theming, and shared shell utilities — the core of daily interaction.
 
 #### [Bash](modules/bash)
 {: .d-inline-block }
@@ -43,7 +41,7 @@ Basic
 
 Basic Bash configuration for systems where zsh/fish aren't available.
 - `.bashrc` with sensible defaults
-- Basic aliases and prompt
+- Aliases (`dot`, `set_env`) and prompt
 - Compatible with most systems
 
 #### [Zsh](modules/zsh)
@@ -51,13 +49,12 @@ Basic Bash configuration for systems where zsh/fish aren't available.
 Advanced
 {: .label .label-green }
 
-Advanced Zsh configuration with Oh-My-Zsh and Powerlevel10k.
-- Oh-My-Zsh framework integration
-- Powerlevel10k theme
+Advanced Zsh configuration with Starship prompt.
+- [Starship](modules/starship) prompt with cyberpunk Tokyo Night theme
 - Plugin management (autosuggestions, syntax highlighting, etc.)
-- Custom aliases and functions
+- Custom aliases and functions (`~dot`, `set_env`)
 - FZF integration
-- 1Password CLI integration
+- [1Password](1password-integration) CLI integration
 
 #### [Fish](modules/fish)
 {: .d-inline-block }
@@ -67,9 +64,19 @@ Advanced
 Modern Fish shell configuration with plugin ecosystem.
 - Fisher plugin manager
 - Custom functions and abbreviations
-- Tide prompt theme
+- [Starship](modules/starship) prompt with cyberpunk Tokyo Night theme
 - Auto-completion and syntax highlighting
-- Configuration management tools
+
+#### [Starship](modules/starship)
+{: .d-inline-block }
+Theme
+{: .label .label-yellow }
+
+Unified cross-shell prompt — cyberpunk Tokyo Night theme.
+- Neon pill segments on dark backgrounds
+- Two-line layout with right-aligned duration/time
+- Nerd Font icons, named palette
+- See also: [Theme Design Guide](starship-theme)
 
 ### Development Tools
 
@@ -81,15 +88,13 @@ Essential
 {: .label .label-purple }
 
 Comprehensive Git configuration with modern best practices.
-- **SSH-based commit signing** with 1Password
+- **SSH-based commit signing** with [1Password](1password-integration)
 - 30+ useful aliases
 - Better diff and merge algorithms
 - Global gitignore patterns
-- Commit message template
 - Configuration scripts:
   - `configure-git-machine` - Automated setup for new machines
   - `git-setup-verify` - Verify configuration
-  - `git-create-repo-template` - Initialize new repositories
 
 #### [Neovim](modules/nvim)
 {: .d-inline-block }
@@ -103,7 +108,6 @@ Modern Neovim configuration with Lazy.nvim and modular plugins.
 - nvim-cmp completion engine
 - Avante AI/Claude integration
 - Tokyo Night theme
-- Delete any plugin file to disable that feature
 
 #### [Tmux](modules/tmux)
 {: .d-inline-block }
@@ -125,8 +129,7 @@ Essential
 Structured SSH configuration with modular host management.
 - Base config with `Include config.d/*`
 - GitHub host entry (port 443 for firewalls)
-- Example host entries as reference
-- 1Password SSH agent support
+- [1Password](1password-integration) SSH agent support
 - Permissions setup via `configure-ssh`
 
 #### [Direnv](modules/direnv)
@@ -137,19 +140,30 @@ Development
 Environment variable management for project-specific configurations.
 - Automatic environment loading
 - `.envrc` file support
-- Shell integration (bash, zsh, fish)
-- 1Password secret management
-- Project isolation
+- Shell integration ([bash](modules/bash), [zsh](modules/zsh), [fish](modules/fish))
+- [1Password](1password-integration) secret management
 
-### Desktop Environment
+### Terminal & Desktop
 
-Wayland-based desktop environment configuration.
+Terminal emulators, Wayland compositor, and desktop tools.
+
+#### [Kitty](modules/kitty)
+{: .d-inline-block }
+Essential
+{: .label .label-purple }
+
+GPU-accelerated terminal emulator with cyberpunk aesthetics.
+- JetBrainsMono Nerd Font 12pt
+- Tokyo Night color scheme (matches [Starship](modules/starship) palette)
+- Split/tiling window management with keybindings
+- Powerline slanted tab bar, 0.92 opacity
+- See also: [Theme Design Guide](starship-theme#kitty-integration)
 
 #### [Hyprland](modules/hyprland)
 Modern tiling Wayland compositor configuration.
 - Window management rules
 - Workspace configuration
-- Keybindings
+- Keybindings (see [Keyboard Shortcuts](keyboard-shortcuts))
 - Animations and effects
 - Auto-start applications
 
@@ -160,109 +174,84 @@ Application launcher and menu system.
 - Keybinding integration
 - Wayland compatibility
 
-#### [Kitty](modules/kitty)
-GPU-accelerated terminal emulator.
-- Font configuration
-- Color schemes
-- Keybindings
-- Performance optimizations
-
-### Applications
-
 #### [WayVNC](modules/wayvnc)
 VNC server for Wayland compositors.
 - Network configuration
 - Security settings
-- Keyboard and mouse input
 - Display configuration
 
----
+### Package Managers & Runtimes
 
-## Quick Reference Guides
+Configuration for language-specific package managers.
 
-Essential reference documentation for daily use.
+#### Npm
+npm registry and configuration (`.npmrc`).
 
-### [Keyboard Shortcuts](keyboard-shortcuts) 🎹
-Complete keybinding reference for all modules.
+#### Pip
+pip configuration (`pip.conf`) with index settings.
 
-**Hyprland shortcuts:**
-- Window management and navigation
-- Workspace switching
-- Application launching
-- System controls
-- Screenshot and multimedia
+#### UV
+[uv](https://github.com/astral-sh/uv) Python package manager configuration.
 
-**Other modules:**
-- Neovim keybindings (Telescope, LSP, completion, AI)
-- Tmux keybindings (splits, panes, windows, copy mode)
-- Kitty terminal keybindings
-- Rofi launcher shortcuts
-- Git command aliases
+#### Podman
+Podman container registries and configuration.
+
+#### Fonts
+Font packages — JetBrainsMono Nerd Font (used by [Kitty](modules/kitty) and [Starship](modules/starship)).
 
 ---
 
-## Integration Guides
+## Guides & References
 
-Cross-module integrations and advanced setups.
+### [Keyboard Shortcuts](keyboard-shortcuts)
+Complete keybinding reference for all modules:
+- [Hyprland](modules/hyprland) — window management, workspaces, app launching
+- [Neovim](modules/nvim) — Telescope, LSP, completion, AI
+- [Tmux](modules/tmux) — splits, panes, windows, copy mode
+- [Kitty](modules/kitty) — terminal splits and navigation
+- [Git](modules/git) — command aliases
 
-### [1Password Integration](1password-integration) 🔐
+### [1Password Integration](1password-integration)
 {: .d-inline-block }
 Security
 {: .label .label-red }
 
-Complete guide for integrating 1Password across your system.
+Cross-module guide for integrating 1Password:
+- **SSH Agent** — [SSH module](modules/ssh)
+- **Git Signing** — [Git module](modules/git)
+- **direnv Secrets** — [Direnv module](modules/direnv)
+- **CLI Authentication** — [Zsh](modules/zsh) / [Fish](modules/fish) shell integration
 
-**Covered topics:**
-- **SSH Agent** - Use 1Password for SSH authentication
-- **Git Signing** - Sign commits with 1Password-managed keys
-- **direnv Integration** - Load secrets from 1Password into environment
-- **CLI Authentication** - Authenticate with `op` command
-- **Secret Management** - Best practices for managing secrets
-- **Troubleshooting** - Common issues and solutions
+### [Starship Theme Guide](starship-theme)
+{: .d-inline-block }
+Design
+{: .label .label-yellow }
 
-**Related module docs:**
-- [Git module](modules/git) - Git signing configuration
-- [Direnv module](modules/direnv) - Environment variable management
-- [Zsh module](modules/zsh) - Shell integration
+Design document for the cyberpunk Tokyo Night theme:
+- Full color palette with hex values
+- Pill segment anatomy
+- [Kitty](modules/kitty) integration details
+- Customization guide (change palette, disable pills, add modules)
 
 ---
 
 ## Repository Structure
 
 ### [Structure Documentation](structure)
-Detailed explanation of the repository layout and conventions.
+All 21 modules organized by category with descriptions.
 
 ### Key Files
 
-- **[config.yaml](../config.yaml)** - Module configuration and deployment targets
-- **[install.sh](../install.sh)** - GNU Stow deployment script
-- **[bootstrap.sh](../bootstrap.sh)** - Automated setup for fresh systems
-- **[CLAUDE.md](../CLAUDE.md)** - Instructions for Claude Code (AI assistant)
-
-### Module Structure
-
-Each module follows this structure:
-```
-module-name/
-├── .config/              # XDG config files (~/.config/)
-├── .local/               # User-local files (~/.local/)
-│   └── bin/              # Executable scripts
-├── .stow-local-ignore    # Files to exclude from deployment
-└── [direct files]        # Files deployed to $HOME
-```
+| File | Purpose |
+|------|---------|
+| **[config.yaml](../config.yaml)** | Module configuration and deployment targets |
+| **[install.sh](../install.sh)** | GNU Stow deployment script |
+| **[bootstrap.sh](../bootstrap.sh)** | Automated setup for fresh systems |
+| **[CLAUDE.md](../CLAUDE.md)** | Instructions for Claude Code (AI assistant) |
 
 ---
 
-## Quick Reference
-
-### Most Useful Resources
-
-1. **[Keyboard Shortcuts](keyboard-shortcuts)** 🎹 - All keybindings in one place
-2. **[Git Module](modules/git)** - Modern git workflow with signing
-3. **[Zsh Module](modules/zsh)** - Feature-rich shell environment
-4. **[1Password Integration](1password-integration)** - Secure secret management
-
-### Common Tasks
+## Common Tasks
 
 **Setting up a new machine:**
 1. Run `./bootstrap.sh` (automated)
@@ -273,16 +262,12 @@ module-name/
 6. Verify git setup: `git-setup-verify`
 
 **Adding a new module:**
-1. Create module directory with appropriate structure
+1. Create module directory with [standard structure](structure#module-directory-convention)
 2. Add module to `config.yaml`
-3. Create `.stow-local-ignore` to exclude documentation
+3. Create `.stow-local-ignore` to exclude docs
 4. Document in `docs/modules/<module>.md`
-5. Run `./install.sh` to deploy
-
-**Updating documentation:**
-- Module-specific: Edit `docs/modules/<module>.md`
-- Integration guides: Add to `docs/` root
-- Update this index if adding new categories
+5. Add to this index and [structure.md](structure)
+6. Run `./install.sh` to deploy
 
 ---
 
@@ -300,24 +285,13 @@ Then visit http://localhost:4000 in your browser.
 
 ---
 
-## Contributing
-
-When adding or modifying modules:
-
-1. **Document thoroughly** - Each module should have comprehensive documentation
-2. **Follow conventions** - Use the established directory structure
-3. **Test deployment** - Verify with `./install.sh` before committing
-4. **Update index** - Add new documentation to this README
-
----
-
 ## Additional Resources
 
 - **[GNU Stow Manual](https://www.gnu.org/software/stow/manual/)** - Understanding the deployment tool
 - **[XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)** - Standard for config file locations
 - **[Dotfiles Best Practices](https://dotfiles.github.io/)** - Community resources
-- **[Jekyll Documentation](https://jekyllrb.com/docs/)** - Static site generator used for GitHub Pages
+- **[Starship Documentation](https://starship.rs/config/)** - Prompt configuration reference
 
 ---
 
-**Last Updated:** 2026-02-06
+**Last Updated:** 2026-02-18

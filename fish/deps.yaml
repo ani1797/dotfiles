@@ -1,10 +1,16 @@
 # fish module dependencies
 packages:
   arch:
+    - eza
     - fish
     - starship
   debian:
+    - eza
+    - fish
+  fedora:
+    - eza
     - fish
   macos:
+    - eza
     - fish
     - starship

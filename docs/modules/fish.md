@@ -49,9 +49,6 @@ Helper scripts in `~/.local/bin/`:
 ```bash
 # Install Fisher and plugins
 configure-fisher
-
-# Configure Tide prompt
-configure-tide
 ```
 
 ## Plugins Included
@@ -60,8 +57,9 @@ Managed via `fish_plugins` and installed with `configure-fisher`:
 
 - **fisher** - Plugin manager
 - **nvm.fish** - Node version manager
-- **tide** - Modern, customizable prompt
 - **z** - Smart directory jumping
+
+Prompt is handled by **Starship** (see [Starship module](starship)).
 
 ## Machine-Specific Overrides
 
@@ -131,5 +129,5 @@ type -q fisher && echo "Fisher OK" || echo "Fisher missing"
 
 - [Fish Shell Documentation](https://fishshell.com/docs/current/)
 - [Fisher Plugin Manager](https://github.com/jorgebucaran/fisher)
-- [Tide Prompt](https://github.com/IlanCosman/tide)
+- [Starship Prompt](https://starship.rs/)
 - [nvm.fish](https://github.com/jorgebucaran/nvm.fish)

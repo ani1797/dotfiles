@@ -34,13 +34,13 @@ Files in `~/.config/zsh/` load in numbered order:
 
 - `00-environment.zsh` - PATH and environment variables
 - `10-history.zsh` - history configuration
-- `20-oh-my-zsh.zsh` - Oh-My-Zsh framework (if available)
-- `30-powerlevel10k.zsh` - Powerlevel10k theme (if available)
+- `30-starship.zsh` - Starship prompt integration
 - `40-plugins.zsh` - syntax highlighting, autosuggestions (if available)
-- `50-aliases-universal.zsh` - cross-platform aliases
+- `50-aliases-universal.zsh` - cross-platform aliases (`~dot`, `set_env`)
 - `51-aliases-arch.zsh` - Arch Linux specific (if on Arch)
 - `51-aliases-debian.zsh` - Debian/Ubuntu specific (if on Debian)
 - `51-aliases-fedora.zsh` - Fedora/RHEL specific (if on Fedora)
+- `52-aliases-docker.zsh` - Docker/Podman aliases
 - `60-direnv.zsh` - Direnv integration (if direnv installed)
 
 ## Optional Tool Installation
@@ -48,12 +48,6 @@ Files in `~/.config/zsh/` load in numbered order:
 Helper scripts in `~/.local/bin/`:
 
 ```bash
-# Install Oh-My-Zsh framework
-configure-oh-my-zsh
-
-# Install Powerlevel10k theme
-configure-powerlevel10k
-
 # Install zsh plugins (syntax-highlighting, autosuggestions, etc.)
 configure-zsh-plugins
 
@@ -127,6 +121,5 @@ ls /etc/*-release
 ## References
 
 - [Zsh Documentation](http://zsh.sourceforge.net/Doc/)
-- [Oh-My-Zsh](https://ohmyz.sh/)
-- [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
+- [Starship Prompt](https://starship.rs/)
 - [XDG Base Directory](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)

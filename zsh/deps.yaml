@@ -5,22 +5,26 @@ packages:
     - zsh-syntax-highlighting
     - zsh-autosuggestions
     - zsh-history-substring-search
+    - eza
     - fzf
     - starship
   debian:
     - zsh
     - zsh-syntax-highlighting
     - zsh-autosuggestions
+    - eza
     - fzf
   fedora:
     - zsh
     - zsh-syntax-highlighting
     - zsh-autosuggestions
+    - eza
     - fzf
   macos:
     - zsh
     - zsh-syntax-highlighting
     - zsh-autosuggestions
     - zsh-history-substring-search
+    - eza
     - fzf
     - starship

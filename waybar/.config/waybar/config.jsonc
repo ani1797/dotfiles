@@ -7,7 +7,7 @@
     "margin-right": 8,
     "spacing": 4,
 
-    // ── Module Layout ──────────────────────────────────────
+    // ── Module Layout ──────────────────────────────────────────
     "modules-left": [
         "custom/arch",
         "clock",
@@ -16,7 +16,8 @@
         "custom/weather"
     ],
     "modules-center": [
-        "hyprland/workspaces"
+        "hyprland/workspaces",
+        "wlr/taskbar"
     ],
     "modules-right": [
         "wireplumber",
@@ -27,16 +28,16 @@
         "custom/power"
     ],
 
-    // ── Left Modules ───────────────────────────────────────
+    // ── Left Modules ───────────────────────────────────────────
 
     "custom/arch": {
-        "format": " ",
+        "format": " ",
         "tooltip": false
     },
 
     "clock": {
-        "format": "  {:%H:%M}",
-        "format-alt": "  {:%A, %B %d, %Y}",
+        "format": "  {:%I:%M %p}",
+        "format-alt": "  {:%A, %B %d, %Y}",
         "tooltip-format": "<tt><small>{calendar}</small></tt>",
         "calendar": {
             "mode": "year",
@@ -54,7 +55,7 @@
     },
 
     "custom/updates": {
-        "format": "  {}",
+        "format": "  {}",
         "interval": 3600,
         "exec": "checkupdates 2>/dev/null | wc -l",
         "exec-if": "which checkupdates",
@@ -67,12 +68,12 @@
         "format": "{player_icon}  {artist} — {title}",
         "format-paused": "{player_icon}  {status_icon} {artist} — {title}",
         "player-icons": {
-            "default": "",
-            "firefox": "",
-            "spotify": ""
+            "default": "",
+            "firefox": "",
+            "spotify": ""
         },
         "status-icons": {
-            "paused": ""
+            "paused": ""
         },
         "max-length": 40,
         "ignored-players": ["firefox"]
@@ -81,28 +82,40 @@
     "custom/weather": {
         "format": "{}",
         "interval": 900,
-        "exec": "wttrbar --location auto --main-indicator temp_C --custom-indicator '{temp_C}°C {weatherDesc} 📍{areaName}' 2>/dev/null",
+        "exec": "wttrbar --location auto --main-indicator temp_C --custom-indicator '{temp_C}°C {weatherDesc} {areaName}' 2>/dev/null",
         "exec-if": "which wttrbar",
         "return-type": "json",
         "tooltip": true
     },
 
-    // ── Center Modules ─────────────────────────────────────
+    // ── Center Modules ─────────────────────────────────────────
 
     "hyprland/workspaces": {
         "format": "{id}",
         "on-click": "activate",
         "sort-by-number": true,
         "active-only": false,
-        "all-outputs": true
+        "all-outputs": true,
+        "persistent-workspaces": {
+            "*": 3
+        }
     },
 
-    // ── Right Modules ──────────────────────────────────────
+    "wlr/taskbar": {
+        "format": "{icon}  {name}",
+        "icon-size": 14,
+        "tooltip-format": "{title}",
+        "on-click": "activate",
+        "on-click-middle": "close",
+        "max-length": 20
+    },
+
+    // ── Right Modules ──────────────────────────────────────────
 
     "wireplumber": {
         "format": "{icon}  {volume}%",
-        "format-muted": "  muted",
-        "format-icons": ["", "", ""],
+        "format-muted": "  muted",
+        "format-icons": ["", "", ""],
         "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
         "on-scroll-up": "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+",
         "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-",
@@ -110,11 +123,11 @@
     },
 
     "network": {
-        "format-wifi": "  {essid}",
-        "format-ethernet": "  {ifname}",
-        "format-disconnected": "  offline",
-        "tooltip-format-wifi": "  {essid}\n  {ipaddr}/{cidr}\n  {signalStrength}% signal\n  {bandwidthUpBits}↑ {bandwidthDownBits}↓",
-        "tooltip-format-ethernet": "  {ifname}\n  {ipaddr}/{cidr}\n  {bandwidthUpBits}↑ {bandwidthDownBits}↓",
+        "format-wifi": "  {essid}",
+        "format-ethernet": "  {ipaddr}",
+        "format-disconnected": "  offline",
+        "tooltip-format-wifi": "  {essid}\n  {ipaddr}/{cidr}\n  {signalStrength}% signal\n  {bandwidthUpBits}↑ {bandwidthDownBits}↓",
+        "tooltip-format-ethernet": "  {ipaddr}\n  {ipaddr}/{cidr}\n  {bandwidthUpBits}↑ {bandwidthDownBits}↓",
         "tooltip-format-disconnected": "No connection",
         "max-length": 20,
         "on-click": "kitty -e nmtui"
@@ -122,9 +135,9 @@
 
     "battery": {
         "format": "{icon}  {capacity}%",
-        "format-charging": "  {capacity}%",
-        "format-plugged": "  {capacity}%",
-        "format-icons": ["", "", "", "", ""],
+        "format-charging": "  {capacity}%",
+        "format-plugged": "  {capacity}%",
+        "format-icons": ["", "", "", "", ""],
         "states": {
             "warning": 20,
             "critical": 10
@@ -133,24 +146,25 @@
     },
 
     "custom/sysinfo": {
-        "format": " ",
-        "on-click": "~/.config/waybar/scripts/sysinfo.sh",
+        "format": " ",
+        "on-click": "kitty --session ~/.config/waybar/scripts/sysinfo-session.conf",
         "tooltip": false
     },
 
     "custom/notification": {
         "exec": "swaync-client -swb",
+        "exec-if": "which swaync-client",
         "return-type": "json",
         "format": "{icon}",
         "format-icons": {
-            "notification": "<span foreground='#f7768e'>  </span>",
-            "none": "  ",
-            "dnd-notification": "<span foreground='#f7768e'>  </span>",
-            "dnd-none": "  ",
-            "inhibited-notification": "  ",
-            "inhibited-none": "  ",
-            "dnd-inhibited-notification": "  ",
-            "dnd-inhibited-none": "  "
+            "notification": "<span foreground='#f7768e'> </span>",
+            "none": " ",
+            "dnd-notification": "<span foreground='#f7768e'> </span>",
+            "dnd-none": " ",
+            "inhibited-notification": " ",
+            "inhibited-none": " ",
+            "dnd-inhibited-notification": " ",
+            "dnd-inhibited-none": " "
         },
         "on-click": "swaync-client -t -sw",
         "on-click-right": "swaync-client -d -sw",
@@ -159,7 +173,7 @@
     },
 
     "custom/power": {
-        "format": " ",
+        "format": " ",
         "on-click": "~/.config/waybar/scripts/power-menu.sh",
         "tooltip": false
     }

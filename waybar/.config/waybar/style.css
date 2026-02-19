@@ -40,6 +40,7 @@ tooltip label {
 #mpris,
 #custom-weather,
 #workspaces,
+#taskbar,
 #wireplumber,
 #network,
 #battery,
@@ -85,7 +86,6 @@ tooltip label {
 
 #mpris {
     color: #bb9af7;
-    max-width: 250px;
 }
 
 #custom-weather {
@@ -115,13 +115,39 @@ tooltip label {
 
 #workspaces button.active {
     color: #1a1b26;
-    background: #7aa2f7;
+    background: #7dcfff;
     font-weight: bold;
 }
 
 #workspaces button.urgent {
     color: #1a1b26;
     background: #f7768e;
+}
+
+/* ── Center — Taskbar (active apps) ──────────────────── */
+
+#taskbar {
+    padding: 2px 4px;
+}
+
+#taskbar button {
+    color: #a9b1d6;
+    background: transparent;
+    border-radius: 14px;
+    padding: 2px 10px;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+#taskbar button:hover {
+    color: #c0caf5;
+    background: rgba(41, 46, 66, 0.6);
+}
+
+#taskbar button.active {
+    color: #c0caf5;
+    background: rgba(122, 162, 247, 0.25);
 }
 
 /* ── Right Modules ────────────────────────────────────── */

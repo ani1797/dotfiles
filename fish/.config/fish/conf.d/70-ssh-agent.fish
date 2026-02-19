@@ -2,8 +2,14 @@
 # SSH agent auto-start
 command -v ssh-agent &>/dev/null; or return
 
-# Skip if running under 1Password SSH agent or already have an agent
-if set -q SSH_AUTH_SOCK
+# Prefer 1Password SSH agent if its socket exists
+if test -S "$HOME/.1password/agent.sock"
+    set -gx SSH_AUTH_SOCK "$HOME/.1password/agent.sock"
+    exit 0
+end
+
+# Skip if already have a working agent
+if set -q SSH_AUTH_SOCK; and test -S "$SSH_AUTH_SOCK"
     exit 0
 end
 

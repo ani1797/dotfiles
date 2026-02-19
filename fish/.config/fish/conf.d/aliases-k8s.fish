@@ -9,4 +9,7 @@ if type -q kubectl
     alias kd='kubectl describe'
     alias klogs='kubectl logs -f'
     alias kexec='kubectl exec -it'
+
+    # Completions
+    kubectl completion fish | source
 end

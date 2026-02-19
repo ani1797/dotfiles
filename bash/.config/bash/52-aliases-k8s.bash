@@ -9,4 +9,7 @@ if command -v kubectl &>/dev/null; then
   alias kd="kubectl describe"
   alias klogs="kubectl logs -f"
   alias kexec="kubectl exec -it"
+
+  # Completions
+  eval "$(kubectl completion bash)"
 fi

@@ -133,7 +133,7 @@ machines:
       - "fonts"
       - "yazi"
 
-  - hostname: "CODESPACES"
+  - hostname: "codespaces-*"
     modules:
       - "bashrc"
       - "zsh"

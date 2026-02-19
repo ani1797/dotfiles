@@ -439,30 +439,51 @@ self_bootstrap() {
 # CONFIG.YAML PARSING
 # ============================================================================
 
+# Find the machine index in config.yaml that matches the given hostname.
+# Supports glob patterns (e.g., "codespaces-*") and case-insensitive matching.
+# Prints the 0-based index, or returns 1 if no match.
+find_machine_index() {
+    local hostname="${1,,}"  # lowercase the actual hostname
+    local machine_count
+    machine_count="$(yq -r '.machines | length' "$CONFIG_FILE")"
+
+    for i in $(seq 0 $((machine_count - 1))); do
+        local pattern
+        pattern="$(yq -r ".machines[$i].hostname" "$CONFIG_FILE")"
+        pattern="${pattern,,}"  # lowercase the pattern too
+        # Use bash glob matching: pattern may contain * or ?
+        # shellcheck disable=SC2254
+        case "$hostname" in
+            $pattern)
+                echo "$i"
+                return 0
+                ;;
+        esac
+    done
+
+    return 1
+}
+
 # Get the list of module names assigned to the current machine.
 # Returns newline-separated module names.
 get_machine_modules() {
     local hostname="$1"
-    local machine_entry
-    machine_entry="$(yq -r ".machines[] | select(.hostname == \"$hostname\")" "$CONFIG_FILE" 2>/dev/null)"
-
-    if [[ -z "$machine_entry" ]]; then
-        return 1
-    fi
+    local idx
+    idx="$(find_machine_index "$hostname")" || return 1
 
     # Iterate over the modules array for this machine.
     # Each entry is either a plain string or an object with .name
     local count
-    count="$(yq -r ".machines[] | select(.hostname == \"$hostname\") | .modules | length" "$CONFIG_FILE")"
+    count="$(yq -r ".machines[$idx].modules | length" "$CONFIG_FILE")"
 
     for i in $(seq 0 $((count - 1))); do
         local entry_type
-        entry_type="$(yq -r ".machines[] | select(.hostname == \"$hostname\") | .modules[$i] | type" "$CONFIG_FILE")"
+        entry_type="$(yq -r ".machines[$idx].modules[$i] | type" "$CONFIG_FILE")"
 
         if [[ "$entry_type" == "!!str" ]] || [[ "$entry_type" == "string" ]]; then
-            yq -r ".machines[] | select(.hostname == \"$hostname\") | .modules[$i]" "$CONFIG_FILE"
+            yq -r ".machines[$idx].modules[$i]" "$CONFIG_FILE"
         else
-            yq -r ".machines[] | select(.hostname == \"$hostname\") | .modules[$i].name" "$CONFIG_FILE"
+            yq -r ".machines[$idx].modules[$i].name" "$CONFIG_FILE"
         fi
     done
 }
@@ -484,18 +505,21 @@ get_machine_module_target() {
     local hostname="$1"
     local module_name="$2"
 
+    local idx
+    idx="$(find_machine_index "$hostname")" || { echo ""; return 0; }
+
     local count
-    count="$(yq -r ".machines[] | select(.hostname == \"$hostname\") | .modules | length" "$CONFIG_FILE")"
+    count="$(yq -r ".machines[$idx].modules | length" "$CONFIG_FILE")"
 
     for i in $(seq 0 $((count - 1))); do
         local entry_type
-        entry_type="$(yq -r ".machines[] | select(.hostname == \"$hostname\") | .modules[$i] | type" "$CONFIG_FILE")"
+        entry_type="$(yq -r ".machines[$idx].modules[$i] | type" "$CONFIG_FILE")"
 
         if [[ "$entry_type" != "!!str" ]] && [[ "$entry_type" != "string" ]]; then
             local name
-            name="$(yq -r ".machines[] | select(.hostname == \"$hostname\") | .modules[$i].name" "$CONFIG_FILE")"
+            name="$(yq -r ".machines[$idx].modules[$i].name" "$CONFIG_FILE")"
             if [[ "$name" == "$module_name" ]]; then
-                yq -r ".machines[] | select(.hostname == \"$hostname\") | .modules[$i].target // \"\"" "$CONFIG_FILE"
+                yq -r ".machines[$idx].modules[$i].target // \"\"" "$CONFIG_FILE"
                 return 0
             fi
         fi

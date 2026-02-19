@@ -1,7 +1,7 @@
-# ~/.config/zsh/40-plugins.zsh
-# Zsh plugins - loads if available (sourced directly, no framework needed)
+# ~/.config/zsh/41-zsh-plugins.zsh
+# Zsh plugins — loads from system packages if available
 
-# Syntax highlighting - try multiple common locations
+# Syntax highlighting
 for plugin_path in \
   "/usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" \
   "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" \
@@ -12,7 +12,7 @@ for plugin_path in \
   fi
 done
 
-# Autosuggestions - try multiple common locations
+# Autosuggestions
 for plugin_path in \
   "/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" \
   "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
@@ -23,7 +23,7 @@ for plugin_path in \
   fi
 done
 
-# History substring search - try multiple common locations
+# History substring search
 for plugin_path in \
   "/usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh" \
   "/usr/share/zsh-history-substring-search/zsh-history-substring-search.zsh" \
@@ -33,18 +33,3 @@ for plugin_path in \
     break
   fi
 done
-
-# FZF integration - check common locations
-if [[ -f "/usr/share/fzf/key-bindings.zsh" ]]; then
-  source /usr/share/fzf/key-bindings.zsh
-  [[ -f "/usr/share/fzf/completion.zsh" ]] && source /usr/share/fzf/completion.zsh
-elif [[ -f "$HOME/.fzf.zsh" ]]; then
-  source "$HOME/.fzf.zsh"
-fi
-
-# Completions initialization
-autoload -Uz compinit
-compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zcompdump"
-
-# pkgfile "command not found" handler (Arch-specific)
-[[ -f "/usr/share/doc/pkgfile/command-not-found.zsh" ]] && source /usr/share/doc/pkgfile/command-not-found.zsh

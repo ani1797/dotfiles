@@ -8,8 +8,9 @@ This is a dotfiles repository that uses GNU Stow for managing configuration file
 
 ## Key Components
 
-- **install.sh**: The main installation script that reads config.yaml and uses GNU Stow to deploy dotfiles
-- **config.yaml**: Configuration file that defines which modules to install and for which hosts
+- **install.sh**: Unified installer that self-bootstraps, reads config.yaml, installs per-module dependencies from deps.yaml, backs up conflicts, and stows modules
+- **config.yaml**: Configuration file with two top-level keys: `modules[]` (module definitions) and `machines[]` (hostname-to-module mappings)
+- **deps.yaml**: Per-module dependency manifests (placed inside each module directory) declaring native packages, cargo crates, pip packages, and install scripts
 - **Module directories**:
   - `bash/` - Contains Bash configuration files (e.g., .bashrc)
   - `zsh/` - Contains Zsh configuration files (e.g., .zshrc)
@@ -34,49 +35,85 @@ This is a dotfiles repository that uses GNU Stow for managing configuration file
 
 ## Installation Process
 
-To install the dotfiles:
-1. Ensure GNU Stow and yq are installed:
-   - Debian/Ubuntu: `sudo apt-get install stow yq`
-   - macOS with Homebrew: `brew install stow yq`
-2. Run the installer: `./install.sh`
-3. The script reads config.yaml, resolves module directories, and uses stow to link dotfiles into target directories
-4. The config.yaml file allows you to individually select which modules to include for each system by specifying modules and their target hosts
-
-## Host Configuration and Target Directories
-
-The installer supports flexible target directory configuration:
-- **Default target**: All modules deploy to `$HOME` by default
-- **Module-level target**: Specify a `target` field at the module level to set a default for all hosts in that module
-- **Host-level target**: Specify a `target` field for individual hosts to override the module default
-
-Target directories can use environment variables (e.g., `$HOME`, `$USER`) which will be expanded at runtime.
-
-Example configurations:
-```yaml
-# Simple: uses $HOME by default
-- name: "bash"
-  path: "bash"
-  hosts:
-    - local
-
-# Module-level target
-- name: "app-config"
-  path: "app"
-  target: "/opt/myapp"
-  hosts:
-    - local
-    - work
-
-# Host-level targets (overrides module default)
-- name: "vim"
-  path: "vim"
-  hosts:
-    - local  # Uses $HOME
-    - name: work
-      target: "$HOME/.work"
+To install the dotfiles, just run:
+```bash
+./install.sh
 ```
 
-Each host can include a subset of modules as defined in config.yaml, allowing for different machine setups with different configurations.
+The script is the single entrypoint for setup. It performs the following steps:
+1. **Self-bootstraps** -- detects the distro and package manager, then installs `stow` and `yq` automatically if they are missing (supports pacman, apt, dnf, and brew)
+2. **Matches the current hostname** against `machines[]` in config.yaml to determine which modules to install
+3. **Installs per-module dependencies** from each module's `deps.yaml` (native packages, cargo crates, pip packages, and install scripts)
+4. **Backs up conflicting files** -- any real (non-symlink) files that would conflict with stow are moved to `~/.dotfiles-backup/<timestamp>/` before linking
+5. **Stows modules** using `stow --restow --no-folding`, which also cleans up dead symlinks from previously removed files
+
+The installer is idempotent and safe to run repeatedly.
+
+## Config Schema (config.yaml)
+
+config.yaml has two top-level keys: `modules` and `machines`.
+
+### modules[]
+Defines every available module. Each entry has a `name`, a `path` (directory in this repo), and an optional `target` (defaults to `$HOME`):
+```yaml
+modules:
+  - name: "bash"
+    path: "bash"
+  - name: "app-config"
+    path: "app"
+    target: "/opt/myapp"   # optional module-level target override
+```
+
+### machines[]
+Each machine entry has a `hostname` (matched against `$(hostname)`) and a list of modules to install. Module references are either a plain string (module name) or an object with `name` + `target` override:
+```yaml
+machines:
+  - hostname: "HOME-DESKTOP"
+    modules:
+      - "bash"               # plain string: uses module default target
+      - "app-config"
+      - name: "vim"          # object form: override target for this machine
+        target: "$HOME/.work"
+
+  - hostname: "WORK-MACBOOK"
+    modules:
+      - "bash"
+      - "vim"
+```
+
+Target resolution priority: machine-level override > module-level default > `$HOME`. Target values can use environment variables (e.g., `$HOME`) which are expanded at runtime.
+
+## Module Dependencies (deps.yaml)
+
+Each module directory may contain a `deps.yaml` file declaring its dependencies. The installer reads this file and installs dependencies before stowing. The format supports multiple sources:
+
+```yaml
+# Native packages, keyed by distro family
+packages:
+  arch:
+    - git
+  debian:
+    - git
+  fedora:
+    - git
+  macos:
+    - git
+
+# Cargo crates (installed via cargo install, skipped if already present)
+cargo:
+  - yazi-fm
+
+# Pip packages (installed with pip install --user)
+pip:
+  - some-tool
+
+# Install scripts with optional idempotency guard
+script:
+  - run: "curl -sS https://starship.rs/install.sh | sh -s -- --yes"
+    provides: starship   # skip if this binary is already on $PATH
+```
+
+All sections are optional. The `packages` key maps distro families (`arch`, `debian`, `fedora`, `macos`) to the corresponding native package names.
 
 ## Development Workflow
 
@@ -87,6 +124,7 @@ This repository is designed for managing personal configuration files. The main 
 
 ## Important Notes
 
-- The installation process uses GNU Stow to create symbolic links
-- The install.sh script is designed to be safe and will fail if required tools are missing
+- The installation process uses GNU Stow to create symbolic links (`stow --restow --no-folding`)
+- install.sh self-bootstraps its own dependencies (`stow` and `yq`), so no manual pre-installation is needed
 - The repository structure follows a modular approach for easy management of different configuration types
+- Shell config files use a guard pattern (`[[ -n "${__<MODULE>_LOADED+x}" ]] && return`) to prevent double-sourcing

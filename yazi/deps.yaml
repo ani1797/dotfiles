@@ -1,0 +1,51 @@
+# yazi module dependencies
+# Terminal file manager + preview dependencies
+packages:
+  arch:
+    - yazi
+    - ffmpeg
+    - p7zip
+    - jq
+    - poppler
+    - fd
+    - ripgrep
+    - fzf
+    - zoxide
+    - imagemagick
+  debian:
+    - ffmpeg
+    - p7zip-full
+    - jq
+    - poppler-utils
+    - fd-find
+    - ripgrep
+    - fzf
+    - zoxide
+    - imagemagick
+  fedora:
+    - ffmpeg
+    - p7zip
+    - jq
+    - poppler-utils
+    - fd-find
+    - ripgrep
+    - fzf
+    - zoxide
+    - ImageMagick
+  macos:
+    - yazi
+    - ffmpeg
+    - p7zip
+    - jq
+    - poppler
+    - fd
+    - ripgrep
+    - fzf
+    - zoxide
+    - imagemagick
+
+# yazi itself is in official repos on Arch and Homebrew on macOS;
+# on Debian/Fedora it must be installed via cargo
+cargo:
+  - yazi-fm
+  - yazi-cli

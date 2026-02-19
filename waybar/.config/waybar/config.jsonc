@@ -32,6 +32,7 @@
 
     "custom/arch": {
         "format": " ",
+        "on-click": "wofi --show drun",
         "tooltip": false
     },
 
@@ -102,12 +103,11 @@
     },
 
     "wlr/taskbar": {
-        "format": "{icon}  {name}",
-        "icon-size": 14,
+        "format": "{icon}",
+        "icon-size": 18,
         "tooltip-format": "{title}",
         "on-click": "activate",
-        "on-click-middle": "close",
-        "max-length": 20
+        "on-click-middle": "close"
     },
 
     // ── Right Modules ──────────────────────────────────────────

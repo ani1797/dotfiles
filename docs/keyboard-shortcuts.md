@@ -135,6 +135,7 @@ Move floating windows with keyboard.
 |------------|-------------|
 | `Super + V` | Toggle floating mode |
 | `Super + F` | Toggle fullscreen |
+| `Super + Shift + F` | Maximize (keep gaps/bar) |
 | `Super + Z` | Minimize (move to special workspace) |
 | `Super + Shift + Z` | Show/toggle minimized windows |
 | `Super + Ctrl + P` | Pin window (show on all workspaces) |
@@ -145,13 +146,14 @@ Move floating windows with keyboard.
 
 ## Workspaces
 
-Switch between and move windows to workspaces 1-9.
+Switch between and move windows to workspaces 1-10.
 
 ### Switch to Workspace
 
 | Keybinding | Description |
 |------------|-------------|
 | `Super + 1` to `Super + 9` | Switch to workspace 1-9 |
+| `Super + 0` | Switch to workspace 10 |
 | `Super + S` | Toggle special workspace |
 
 ### Move Window to Workspace
@@ -159,6 +161,7 @@ Switch between and move windows to workspaces 1-9.
 | Keybinding | Description |
 |------------|-------------|
 | `Super + Shift + 1` to `Super + Shift + 9` | Move active window to workspace 1-9 |
+| `Super + Shift + 0` | Move active window to workspace 10 |
 
 ### Workspace Navigation
 
@@ -217,6 +220,7 @@ Control tiling layouts and window arrangements.
 |------------|-------------|
 | `Super + Shift + S` | Screenshot area to clipboard |
 | `Super + Shift + P` | Screenshot area to file (Pictures/) |
+| `Super + Shift + W` | Restart Waybar |
 | `Super + Shift + R` | Reload Hyprland configuration |
 | `Super + Shift + E` | Exit Hyprland |
 
@@ -299,6 +303,15 @@ Understanding the modifier key combinations:
 
 **Leader Key**: `Space`
 
+### Window Navigation
+
+| Keybinding | Description |
+|------------|-------------|
+| `Ctrl+H` | Move to left split |
+| `Ctrl+J` | Move to lower split |
+| `Ctrl+K` | Move to upper split |
+| `Ctrl+L` | Move to right split |
+
 ### File Navigation
 
 | Keybinding | Description |
@@ -311,6 +324,26 @@ Understanding the modifier key combinations:
 | `Space+fh` | Help tags |
 | `Ctrl+n` | Toggle Neo-tree |
 
+### Editing & Movement
+
+| Keybinding | Mode | Description |
+|------------|------|-------------|
+| `Shift+J` | Visual | Move selected lines down |
+| `Shift+K` | Visual | Move selected lines up |
+| `Ctrl+D` | Normal | Scroll half-page down (centered) |
+| `Ctrl+U` | Normal | Scroll half-page up (centered) |
+| `n` / `N` | Normal | Next/prev search result (centered) |
+| `Esc` | Normal | Clear search highlights |
+
+### Clipboard & Registers
+
+| Keybinding | Description |
+|------------|-------------|
+| `Space+p` | Paste without overwriting register |
+| `Space+y` | Yank to system clipboard |
+| `Space+Y` | Yank line to system clipboard |
+| `Space+d` | Delete to void register |
+
 ### LSP
 
 | Keybinding | Description |
@@ -322,6 +355,14 @@ Understanding the modifier key combinations:
 | `gr` | References |
 | `Space+rn` | Rename symbol |
 | `Space+ca` | Code action |
+
+### Diagnostics
+
+| Keybinding | Description |
+|------------|-------------|
+| `[d` | Previous diagnostic |
+| `]d` | Next diagnostic |
+| `Space+e` | Show diagnostic float |
 
 ### Completion
 
@@ -340,6 +381,13 @@ Understanding the modifier key combinations:
 | `Space+aa` | Ask AI |
 | `Space+ae` | Edit with AI |
 | `Space+ar` | Refresh AI |
+
+### Utilities
+
+| Keybinding | Description |
+|------------|-------------|
+| `Space+w` | Quick save |
+| `Space+?` | Show buffer-local keymaps (Which-Key) |
 
 See [Neovim Module Documentation](modules/nvim.md) for full details.
 
@@ -405,32 +453,107 @@ See [Tmux Module Documentation](modules/tmux.md) for full details.
 
 ---
 
-## Other Module Shortcuts
+## Kitty Terminal
 
-### Kitty Terminal
+### Split Management
 
-See [Kitty Module Documentation](modules/kitty.md) for terminal-specific keybindings.
+| Keybinding | Description |
+|------------|-------------|
+| `Ctrl+Shift+\` | Create vertical split (side-by-side) |
+| `Ctrl+Shift+-` | Create horizontal split (top-bottom) |
+| `Ctrl+Shift+W` | Close current split |
 
-### Rofi Launcher
+### Split Navigation
 
-See [Rofi Module Documentation](modules/rofi.md) for launcher shortcuts.
+| Keybinding | Description |
+|------------|-------------|
+| `Ctrl+←` | Move focus left |
+| `Ctrl+→` | Move focus right |
+| `Ctrl+↑` | Move focus up |
+| `Ctrl+↓` | Move focus down |
 
-### Git Aliases
+### Window Movement
+
+| Keybinding | Description |
+|------------|-------------|
+| `Shift+Alt+←` | Move window left |
+| `Shift+Alt+→` | Move window right |
+| `Shift+Alt+↑` | Move window up |
+| `Shift+Alt+↓` | Move window down |
+
+### Layout & Resize
+
+| Keybinding | Description |
+|------------|-------------|
+| `Ctrl+Shift+L` | Cycle through layouts (splits → stack → tall → grid) |
+| `Ctrl+Shift+R` | Enter resize mode |
+
+**Configuration**: `~/.config/kitty/kitty.conf`
+
+---
+
+## Yazi (File Manager)
+
+### Custom Bindings
+
+| Keybinding | Description |
+|------------|-------------|
+| `!` | Open shell in current directory |
+| `E` | Extract archive |
+| `z` | Jump via zoxide |
+
+### Quick Navigation
+
+| Keybinding | Description |
+|------------|-------------|
+| `g, d` | Go to `~/Downloads` |
+| `g, c` | Go to `~/.config` |
+| `g, D` | Go to dotfiles (`~/.local/share/dotfiles`) |
+
+All default Yazi keybindings are preserved alongside these custom additions.
+
+**Configuration**: `~/.config/yazi/keymap.toml`
+
+---
+
+## Waybar (Status Bar)
+
+Waybar modules respond to mouse clicks and scroll actions.
+
+### Click Actions
+
+| Module | Action | Trigger |
+|--------|--------|---------|
+| Volume | Toggle mute | Left click |
+| Volume | Increase 2% | Scroll up |
+| Volume | Decrease 2% | Scroll down |
+| Network | Open `nmtui` (network manager) | Left click |
+| Updates | Open system update in terminal | Left click |
+| System Info | Open system monitor session | Left click |
+| Notifications | Toggle notification panel | Left click |
+| Notifications | Toggle Do Not Disturb | Right click |
+| Power | Open power menu | Left click |
+| Clock | Toggle time/date format | Left click |
+| Workspaces | Switch to workspace | Left click |
+| Taskbar | Activate window | Left click |
+| Taskbar | Close window | Middle click |
+
+**Configuration**: `~/.config/waybar/config.jsonc`
+
+---
+
+## Rofi (Application Launcher)
+
+Rofi is configured as a themed application launcher with no custom keybindings — it uses default Rofi controls. It is launched from Hyprland via `Super + R`.
+
+See [Rofi Module Documentation](modules/rofi.md) for theming details.
+
+---
+
+## Git Aliases
 
 See [Git Module Documentation](modules/git.md) for git command aliases and shortcuts.
 
 ---
 
-## Adding Module Shortcuts
-
-When adding new modules with keybindings:
-
-1. Document shortcuts in the module's documentation (`docs/modules/<module>.md`)
-2. Add a reference section here linking to that documentation
-3. For complex keybinding sets, create a dedicated section in this file
-
----
-
-**Configuration Location**: `~/.config/hypr/hyprland.conf`  
-**Helper Scripts**: `~/.config/hypr/scripts/`  
-**Last Updated**: 2026-02-06
+**Last Updated**: 2026-02-19

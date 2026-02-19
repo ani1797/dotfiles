@@ -1,0 +1,70 @@
+/* ═══════════════════════════════════════════════════════════
+   Wofi — Tokyo Night
+   Matches the Rofi / Waybar palette from this dotfiles repo
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Outer window ────────────────────────────────────────── */
+
+window {
+    background-color: rgba(36, 40, 59, 0.88);       /* storm, 88 % */
+    border: 2px solid #7aa2f7;                        /* blue accent */
+    border-radius: 16px;
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    color: #c0caf5;                                   /* fg */
+}
+
+/* ── Search bar ──────────────────────────────────────────── */
+
+#input {
+    background-color: rgba(26, 27, 38, 0.9);         /* night bg */
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 16px 16px 8px 16px;
+    color: #c0caf5;
+    font-size: 14px;
+}
+
+#input:focus {
+    border: none;
+    box-shadow: none;
+}
+
+/* ── App list container ──────────────────────────────────── */
+
+#outer-box {
+    padding: 0 8px 12px 8px;
+}
+
+#scroll {
+    margin: 0;
+}
+
+/* ── Individual rows ─────────────────────────────────────── */
+
+#entry {
+    padding: 8px 12px;
+    margin: 2px 8px;
+    border-radius: 10px;
+    transition: background-color 0.2s ease;
+}
+
+#entry:selected {
+    background-color: rgba(255, 255, 255, 0.09);      /* glass hover */
+    border: 1px solid rgba(122, 162, 247, 0.5);       /* subtle blue */
+}
+
+/* ── Icon + text inside each row ─────────────────────────── */
+
+#img {
+    margin-right: 12px;
+}
+
+#text {
+    color: #a9b1d6;                                    /* fg-dim */
+}
+
+#text:selected {
+    color: #c0caf5;                                    /* fg bright */
+}

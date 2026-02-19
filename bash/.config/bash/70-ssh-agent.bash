@@ -1,5 +1,6 @@
 # ~/.config/bash/70-ssh-agent.bash
 # SSH agent auto-start
+command -v ssh-agent &>/dev/null || return 0
 
 # Skip if running under 1Password SSH agent or already have an agent
 if [[ -n "$SSH_AUTH_SOCK" ]]; then

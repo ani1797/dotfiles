@@ -1,6 +1,7 @@
 # ~/.config/fish/conf.d/80-yazi.fish
 # Yazi shell wrapper — cd to last directory on exit
 # Use `y` to launch; `q` to quit and cd, `Q` to quit without cd
+command -v yazi &>/dev/null; or return
 
 function y
 	set tmp (mktemp -t "yazi-cwd.XXXXXX")

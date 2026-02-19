@@ -1,5 +1,6 @@
 # ~/.config/fish/conf.d/70-ssh-agent.fish
 # SSH agent auto-start
+command -v ssh-agent &>/dev/null; or return
 
 # Skip if running under 1Password SSH agent or already have an agent
 if set -q SSH_AUTH_SOCK

@@ -82,7 +82,7 @@
     "custom/weather": {
         "format": "{}",
         "interval": 900,
-        "exec": "wttrbar --location auto --main-indicator temp_C --custom-indicator '{temp_C}°C {weatherDesc} {areaName}' 2>/dev/null",
+        "exec": "wttrbar --main-indicator temp_C --custom-indicator '{temp_C}°C {weatherDesc} {areaName}' 2>/dev/null",
         "exec-if": "which wttrbar",
         "return-type": "json",
         "tooltip": true

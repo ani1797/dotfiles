@@ -66,22 +66,35 @@ get_github_username() {
 import_github_keys() {
     local username="$1"
 
-    print_info "Checking for ssh-import-id..."
-    if ! command_exists ssh-import-id; then
-        print_error "ssh-import-id not found. Please install it:"
-        echo "  Ubuntu/Debian: sudo apt-get install ssh-import-id"
-        echo "  Arch Linux: yay -S ssh-import-id"
-        echo "  macOS: brew install ssh-import-id"
+    mkdir -p "$SSH_DIR"
+    chmod 700 "$SSH_DIR"
+
+    print_info "Importing SSH keys from GitHub for user: $username"
+    local keys
+    keys="$(curl -sS "https://github.com/${username}.keys")" || {
+        print_error "Failed to fetch SSH keys from GitHub"
+        exit 1
+    }
+
+    if [[ -z "$keys" ]]; then
+        print_error "No SSH keys found for GitHub user: $username"
         exit 1
     fi
 
-    print_info "Importing SSH keys from GitHub for user: $username"
-    if ssh-import-id "gh:$username"; then
-        print_success "SSH keys imported successfully"
-    else
-        print_error "Failed to import SSH keys from GitHub"
-        exit 1
-    fi
+    # Append to authorized_keys, avoiding duplicates
+    local auth_keys="$SSH_DIR/authorized_keys"
+    touch "$auth_keys"
+    chmod 600 "$auth_keys"
+
+    local added=0
+    while IFS= read -r key; do
+        if ! grep -qF "$key" "$auth_keys" 2>/dev/null; then
+            echo "$key" >> "$auth_keys"
+            ((added++))
+        fi
+    done <<< "$keys"
+
+    print_success "SSH keys imported ($added new, from GitHub)"
 }
 
 # Get the first ed25519 key from authorized_keys

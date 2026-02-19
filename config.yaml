@@ -180,3 +180,12 @@ modules:
       - WORK-MACBOOK
       - asus-vivobook
       - DESKTOP-OKTKL4S
+  - name: "yazi"
+    path: "yazi"
+    hosts:
+      - HOME-DESKTOP
+      - ASUS-LAPTOP
+      - WORK-MACBOOK
+      - CODESPACES
+      - asus-vivobook
+      - DESKTOP-OKTKL4S

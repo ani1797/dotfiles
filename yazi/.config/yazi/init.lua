@@ -1,6 +1,7 @@
 -- Yazi Plugin Initialization
--- Git status integration for file list
+-- Plugins are installed via: configure-yazi
 
--- Show git file status (modified, untracked, etc.) in linemode
--- Requires: git
-require("git"):setup()
+-- Git status integration for file list
+-- Requires: yazi-rs/plugins:git (install via configure-yazi)
+local ok, git = pcall(require, "git")
+if ok then git:setup() end

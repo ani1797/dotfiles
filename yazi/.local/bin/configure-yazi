@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# configure-yazi — install yazi plugins via ya pack
+# Run after stowing the yazi module
+
+set -euo pipefail
+
+if ! command -v ya &>/dev/null; then
+    echo "[ERROR] ya CLI not found. Install yazi first."
+    exit 1
+fi
+
+echo "[INFO] Installing yazi plugins..."
+
+# Git status integration (shows modified/untracked in file list)
+ya pack -a yazi-rs/plugins:git
+
+echo "[OK] Yazi plugins installed."

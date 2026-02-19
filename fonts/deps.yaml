@@ -1,4 +1,8 @@
 # fonts module dependencies
+# On Arch, Nerd Fonts are available as native packages.
+# On Debian/Fedora, install Nerd Fonts manually or via:
+#   curl -fsSL https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/install.sh | bash -s -- JetBrainsMono
+# On macOS, use: brew install --cask font-jetbrains-mono-nerd-font
 packages:
   arch:
     - fontconfig
@@ -7,4 +11,5 @@ packages:
     - fontconfig
   fedora:
     - fontconfig
-  macos: []
+  macos:
+    - font-jetbrains-mono-nerd-font

@@ -1,11 +1,11 @@
 # bash module dependencies
+# Note: starship is owned by the starship module -- not listed here
 packages:
   arch:
     - bash
     - bash-completion
     - eza
     - fzf
-    - starship
   debian:
     - bash
     - bash-completion
@@ -21,4 +21,3 @@ packages:
     - bash-completion@2
     - eza
     - fzf
-    - starship

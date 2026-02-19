@@ -3,7 +3,6 @@
 packages:
   arch:
     - waybar
-    - wttrbar
     - playerctl
     - swaync
   debian:
@@ -13,3 +12,6 @@ packages:
     - waybar
     - playerctl
   macos: []
+
+aur:
+  - wttrbar

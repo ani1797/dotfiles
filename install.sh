@@ -188,6 +188,51 @@ install_native_packages() {
     esac
 }
 
+# Install AUR packages via yay or paru (Arch-only, no sudo).
+install_aur_packages() {
+    local -a pkgs=("$@")
+
+    if [[ ${#pkgs[@]} -eq 0 ]]; then
+        return 0
+    fi
+
+    # Only relevant on Arch-based systems
+    if [[ "$PKG_MGR" != "pacman" ]]; then
+        return 0
+    fi
+
+    # Filter out already-installed packages
+    local -a missing_pkgs=()
+    for pkg in "${pkgs[@]}"; do
+        if ! pacman -Qq "$pkg" &>/dev/null; then
+            missing_pkgs+=("$pkg")
+        fi
+    done
+
+    if [[ ${#missing_pkgs[@]} -eq 0 ]]; then
+        info "  All AUR packages already installed: ${pkgs[*]}"
+        return 0
+    fi
+
+    # Detect AUR helper
+    local aur_helper=""
+    if command -v paru &>/dev/null; then
+        aur_helper="paru"
+    elif command -v yay &>/dev/null; then
+        aur_helper="yay"
+    else
+        warn "  AUR packages needed but no AUR helper (paru/yay) found: ${missing_pkgs[*]}"
+        warn "  Install paru or yay, then re-run install.sh"
+        return 1
+    fi
+
+    info "  Installing AUR packages via $aur_helper: ${missing_pkgs[*]}"
+    "$aur_helper" -S --noconfirm --needed "${missing_pkgs[@]}" || {
+        warn "Some AUR packages may have failed"
+        return 1
+    }
+}
+
 # Install cargo packages. Runs as the current user (no sudo).
 install_cargo_packages() {
     local -a pkgs=("$@")
@@ -535,6 +580,13 @@ process_module() {
                 fi
             fi
         fi
+
+        # AUR packages (Arch-only)
+        local -a aur_pkgs=()
+        while IFS= read -r pkg; do
+            [[ -n "$pkg" ]] && aur_pkgs+=("$pkg")
+        done < <(yq -r '.aur[]? // empty' "$deps_file" 2>/dev/null)
+        install_aur_packages "${aur_pkgs[@]}"
 
         # Cargo packages
         local -a cargo_pkgs=()

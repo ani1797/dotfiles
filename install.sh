@@ -156,7 +156,7 @@ install_native_packages() {
             }
             ;;
         apt)
-            sudo apt-get update -qq
+            sudo apt-get update -qq || warn "apt-get update had errors (non-fatal, continuing)"
             sudo apt-get install -y -qq "${missing_pkgs[@]}" || {
                 warn "Some apt packages may not be available"
                 return 1

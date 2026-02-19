@@ -3,10 +3,8 @@
 
 command -v fzf &>/dev/null || return 0
 
-# FZF provides native zsh integration since v0.48+
-if fzf --zsh &>/dev/null; then
-  eval "$(fzf --zsh)"
-elif [[ -f "/usr/share/fzf/key-bindings.zsh" ]]; then
+# Source from system/user files (works on all fzf versions)
+if [[ -f "/usr/share/fzf/key-bindings.zsh" ]]; then
   source /usr/share/fzf/key-bindings.zsh
   [[ -f "/usr/share/fzf/completion.zsh" ]] && source /usr/share/fzf/completion.zsh
 elif [[ -f "$HOME/.fzf.zsh" ]]; then

@@ -1,13 +1,13 @@
 show=drun
-width=600
-height=480
+width=680
+height=540
 always_parse_args=true
 show_all=true
 print_command=true
 layer=overlay
 insensitive=true
-prompt=Search...
-image_size=36
+prompt=Search
+image_size=48
 columns=1
 allow_images=true
 hide_scroll=true

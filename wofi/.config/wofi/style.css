@@ -1,40 +1,40 @@
 /* ═══════════════════════════════════════════════════════════
-   Wofi — Tokyo Night
-   Matches the Rofi / Waybar palette from this dotfiles repo
+   Wofi — Tokyo Night · Glass panel style
+   Matches the reference launcher's right-panel aesthetic
    ═══════════════════════════════════════════════════════════ */
 
 /* ── Outer window ────────────────────────────────────────── */
 
 window {
-    background-color: rgba(36, 40, 59, 0.88);       /* storm, 88 % */
-    border: 2px solid #7aa2f7;                        /* blue accent */
-    border-radius: 16px;
+    background-color: rgba(36, 40, 59, 0.82);
+    border: 1px solid rgba(122, 162, 247, 0.25);
+    border-radius: 20px;
     font-family: "JetBrainsMono Nerd Font", monospace;
-    font-size: 13px;
-    color: #c0caf5;                                   /* fg */
+    font-size: 14px;
+    color: #c0caf5;
 }
 
 /* ── Search bar ──────────────────────────────────────────── */
 
 #input {
-    background-color: rgba(26, 27, 38, 0.9);         /* night bg */
-    border: none;
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin: 16px 16px 8px 16px;
+    background-color: rgba(26, 27, 38, 0.7);
+    border: 1px solid rgba(122, 162, 247, 0.15);
+    border-radius: 14px;
+    padding: 14px 20px;
+    margin: 18px 18px 10px 18px;
     color: #c0caf5;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 #input:focus {
-    border: none;
+    border: 1px solid rgba(122, 162, 247, 0.35);
     box-shadow: none;
 }
 
 /* ── App list container ──────────────────────────────────── */
 
 #outer-box {
-    padding: 0 8px 12px 8px;
+    padding: 4px 10px 14px 10px;
 }
 
 #scroll {
@@ -44,27 +44,28 @@ window {
 /* ── Individual rows ─────────────────────────────────────── */
 
 #entry {
-    padding: 8px 12px;
-    margin: 2px 8px;
-    border-radius: 10px;
-    transition: background-color 0.2s ease;
+    padding: 12px 16px;
+    margin: 3px 8px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    transition: background-color 0.15s ease, border 0.15s ease;
 }
 
 #entry:selected {
-    background-color: rgba(255, 255, 255, 0.09);      /* glass hover */
-    border: 1px solid rgba(122, 162, 247, 0.5);       /* subtle blue */
+    background-color: rgba(122, 162, 247, 0.12);
+    border: 1px solid rgba(122, 162, 247, 0.30);
 }
 
 /* ── Icon + text inside each row ─────────────────────────── */
 
 #img {
-    margin-right: 12px;
+    margin-right: 16px;
 }
 
 #text {
-    color: #a9b1d6;                                    /* fg-dim */
+    color: #a9b1d6;
 }
 
 #text:selected {
-    color: #c0caf5;                                    /* fg bright */
+    color: #c0caf5;
 }

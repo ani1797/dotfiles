@@ -1,191 +1,189 @@
+# Module definitions
+# Each module has a name, path (directory in this repo), and optional target (defaults to $HOME)
 modules:
   - name: "antigravity"
     path: "antigravity"
-    hosts:
-      - HOME-DESKTOP
   - name: "bashrc"
     path: "bash"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "zsh"
     path: "zsh"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "fish"
     path: "fish"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "starship"
     path: "starship"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "shell-utils"
     path: "shell-utils"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "direnv"
     path: "direnv"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "git"
     path: "git"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "vim"
     path: "vim"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "nvim"
     path: "nvim"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "tmux"
     path: "tmux"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "ssh"
     path: "ssh"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "kitty"
     path: "kitty"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
   - name: "rofi"
     path: "rofi"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
   - name: "hyprland"
     path: "hyprland"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
   - name: "waybar"
     path: "waybar"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
   - name: "theme"
     path: "theme"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
   - name: "sddm"
     path: "sddm"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
   - name: "swaync"
     path: "swaync"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
   - name: "wayvnc"
     path: "wayvnc"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
   - name: "pip"
     path: "pip"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "uv"
     path: "uv"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "npm"
     path: "npm"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "podman"
     path: "podman"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
   - name: "fonts"
     path: "fonts"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
   - name: "yazi"
     path: "yazi"
-    hosts:
-      - HOME-DESKTOP
-      - ASUS-LAPTOP
-      - WORK-MACBOOK
-      - CODESPACES
-      - asus-vivobook
-      - DESKTOP-OKTKL4S
+
+# Machine profiles
+# Each machine has a hostname and a list of modules to install.
+# Module refs are either a plain string (module name) or an object with name + target override.
+machines:
+  - hostname: "HOME-DESKTOP"
+    modules:
+      - "antigravity"
+      - "bashrc"
+      - "zsh"
+      - "fish"
+      - "starship"
+      - "shell-utils"
+      - "direnv"
+      - "git"
+      - "vim"
+      - "nvim"
+      - "tmux"
+      - "ssh"
+      - "kitty"
+      - "rofi"
+      - "hyprland"
+      - "waybar"
+      - "theme"
+      - "sddm"
+      - "swaync"
+      - "wayvnc"
+      - "pip"
+      - "uv"
+      - "npm"
+      - "podman"
+      - "fonts"
+      - "yazi"
+
+  - hostname: "ASUS-LAPTOP"
+    modules:
+      - "bashrc"
+      - "zsh"
+      - "fish"
+      - "starship"
+      - "shell-utils"
+      - "direnv"
+      - "git"
+      - "vim"
+      - "nvim"
+      - "tmux"
+      - "ssh"
+      - "kitty"
+      - "rofi"
+      - "hyprland"
+      - "waybar"
+      - "theme"
+      - "sddm"
+      - "swaync"
+      - "wayvnc"
+      - "pip"
+      - "uv"
+      - "npm"
+      - "podman"
+      - "fonts"
+      - "yazi"
+
+  - hostname: "WORK-MACBOOK"
+    modules:
+      - "bashrc"
+      - "zsh"
+      - "starship"
+      - "shell-utils"
+      - "direnv"
+      - "git"
+      - "vim"
+      - "nvim"
+      - "tmux"
+      - "ssh"
+      - "pip"
+      - "uv"
+      - "npm"
+      - "fonts"
+      - "yazi"
+
+  - hostname: "CODESPACES"
+    modules:
+      - "bashrc"
+      - "zsh"
+      - "starship"
+      - "shell-utils"
+      - "direnv"
+      - "git"
+      - "vim"
+      - "nvim"
+      - "tmux"
+      - "ssh"
+      - "pip"
+      - "uv"
+      - "npm"
+      - "yazi"
+
+  - hostname: "asus-vivobook"
+    modules:
+      - "bashrc"
+      - "zsh"
+      - "fish"
+      - "starship"
+      - "shell-utils"
+      - "direnv"
+      - "git"
+      - "vim"
+      - "nvim"
+      - "tmux"
+      - "ssh"
+      - "pip"
+      - "uv"
+      - "npm"
+      - "fonts"
+      - "yazi"
+
+  - hostname: "DESKTOP-OKTKL4S"
+    modules:
+      - "bashrc"
+      - "zsh"
+      - "fish"
+      - "starship"
+      - "shell-utils"
+      - "direnv"
+      - "git"
+      - "vim"
+      - "nvim"
+      - "tmux"
+      - "ssh"
+      - "pip"
+      - "uv"
+      - "npm"
+      - "fonts"
+      - "yazi"

@@ -107,8 +107,23 @@ get_deps_os_key() {
 # PACKAGE INSTALLATION HELPERS
 # ============================================================================
 
+# Check if a native package is already installed.
+# Returns 0 if installed, 1 if not.
+is_package_installed() {
+    local pkg_mgr="$1"
+    local pkg="$2"
+
+    case "$pkg_mgr" in
+        pacman)  pacman -Qq "$pkg" &>/dev/null ;;
+        apt)     dpkg -s "$pkg" &>/dev/null ;;
+        dnf|yum) rpm -q "$pkg" &>/dev/null ;;
+        brew)    brew list "$pkg" &>/dev/null ;;
+        *)       return 1 ;;
+    esac
+}
+
 # Install native packages via the detected package manager.
-# Accepts a list of package names. Skips if the list is empty.
+# Filters out already-installed packages to avoid unnecessary sudo prompts.
 install_native_packages() {
     local pkg_mgr="$1"
     shift
@@ -118,43 +133,56 @@ install_native_packages() {
         return 0
     fi
 
-    info "  Installing native packages: ${pkgs[*]}"
+    # Filter out already-installed packages
+    local -a missing_pkgs=()
+    for pkg in "${pkgs[@]}"; do
+        if ! is_package_installed "$pkg_mgr" "$pkg"; then
+            missing_pkgs+=("$pkg")
+        fi
+    done
+
+    if [[ ${#missing_pkgs[@]} -eq 0 ]]; then
+        info "  All packages already installed: ${pkgs[*]}"
+        return 0
+    fi
+
+    info "  Installing native packages: ${missing_pkgs[*]}"
 
     case "$pkg_mgr" in
         pacman)
-            sudo pacman -Sy --noconfirm --needed "${pkgs[@]}" || {
+            sudo pacman -Sy --noconfirm --needed "${missing_pkgs[@]}" || {
                 warn "Some pacman packages may have failed"
                 return 1
             }
             ;;
         apt)
             sudo apt-get update -qq
-            sudo apt-get install -y -qq "${pkgs[@]}" || {
+            sudo apt-get install -y -qq "${missing_pkgs[@]}" || {
                 warn "Some apt packages may not be available"
                 return 1
             }
             ;;
         dnf)
-            sudo dnf install -y -q "${pkgs[@]}" || {
+            sudo dnf install -y -q "${missing_pkgs[@]}" || {
                 warn "Some dnf packages may not be available"
                 return 1
             }
             ;;
         yum)
-            sudo yum install -y -q "${pkgs[@]}" || {
+            sudo yum install -y -q "${missing_pkgs[@]}" || {
                 warn "Some yum packages may not be available"
                 return 1
             }
             ;;
         brew)
-            brew install "${pkgs[@]}" || {
+            brew install "${missing_pkgs[@]}" || {
                 warn "Some brew packages may not be available"
                 return 1
             }
             ;;
         *)
             error "Unsupported package manager: $pkg_mgr"
-            error "Please install manually: ${pkgs[*]}"
+            error "Please install manually: ${missing_pkgs[*]}"
             return 1
             ;;
     esac

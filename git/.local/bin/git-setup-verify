@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+# git-setup-verify - Verify git configuration and setup
+# Works from any shell (bash/zsh/fish) due to shebang
+
+set -euo pipefail
+
+# Colors
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+success() { echo -e "${GREEN}✓${NC} $*"; }
+info() { echo -e "${BLUE}ℹ${NC} $*"; }
+warn() { echo -e "${YELLOW}⚠${NC} $*"; }
+error() { echo -e "${RED}✗${NC} $*"; }
+
+echo "=== Git Configuration Verification ==="
+echo
+
+# Check git installation
+if command -v git >/dev/null 2>&1; then
+    success "Git is installed: $(git --version)"
+else
+    error "Git is not installed"
+    exit 1
+fi
+echo
+
+# Check user configuration
+echo "User Configuration:"
+if [[ -f "$HOME/.gitconfig.local" ]]; then
+    success "Machine config: ~/.gitconfig.local"
+else
+    warn "No ~/.gitconfig.local found. Run: configure-git-machine <github_username>"
+fi
+
+if git config user.name >/dev/null 2>&1; then
+    success "Name: $(git config user.name)"
+else
+    warn "Name not configured. Run: git config --global user.name 'Your Name'"
+fi
+
+if git config user.email >/dev/null 2>&1; then
+    success "Email: $(git config user.email)"
+else
+    warn "Email not configured. Run: git config --global user.email 'your@email.com'"
+fi
+echo
+
+# Check signing configuration
+echo "Commit Signing:"
+if git config commit.gpgsign >/dev/null 2>&1; then
+    if [[ "$(git config commit.gpgsign)" == "true" ]]; then
+        success "Commit signing is enabled"
+
+        # Check signing key
+        if git config user.signingkey >/dev/null 2>&1; then
+            success "Signing key: $(git config user.signingkey | cut -c 1-20)..."
+        else
+            warn "Signing key not configured"
+        fi
+
+        # Check GPG format
+        if git config gpg.format >/dev/null 2>&1; then
+            gpg_format=$(git config gpg.format)
+            success "GPG format: $gpg_format"
+
+            # Check SSH signing program if using SSH
+            if [[ "$gpg_format" == "ssh" ]]; then
+                if git config gpg.ssh.program >/dev/null 2>&1; then
+                    ssh_program=$(git config gpg.ssh.program)
+                    if [[ -x "$ssh_program" ]]; then
+                        success "SSH signing program: $ssh_program"
+                    else
+                        error "SSH signing program not found: $ssh_program"
+                    fi
+                else
+                    warn "SSH signing program not configured"
+                fi
+            fi
+        fi
+    else
+        info "Commit signing is disabled"
+    fi
+else
+    info "Commit signing not configured"
+fi
+echo
+
+# Check allowed signers
+echo "Allowed Signers:"
+if git config gpg.ssh.allowedsignersfile >/dev/null 2>&1; then
+    signers_file=$(git config gpg.ssh.allowedsignersfile)
+    signers_file="${signers_file/#\~/$HOME}"
+    if [[ -f "$signers_file" ]]; then
+        signer_count=$(grep -cv '^\s*#\|^\s*$' "$signers_file" 2>/dev/null || echo 0)
+        success "Allowed signers file: $signers_file ($signer_count entries)"
+    else
+        error "Allowed signers file not found: $signers_file"
+    fi
+else
+    warn "Allowed signers file not configured"
+fi
+echo
+
+# Check global gitignore
+echo "Global Gitignore:"
+if git config core.excludesfile >/dev/null 2>&1; then
+    excludes_file=$(git config core.excludesfile)
+    # Expand tilde
+    excludes_file="${excludes_file/#\~/$HOME}"
+    if [[ -f "$excludes_file" ]]; then
+        success "Global gitignore: $excludes_file"
+        line_count=$(wc -l < "$excludes_file")
+        info "  Contains $line_count lines"
+    else
+        error "Global gitignore file not found: $excludes_file"
+    fi
+else
+    warn "Global gitignore not configured"
+fi
+echo
+
+# Check commit template
+echo "Commit Template:"
+if git config commit.template >/dev/null 2>&1; then
+    template_file=$(git config commit.template)
+    # Expand tilde
+    template_file="${template_file/#\~/$HOME}"
+    if [[ -f "$template_file" ]]; then
+        success "Commit template: $template_file"
+    else
+        error "Commit template file not found: $template_file"
+    fi
+else
+    info "Commit template not configured"
+fi
+echo
+
+# Check default branch
+echo "Default Branch:"
+if git config init.defaultbranch >/dev/null 2>&1; then
+    success "Default branch: $(git config init.defaultbranch)"
+else
+    warn "Default branch not configured. Run: git config --global init.defaultBranch main"
+fi
+echo
+
+# Check pull configuration
+echo "Pull Configuration:"
+if git config pull.rebase >/dev/null 2>&1; then
+    if [[ "$(git config pull.rebase)" == "true" ]]; then
+        success "Pull uses rebase (recommended)"
+    else
+        info "Pull uses merge"
+    fi
+else
+    warn "Pull strategy not configured. Recommend: git config --global pull.rebase true"
+fi
+echo
+
+# Check 1Password integration (if applicable)
+echo "1Password Integration:"
+if command -v op >/dev/null 2>&1; then
+    success "1Password CLI installed: $(op --version)"
+
+    if op account list >/dev/null 2>&1; then
+        success "Authenticated with 1Password"
+    else
+        warn "Not authenticated with 1Password. Run: eval \$(op signin)"
+    fi
+else
+    info "1Password CLI not installed"
+fi
+echo
+
+# Check for useful aliases
+echo "Git Aliases:"
+alias_count=$(git config --get-regexp alias | wc -l)
+if [[ $alias_count -gt 0 ]]; then
+    success "$alias_count aliases configured"
+    info "Run 'git aliases' to see all aliases"
+else
+    info "No aliases configured"
+fi
+echo
+
+# Check editor configuration
+echo "Editor Configuration:"
+if git config core.editor >/dev/null 2>&1; then
+    editor=$(git config core.editor)
+    success "Editor: $editor"
+else
+    info "Editor not configured (using system default)"
+fi
+echo
+
+echo "=== Verification Complete ==="

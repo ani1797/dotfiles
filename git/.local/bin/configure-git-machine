@@ -1,237 +1,242 @@
 #!/usr/bin/env bash
-# Configure machine-specific Git settings
-# Uses SSH signing (recommended over GPG - simpler, uses existing SSH keys)
+# configure-git-machine — set up machine-specific git identity and SSH signing
 #
-# - Imports SSH keys from GitHub
-# - Detects 1Password SSH agent or falls back to ssh-keygen
-# - Generates .gitconfig.local with SSH signing configuration
+# Usage: configure-git-machine <github_username>
 #
-# SSH signing advantages over GPG:
-# - No GPG keyring to manage
-# - Uses the same SSH key you already use for GitHub
-# - 1Password integration provides secure key storage
-# - Simpler setup and maintenance
+# Pipeline:
+#   1. Fetch user identity from GitHub API
+#   2. Fetch SSH public keys from GitHub
+#   3. Detect 1Password SSH agent (cross-platform)
+#   4. Generate ~/.gitconfig.local (backup existing)
+#   5. Update ~/.ssh/allowed_signers (append-only)
 
 set -euo pipefail
 
-# Colors for output
+# ── colours ──────────────────────────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+BOLD='\033[1m'
+NC='\033[0m'
 
-# Configuration
+info()    { echo -e "${BLUE}::${NC} $*"; }
+ok()      { echo -e "${GREEN}✓${NC}  $*"; }
+warn()    { echo -e "${YELLOW}!${NC}  $*"; }
+err()     { echo -e "${RED}✗${NC}  $*" >&2; }
+die()     { err "$@"; exit 1; }
+
+# ── configuration ────────────────────────────────────────────────────
 GITCONFIG_LOCAL="$HOME/.gitconfig.local"
-SSH_DIR="$HOME/.ssh"
-ONEPASSWORD_SIGN="/opt/1Password/op-ssh-sign"
+ALLOWED_SIGNERS="$HOME/.ssh/allowed_signers"
+
+# 1Password socket paths (platform-specific)
+OP_SOCK_LINUX="$HOME/.1password/agent.sock"
+OP_SOCK_MACOS="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+# 1Password signing program paths
+OP_SIGN_LINUX="/opt/1Password/op-ssh-sign"
+OP_SIGN_MACOS="/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+
 FALLBACK_SIGN="/usr/bin/ssh-keygen"
 
-# Print colored output
-print_info() {
-    echo -e "${BLUE}ℹ${NC} $1"
+# ── helpers ──────────────────────────────────────────────────────────
+need_cmd() {
+    command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"
 }
 
-print_success() {
-    echo -e "${GREEN}✓${NC} $1"
+detect_platform() {
+    case "$(uname -s)" in
+        Linux*)  echo "linux" ;;
+        Darwin*) echo "macos" ;;
+        *)       die "Unsupported platform: $(uname -s)" ;;
+    esac
 }
 
-print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
-}
+# ── pipeline steps ───────────────────────────────────────────────────
 
-print_error() {
-    echo -e "${RED}✗${NC} $1"
-}
-
-# Check if command exists
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-# Get GitHub username
-get_github_username() {
-    local username=""
-
-    if [ $# -gt 0 ]; then
-        username="$1"
-    else
-        read -rp "Enter your GitHub username: " username
-    fi
-
-    echo "$username"
-}
-
-# Import SSH keys from GitHub
-import_github_keys() {
+# Step 1: Fetch identity from GitHub API
+fetch_identity() {
     local username="$1"
+    info "Fetching identity for GitHub user: ${BOLD}$username${NC}"
 
-    mkdir -p "$SSH_DIR"
-    chmod 700 "$SSH_DIR"
+    local api_response
+    api_response=$(curl -sf "https://api.github.com/users/${username}") \
+        || die "Failed to fetch GitHub user: $username"
 
-    print_info "Importing SSH keys from GitHub for user: $username"
-    local keys
-    keys="$(curl -sS "https://github.com/${username}.keys")" || {
-        print_error "Failed to fetch SSH keys from GitHub"
-        exit 1
-    }
-
-    if [[ -z "$keys" ]]; then
-        print_error "No SSH keys found for GitHub user: $username"
-        exit 1
-    fi
-
-    # Append to authorized_keys, avoiding duplicates
-    local auth_keys="$SSH_DIR/authorized_keys"
-    touch "$auth_keys"
-    chmod 600 "$auth_keys"
-
-    local added=0
-    while IFS= read -r key; do
-        if ! grep -qF "$key" "$auth_keys" 2>/dev/null; then
-            echo "$key" >> "$auth_keys"
-            ((added++))
-        fi
-    done <<< "$keys"
-
-    print_success "SSH keys imported ($added new, from GitHub)"
-}
-
-# Get the first ed25519 key from authorized_keys
-get_signing_key() {
-    local auth_keys="$SSH_DIR/authorized_keys"
-
-    if [ ! -f "$auth_keys" ]; then
-        print_error "No authorized_keys file found at $auth_keys"
-        exit 1
-    fi
-
-    # Find first ed25519 key
-    local key
-    key=$(grep "ssh-ed25519" "$auth_keys" | head -n1)
-
-    if [ -z "$key" ]; then
-        print_warning "No ed25519 key found, trying rsa..."
-        key=$(grep "ssh-rsa" "$auth_keys" | head -n1)
-    fi
-
-    if [ -z "$key" ]; then
-        print_error "No suitable SSH key found in $auth_keys"
-        exit 1
-    fi
-
-    # Extract only key type and key data (remove comment)
-    # Format: "ssh-ed25519 AAAAA... [optional comment]"
-    # We want: "ssh-ed25519 AAAAA..."
-    echo "$key" | awk '{print $1 " " $2}'
-}
-
-# Detect GPG signing program
-detect_gpg_program() {
-    if [ -f "$ONEPASSWORD_SIGN" ]; then
-        print_success "1Password detected at $ONEPASSWORD_SIGN" >&2
-        echo "$ONEPASSWORD_SIGN"
-    elif [ -f "$FALLBACK_SIGN" ]; then
-        print_warning "1Password not found, using fallback: $FALLBACK_SIGN" >&2
-        echo "$FALLBACK_SIGN"
+    # Extract name — try jq first, fall back to grep
+    if command -v jq >/dev/null 2>&1; then
+        GIT_NAME=$(echo "$api_response" | jq -r '.name // empty')
     else
-        print_error "Neither 1Password nor ssh-keygen found"
-        exit 1
+        GIT_NAME=$(echo "$api_response" | grep -oP '"name"\s*:\s*"\K[^"]+' || true)
+    fi
+
+    if [[ -z "$GIT_NAME" ]]; then
+        die "GitHub user '$username' has no public name set"
+    fi
+
+    GIT_EMAIL="${username}@users.noreply.github.com"
+
+    ok "Name:  $GIT_NAME"
+    ok "Email: $GIT_EMAIL"
+}
+
+# Step 2: Fetch SSH keys from GitHub
+fetch_keys() {
+    local username="$1"
+    info "Fetching SSH keys from github.com/${username}.keys"
+
+    GITHUB_KEYS=$(curl -sf "https://github.com/${username}.keys") \
+        || die "Failed to fetch SSH keys for: $username"
+
+    if [[ -z "$GITHUB_KEYS" ]]; then
+        die "No SSH keys found for GitHub user: $username"
+    fi
+
+    local key_count
+    key_count=$(echo "$GITHUB_KEYS" | wc -l)
+    ok "Found $key_count key(s)"
+
+    # Pick signing key: prefer ed25519, fall back to first key
+    SIGNING_KEY=$(echo "$GITHUB_KEYS" | grep "ssh-ed25519" | head -n1 || true)
+    if [[ -z "$SIGNING_KEY" ]]; then
+        warn "No ed25519 key found, using first available key"
+        SIGNING_KEY=$(echo "$GITHUB_KEYS" | head -n1)
+    fi
+
+    # Strip trailing comment (keep "type base64" only)
+    SIGNING_KEY=$(echo "$SIGNING_KEY" | awk '{print $1, $2}')
+
+    ok "Signing key: ${SIGNING_KEY:0:50}..."
+}
+
+# Step 3: Detect 1Password SSH agent
+detect_1password() {
+    local platform="$1"
+    info "Detecting 1Password SSH agent..."
+
+    local op_sock op_sign
+    if [[ "$platform" == "macos" ]]; then
+        op_sock="$OP_SOCK_MACOS"
+        op_sign="$OP_SIGN_MACOS"
+    else
+        op_sock="$OP_SOCK_LINUX"
+        op_sign="$OP_SIGN_LINUX"
+    fi
+
+    if [[ -S "$op_sock" ]]; then
+        ok "1Password agent socket found: $op_sock"
+        if [[ -x "$op_sign" ]]; then
+            GPG_SSH_PROGRAM="$op_sign"
+            ok "Signing program: $GPG_SSH_PROGRAM"
+        else
+            warn "1Password socket exists but op-ssh-sign not found at $op_sign"
+            warn "Falling back to $FALLBACK_SIGN"
+            GPG_SSH_PROGRAM="$FALLBACK_SIGN"
+        fi
+    else
+        warn "No 1Password agent socket at $op_sock"
+        GPG_SSH_PROGRAM="$FALLBACK_SIGN"
+        ok "Using fallback: $GPG_SSH_PROGRAM"
     fi
 }
 
-# Generate .gitconfig.local
+# Step 4: Generate ~/.gitconfig.local
 generate_gitconfig_local() {
-    local signing_key="$1"
-    local gpg_program="$2"
+    info "Generating $GITCONFIG_LOCAL"
 
-    print_info "Generating $GITCONFIG_LOCAL..."
+    # Backup existing
+    if [[ -f "$GITCONFIG_LOCAL" ]]; then
+        local backup="${GITCONFIG_LOCAL}.bak.$(date +%Y%m%d_%H%M%S)"
+        cp "$GITCONFIG_LOCAL" "$backup"
+        warn "Backed up existing → $backup"
+    fi
 
     cat > "$GITCONFIG_LOCAL" << EOF
-# Machine-specific Git Configuration
+# Machine-specific Git configuration
 # Generated by configure-git-machine on $(date +%Y-%m-%d)
-# This file is NOT version controlled in dotfiles
+# Do NOT check this file into version control.
 
 [user]
-    signingKey = $signing_key
+    name = $GIT_NAME
+    email = $GIT_EMAIL
+    signingKey = $SIGNING_KEY
 
 [gpg]
     format = ssh
 
 [gpg "ssh"]
-    program = $gpg_program
+    program = $GPG_SSH_PROGRAM
+    allowedSignersFile = $ALLOWED_SIGNERS
 EOF
 
-    # Add fallback comment if using 1Password
-    if [[ "$gpg_program" == "$ONEPASSWORD_SIGN" ]]; then
-        cat >> "$GITCONFIG_LOCAL" << EOF
-    # Fallback for machines without 1Password
-    # program = $FALLBACK_SIGN
-EOF
-    fi
-
-    print_success "Configuration written to $GITCONFIG_LOCAL"
+    ok "Written to $GITCONFIG_LOCAL"
 }
 
-# Backup existing config
-backup_existing_config() {
-    if [ -f "$GITCONFIG_LOCAL" ]; then
-        local backup="${GITCONFIG_LOCAL}.backup.$(date +%Y%m%d_%H%M%S)"
-        print_warning "Backing up existing config to $backup"
-        cp "$GITCONFIG_LOCAL" "$backup"
-    fi
+# Step 5: Update allowed_signers (append-only)
+update_allowed_signers() {
+    local username="$1"
+    info "Updating $ALLOWED_SIGNERS"
+
+    mkdir -p "$(dirname "$ALLOWED_SIGNERS")"
+    touch "$ALLOWED_SIGNERS"
+
+    local added=0
+    while IFS= read -r key; do
+        [[ -z "$key" ]] && continue
+        # Check if the key material (type + base64) already exists in the file
+        local key_material
+        key_material=$(echo "$key" | awk '{print $1, $2}')
+        if ! grep -qF "$key_material" "$ALLOWED_SIGNERS" 2>/dev/null; then
+            echo "$username $key_material" >> "$ALLOWED_SIGNERS"
+            added=$((added + 1))
+        fi
+    done <<< "$GITHUB_KEYS"
+
+    ok "Allowed signers updated ($added new key(s) added)"
 }
 
-# Verify configuration
-verify_config() {
-    print_info "Verifying Git configuration..."
-
-    echo ""
-    echo "Current Git signing configuration:"
-    git config --get user.signingkey && print_success "Signing key: $(git config --get user.signingkey)" || print_warning "No signing key configured"
-    git config --get gpg.format && print_success "GPG format: $(git config --get gpg.format)" || print_warning "No GPG format configured"
-    git config --get gpg.ssh.program && print_success "GPG SSH program: $(git config --get gpg.ssh.program)" || print_warning "No GPG SSH program configured"
-    echo ""
-}
-
-# Main function
+# ── main ─────────────────────────────────────────────────────────────
 main() {
+    if [[ $# -ne 1 ]]; then
+        echo "Usage: configure-git-machine <github_username>"
+        exit 1
+    fi
+
+    local username="$1"
+    local platform
+
     echo ""
-    print_info "Git Machine Configuration Script"
+    info "${BOLD}Git Machine Configuration${NC}"
     echo ""
 
-    # Get GitHub username
-    local github_username
-    github_username=$(get_github_username "$@")
+    need_cmd curl
+    need_cmd git
 
-    # Backup existing config
-    backup_existing_config
-
-    # Import SSH keys from GitHub
-    import_github_keys "$github_username"
-
-    # Get signing key
-    print_info "Extracting signing key..."
-    local signing_key
-    signing_key=$(get_signing_key)
-    print_success "Found signing key: ${signing_key:0:50}..."
-
-    # Detect GPG program
-    local gpg_program
-    gpg_program=$(detect_gpg_program)
-
-    # Generate config
-    generate_gitconfig_local "$signing_key" "$gpg_program"
-
-    # Verify
-    verify_config
-
-    print_success "Git machine configuration complete!"
+    platform=$(detect_platform)
+    ok "Platform: $platform"
     echo ""
-    print_info "You can now sign commits with: git commit -S"
-    print_info "To test signing: git commit --allow-empty -m 'Test signed commit'"
+
+    fetch_identity "$username"
+    echo ""
+
+    fetch_keys "$username"
+    echo ""
+
+    detect_1password "$platform"
+    echo ""
+
+    generate_gitconfig_local
+    echo ""
+
+    update_allowed_signers "$username"
+    echo ""
+
+    info "${BOLD}Configuration complete!${NC}"
+    echo ""
+    info "Verify with:  git-setup-verify"
+    info "Test commit:  git commit --allow-empty -m 'test: verify SSH signing'"
     echo ""
 }
 
-# Run main function with all arguments
 main "$@"

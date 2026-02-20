@@ -1,10 +1,6 @@
 # Git Global Configuration
 # Managed by dotfiles - deployed via GNU Stow
 
-[user]
-    name = Anirudh Aggarwal
-    email = 16053724+ani1797@users.noreply.github.com
-
 [core]
     editor = nvim
     # Use global gitignore

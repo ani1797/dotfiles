@@ -12,3 +12,7 @@ CHANGELOG
 
 # Module metadata (not deployed to target)
 deps\.yaml
+
+# Theme files and legacy install script (not stowed, used by configure-sddm)
+theme
+scripts

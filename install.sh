@@ -636,7 +636,7 @@ process_module() {
     # --- Stow ---
     mkdir -p "$target"
 
-    if stow --restow --no-folding --dir="$SCRIPT_DIR" --target="$target" "$module_rel_path" 2>&1; then
+    if stow --restow --no-folding --verbose --dir="$SCRIPT_DIR" --target="$target" "$module_rel_path" 2>&1; then
         success "  Stowed $module_name"
         MODULES_STOWED+=1
         STOWED_MODULES+=("$module_name")

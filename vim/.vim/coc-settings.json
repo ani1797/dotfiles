@@ -1,0 +1,31 @@
+{
+  "languageserver": {
+    "lua": {
+      "command": "lua-language-server",
+      "filetypes": ["lua"],
+      "rootPatterns": [".git/"]
+    },
+    "bash": {
+      "command": "bash-language-server",
+      "args": ["start"],
+      "filetypes": ["sh", "bash"],
+      "ignoredRootPaths": ["~"]
+    }
+  },
+  "pyright.enable": true,
+  "tsserver.enable": true,
+  "rust-analyzer.enable": true,
+  "go.goplsPath": "gopls",
+  "diagnostic.errorSign": "✘",
+  "diagnostic.warningSign": "⚠",
+  "diagnostic.infoSign": "ℹ",
+  "diagnostic.hintSign": "➤",
+  "suggest.noselect": false,
+  "coc.preferences.formatOnSaveFiletypes": [
+    "python",
+    "javascript",
+    "typescript",
+    "rust",
+    "go"
+  ]
+}

@@ -20,6 +20,14 @@ This is a dotfiles repository that uses GNU Stow for managing configuration file
   - `git/` - Git configuration with SSH signing
   - `vim/` - Contains Vim configuration files (e.g., .vimrc)
   - `nvim/` - Neovim configuration with Lazy.nvim
+  - **vim/nvim package management**:
+    - nvim uses lazy.nvim (Lua-based plugin manager)
+    - vim uses vim-plug (VimScript plugin manager)
+    - Both use coc.nvim (vim) or nvim-lspconfig (nvim) for LSP
+    - LSP servers installed via system packages (see deps.yaml)
+    - No mason.nvim - simpler architecture
+    - Both configs provide VSCode-like features: autocomplete, go-to-definition, file navigation
+    - AI integration: GitHub Copilot (inline) + Gemini CLI (command-based)
   - `direnv/` - Environment variable management
   - `hyprland/` - Wayland compositor configuration
   - `tmux/` - Terminal multiplexer configuration

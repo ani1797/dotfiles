@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Configure vim on first run - install plugins and extensions
+
+set -e
+
+echo "🔧 Configuring Vim for first-time use..."
+echo
+
+# Step 1: Install vim-plug plugins
+echo "📦 Installing vim plugins via vim-plug..."
+if vim +PlugInstall +qall; then
+    echo "✅ Vim plugins installed successfully"
+else
+    echo "❌ Failed to install vim plugins"
+    exit 1
+fi
+echo
+
+# Step 2: Install coc.nvim extensions
+echo "🔌 Installing coc.nvim language server extensions..."
+if vim -c "CocInstall -sync coc-pyright coc-tsserver coc-rust-analyzer coc-json coc-go" -c "qall"; then
+    echo "✅ Coc extensions installed successfully"
+else
+    echo "⚠️  Warning: Some coc extensions may have failed to install"
+fi
+echo
+
+# Step 3: Verify setup
+echo "🔍 Verifying vim configuration..."
+if vim -c "version" -c "qall" 2>&1 | grep -q "VIM"; then
+    echo "✅ Vim configuration verified"
+else
+    echo "⚠️  Warning: Vim verification check had issues"
+fi
+echo
+
+echo "✨ Vim configuration complete!"
+echo
+echo "Next steps:"
+echo "  1. Run 'vim' to start editing"
+echo "  2. Run ':Copilot setup' in vim for GitHub Copilot (optional)"
+echo "  3. Run ':checkhealth' to verify LSP servers are installed"
+echo
+echo "Keybindings:"
+echo "  <Space>ff  - Find files"
+echo "  <Space>fg  - Grep search"
+echo "  <Space>e   - Toggle file explorer"
+echo "  gd         - Go to definition"
+echo "  K          - Show documentation"
+echo "  <Tab>      - Accept Copilot suggestion"

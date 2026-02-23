@@ -42,6 +42,3 @@ packages:
     - rust-analyzer
     - gopls
     - bash-language-server
-
-script:
-  - run: "command -v gemini || echo 'Gemini CLI not installed. Install from https://ai.google.dev/gemini-api/docs/cli'"

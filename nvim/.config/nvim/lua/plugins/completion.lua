@@ -26,8 +26,6 @@ return {
             cmp.select_next_item()
           elseif luasnip.expand_or_jumpable() then
             luasnip.expand_or_jump()
-          elseif vim.fn["copilot#GetDisplayedSuggestion"]().text ~= "" then
-            vim.fn["copilot#Accept"]("")
           else
             fallback()
           end

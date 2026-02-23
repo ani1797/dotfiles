@@ -55,8 +55,6 @@ modules:
     path: "yazi"
   - name: "iximiuz"
     path: "iximiuz"
-  - name: "wofi"
-    path: "wofi"
 
 # Machine profiles
 # Each machine has a hostname and a list of modules to install.
@@ -78,7 +76,6 @@ machines:
       - "ssh"
       - "kitty"
       - "rofi"
-      - "wofi"
       - "hyprland"
       - "waybar"
       - "theme"

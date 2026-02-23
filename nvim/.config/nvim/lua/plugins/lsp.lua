@@ -24,10 +24,8 @@ return {
         end, opts)
       end
 
-      local lspconfig = require("lspconfig")
-
       -- Lua
-      lspconfig.lua_ls.setup({
+      vim.lsp.config("lua_ls", {
         capabilities = capabilities,
         on_attach = on_attach,
         settings = {
@@ -45,36 +43,42 @@ return {
           },
         },
       })
+      vim.lsp.enable("lua_ls")
 
       -- Python
-      lspconfig.pyright.setup({
+      vim.lsp.config("pyright", {
         capabilities = capabilities,
         on_attach = on_attach,
       })
+      vim.lsp.enable("pyright")
 
       -- TypeScript/JavaScript
-      lspconfig.ts_ls.setup({
+      vim.lsp.config("ts_ls", {
         capabilities = capabilities,
         on_attach = on_attach,
       })
+      vim.lsp.enable("ts_ls")
 
       -- Rust
-      lspconfig.rust_analyzer.setup({
+      vim.lsp.config("rust_analyzer", {
         capabilities = capabilities,
         on_attach = on_attach,
       })
+      vim.lsp.enable("rust_analyzer")
 
       -- Go
-      lspconfig.gopls.setup({
+      vim.lsp.config("gopls", {
         capabilities = capabilities,
         on_attach = on_attach,
       })
+      vim.lsp.enable("gopls")
 
       -- Bash
-      lspconfig.bashls.setup({
+      vim.lsp.config("bashls", {
         capabilities = capabilities,
         on_attach = on_attach,
       })
+      vim.lsp.enable("bashls")
     end,
   },
 }

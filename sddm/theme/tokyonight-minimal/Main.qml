@@ -80,7 +80,7 @@ Rectangle {
             }
 
             Keys.onTabPressed: passwordField.forceActiveFocus()
-            Keys.onReturnPressed: sddm.login(userField.text, passwordField.text, sessionModel.lastIndex)
+            Keys.onReturnPressed: sddm.login(userField.text.trim().toLowerCase(), passwordField.text, sessionModel.lastIndex)
         }
 
         // Password field
@@ -106,7 +106,7 @@ Rectangle {
                 }
             }
 
-            Keys.onReturnPressed: sddm.login(userField.text, passwordField.text, sessionModel.lastIndex)
+            Keys.onReturnPressed: sddm.login(userField.text.trim().toLowerCase(), passwordField.text, sessionModel.lastIndex)
         }
 
         // Error message

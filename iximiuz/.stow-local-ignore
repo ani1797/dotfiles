@@ -1,0 +1,7 @@
+README\.md
+.*\.md$
+LICENSE
+CHANGELOG
+\.git
+\.gitignore
+deps\.yaml

@@ -1,13 +1,26 @@
 # direnvrc - Custom direnv configuration
 # Provides custom layout functions for auto-loading environments
+# See: https://direnv.net/man/direnv-stdlib.1.html
 
 # ==============================================================================
 # LAYOUT AUTO - Smart environment detection and loading
 # ==============================================================================
-# Automatically loads .env files and detects project type
+# Automatically loads .env and .oprc (1Password) files
 # Usage in .envrc: layout auto
 
 layout_auto() {
+    # Load .oprc file with 1Password secrets first (if exists)
+    if [[ -f .oprc ]]; then
+        if command -v op >/dev/null 2>&1; then
+            log_status "Loading secrets from .oprc via 1Password"
+            # Use op inject to replace secret references with actual values
+            eval "$(op inject -i .oprc 2>/dev/null || cat .oprc)"
+        else
+            log_error "1Password CLI (op) not found, skipping .oprc"
+            log_status "Install: https://developer.1password.com/docs/cli/get-started/"
+        fi
+    fi
+
     # Load .env file if it exists
     if [[ -f .env ]]; then
         log_status "Loading .env file"
@@ -27,3 +40,138 @@ layout_auto() {
         log_status "Rust project detected (use 'layout rust' for cargo)"
     fi
 }
+
+# ==============================================================================
+# LAYOUT UV - Python with UV package manager
+# ==============================================================================
+# Sets up Python environment using UV for fast package management
+# Usage in .envrc: layout uv [python-version]
+
+layout_uv() {
+    local python_version="${1:-python3}"
+
+    if ! command -v uv >/dev/null 2>&1; then
+        log_error "uv not found. Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
+        return 1
+    fi
+
+    local venv_dir="$(direnv_layout_dir)/uv-venv"
+
+    if [[ ! -d "$venv_dir" ]]; then
+        log_status "Creating UV virtual environment with $python_version"
+        uv venv "$venv_dir" --python "$python_version"
+    fi
+
+    export VIRTUAL_ENV="$venv_dir"
+    PATH_add "$venv_dir/bin"
+
+    log_status "UV virtual environment activated: $venv_dir"
+
+    # Auto-install dependencies if requirements files exist
+    if [[ -f pyproject.toml ]]; then
+        log_status "Found pyproject.toml - run 'uv pip install .' to install"
+    elif [[ -f requirements.txt ]]; then
+        log_status "Found requirements.txt - run 'uv pip install -r requirements.txt' to install"
+    fi
+}
+
+# Alias for consistency
+use_uv() {
+    layout_uv "$@"
+}
+
+# ==============================================================================
+# LAYOUT RUST - Rust project environment
+# ==============================================================================
+# Sets up Rust project environment with cargo
+# Usage in .envrc: layout rust
+
+layout_rust() {
+    if ! command -v cargo >/dev/null 2>&1; then
+        log_error "cargo not found. Install Rust: https://rustup.rs/"
+        return 1
+    fi
+
+    # Add cargo bin to PATH
+    PATH_add "$HOME/.cargo/bin"
+
+    # Set CARGO_TARGET_DIR to project-local directory to avoid conflicts
+    local cargo_target="$(direnv_layout_dir)/cargo-target"
+    mkdir -p "$cargo_target"
+    export CARGO_TARGET_DIR="$cargo_target"
+
+    log_status "Rust environment activated (CARGO_TARGET_DIR=$cargo_target)"
+}
+
+use_rust() {
+    layout_rust
+}
+
+# ==============================================================================
+# LAYOUT TERRAFORM - Terraform version management
+# ==============================================================================
+# Auto-selects terraform version based on .terraform-version
+# Usage in .envrc: layout terraform
+
+layout_terraform() {
+    # Use tfenv if available and .terraform-version exists
+    if command -v tfenv >/dev/null 2>&1; then
+        if [[ -f .terraform-version ]]; then
+            local tf_version
+            tf_version=$(cat .terraform-version)
+            log_status "Using Terraform version: $tf_version (via tfenv)"
+            tfenv use "$tf_version" 2>/dev/null || tfenv install "$tf_version"
+        fi
+    fi
+
+    # Set up plugin cache to avoid re-downloading providers
+    local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/terraform/plugin-cache"
+    mkdir -p "$cache_dir"
+    export TF_PLUGIN_CACHE_DIR="$cache_dir"
+    log_status "Terraform plugin cache: $TF_PLUGIN_CACHE_DIR"
+}
+
+use_tfenv() {
+    layout_terraform
+}
+
+# ==============================================================================
+# LAYOUT PRECOMMIT - Pre-commit hooks integration
+# ==============================================================================
+# Auto-installs pre-commit hooks when entering directory
+# Usage in .envrc: layout precommit
+
+layout_precommit() {
+    if ! command -v pre-commit >/dev/null 2>&1; then
+        log_error "pre-commit not found. Install with: pip install pre-commit"
+        return 1
+    fi
+
+    if [[ -f .pre-commit-config.yaml ]]; then
+        # Check if hooks are installed by looking for the hook directory
+        if [[ ! -f .git/hooks/pre-commit ]] || \
+           ! grep -q "pre-commit" .git/hooks/pre-commit 2>/dev/null; then
+            log_status "Installing pre-commit hooks..."
+            pre-commit install --install-hooks 2>/dev/null
+            log_status "Pre-commit hooks installed"
+        else
+            log_status "Pre-commit hooks already installed"
+        fi
+    fi
+}
+
+use_precommit() {
+    layout_precommit
+}
+
+# ==============================================================================
+# BUILT-IN LAYOUTS (provided by direnv stdlib)
+# ==============================================================================
+# These are automatically available:
+# - layout python [python-version]  : Python virtualenv
+# - layout node                     : Node.js project (adds node_modules/.bin to PATH)
+# - layout go                       : Go project (sets GOPATH)
+# - layout perl                     : Perl project
+# - layout php                      : PHP project
+#
+# See: https://direnv.net/man/direnv-stdlib.1.html

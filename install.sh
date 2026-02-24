@@ -1041,7 +1041,7 @@ main() {
     local -a module_list=()
     while IFS= read -r mod; do
         [[ -n "$mod" ]] && module_list+=("$mod")
-    done < <(get_machine_modules "$CURRENT_HOST")
+    done < <(expand_machine_modules "$CURRENT_HOST")
 
     if [[ ${#module_list[@]} -eq 0 ]]; then
         error "No modules found for hostname '$CURRENT_HOST'."

@@ -1,0 +1,58 @@
+# direnv.toml - Direnv configuration
+# See: https://direnv.net/man/direnv.toml.1.html
+
+# ==============================================================================
+# AUTO-APPROVAL WHITELIST
+# ==============================================================================
+# Directories listed here will have their .envrc files automatically allowed
+# without requiring explicit 'direnv allow' each time they change.
+# Use this for trusted directories where you control the .envrc content.
+
+[whitelist]
+# Home directory projects (trusted locations)
+prefix = [
+    # User project directories
+    "~/Projects",
+    "~/Documents",
+    "/workspace",
+    "~/dev",
+
+    # Dotfiles repository (this repo)
+    "~/.local/share/dotfiles",
+
+    # GitHub Codespaces workspace
+    "/workspaces",
+
+    # Temporary testing
+    "/tmp",
+]
+
+# ==============================================================================
+# GLOBAL SETTINGS
+# ==============================================================================
+
+[global]
+# Enable strict mode: errors in .envrc will prevent environment loading
+strict_env = true
+
+# Automatically load .env files in whitelisted directories
+load_dotenv = true
+
+# Don't warn about unloading environment when leaving directory
+# warn_timeout = "5s"
+
+# ==============================================================================
+# NOTES
+# ==============================================================================
+#
+# Security Considerations:
+# - Only whitelist directories YOU control
+# - DO NOT whitelist system directories or untrusted locations
+# - Review .envrc files before whitelisting their parent directory
+# - .env files in whitelisted directories are automatically loaded
+#
+# Whitelist Patterns:
+# - prefix: Matches directory and all subdirectories
+# - exact: Matches only the specific directory
+#
+# After modifying this file, restart your shell or run: direnv reload

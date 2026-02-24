@@ -5,7 +5,10 @@ return {
     plugins = {
       marks = true,
       registers = true,
-      spelling = { enabled = true, suggestions = 20 },
+      spelling = {
+        enabled = true,
+        suggestions = 20,
+      },
     },
     win = {
       border = "rounded",
@@ -28,7 +31,6 @@ return {
     wk.add({
       { "<leader>f", group = "Find" },
       { "<leader>c", group = "Code" },
-      { "<leader>g", group = "Git" },
       { "<leader>r", group = "Rename" },
     })
   end,

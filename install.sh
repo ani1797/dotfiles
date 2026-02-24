@@ -513,6 +513,105 @@ get_machine_modules() {
     done
 }
 
+# Expand toolkits and module references for a machine into a deduplicated list.
+# Populates MODULE_TARGETS associative array with target overrides.
+# Returns newline-separated module names.
+expand_machine_modules() {
+    local hostname="$1"
+    local idx
+    idx="$(find_machine_index "$hostname")" || return 1
+
+    # Track seen modules to detect duplicates
+    declare -A seen_modules
+
+    # Clear MODULE_TARGETS for this expansion
+    MODULE_TARGETS=()
+
+    # Get the count of module entries for this machine
+    local count
+    count="$(yq -r ".machines[$idx].modules | length" "$CONFIG_FILE")"
+
+    for i in $(seq 0 $((count - 1))); do
+        local entry_type name target
+        entry_type="$(yq -r ".machines[$idx].modules[$i] | type" "$CONFIG_FILE")"
+
+        # Extract name and optional target
+        if [[ "$entry_type" == "!!str" ]] || [[ "$entry_type" == "string" ]]; then
+            name="$(yq -r ".machines[$idx].modules[$i]" "$CONFIG_FILE")"
+            target=""
+        else
+            name="$(yq -r ".machines[$idx].modules[$i].name" "$CONFIG_FILE")"
+            target="$(yq -r ".machines[$idx].modules[$i].target // \"\"" "$CONFIG_FILE")"
+        fi
+
+        # Check if this is a toolkit
+        if is_toolkit "$name"; then
+            # Expand toolkit to individual modules
+            local toolkit_modules
+            toolkit_modules="$(get_toolkit_modules "$name")"
+
+            if [[ -z "$toolkit_modules" ]]; then
+                warn "Toolkit '$name' is empty -- skipping"
+                ERRORS+=("toolkit '$name' is empty")
+                continue
+            fi
+
+            while IFS= read -r module_name; do
+                [[ -z "$module_name" ]] && continue
+
+                # Check if module is defined in modules[]
+                local module_path
+                module_path="$(get_module_path "$module_name")"
+                if [[ -z "$module_path" || "$module_path" == "null" ]]; then
+                    warn "Module '$module_name' in toolkit '$name' not found in modules[] -- skipping"
+                    ERRORS+=("module '$module_name' from toolkit '$name' not defined")
+                    continue
+                fi
+
+                # Check for duplicates
+                if [[ -n "${seen_modules[$module_name]+x}" ]]; then
+                    warn "Module '$module_name' already included, skipping duplicate reference"
+                    ERRORS+=("duplicate module '$module_name'")
+                    continue
+                fi
+
+                seen_modules[$module_name]=1
+                echo "$module_name"
+
+                # Store target override if toolkit had one
+                if [[ -n "$target" ]]; then
+                    MODULE_TARGETS[$module_name]="$target"
+                fi
+            done <<< "$toolkit_modules"
+        else
+            # Regular module reference
+            # Check if module is defined in modules[]
+            local module_path
+            module_path="$(get_module_path "$name")"
+            if [[ -z "$module_path" || "$module_path" == "null" ]]; then
+                warn "Module or toolkit '$name' not found -- skipping"
+                ERRORS+=("module/toolkit '$name' not defined")
+                continue
+            fi
+
+            # Check for duplicates
+            if [[ -n "${seen_modules[$name]+x}" ]]; then
+                warn "Module '$name' already included, skipping duplicate reference"
+                ERRORS+=("duplicate module '$name'")
+                continue
+            fi
+
+            seen_modules[$name]=1
+            echo "$name"
+
+            # Store target override if module had one
+            if [[ -n "$target" ]]; then
+                MODULE_TARGETS[$name]="$target"
+            fi
+        fi
+    done
+}
+
 # Get the module path from the modules[] definition.
 get_module_path() {
     local module_name="$1"

@@ -1,8 +1,6 @@
--- config/options.lua - Editor options
-
 -- Line numbers
-vim.o.number = true
-vim.o.relativenumber = true
+vim.opt.number = true
+vim.opt.relativenumber = true
 
 -- Indentation
 vim.opt.tabstop = 2

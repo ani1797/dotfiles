@@ -1,8 +1,6 @@
--- config/keymap.lua - General keymaps (non-plugin)
-
 local map = vim.keymap.set
 
--- Better window navigation
+-- Window navigation
 map("n", "<C-h>", "<C-w>h", { desc = "Move to left window" })
 map("n", "<C-j>", "<C-w>j", { desc = "Move to lower window" })
 map("n", "<C-k>", "<C-w>k", { desc = "Move to upper window" })

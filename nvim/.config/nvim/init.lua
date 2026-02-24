@@ -5,4 +5,4 @@ require("config.lazy")
 require("config.options")
 
 -- Load keymaps
-require("config.keymap")
+require("config.keymaps")

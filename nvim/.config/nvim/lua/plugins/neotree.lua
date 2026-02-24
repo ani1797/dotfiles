@@ -1,29 +1,25 @@
 return {
-  {
-    "nvim-neo-tree/neo-tree.nvim",
-    branch = "v3.x",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      "nvim-tree/nvim-web-devicons",
-    },
-    config = function()
-      vim.keymap.set('n', '<C-n>', '<Cmd>Neotree toggle<CR>')
-    end
+  "nvim-neo-tree/neo-tree.nvim",
+  branch = "v3.x",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    "nvim-tree/nvim-web-devicons",
+    "MunifTanjim/nui.nvim",
   },
-  {
-    "antosha417/nvim-lsp-file-operations",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-neo-tree/neo-tree.nvim",
-    },
-    config = function()
-    end
-  },
-  {
-    "s1n7ax/nvim-window-picker",
-    version = "2.*",
-    config = function()
-    end
-  },
+  config = function()
+    require("neo-tree").setup({
+      close_if_last_window = true,
+      window = {
+        width = 30,
+      },
+      filesystem = {
+        follow_current_file = {
+          enabled = true,
+        },
+        use_libuv_file_watcher = true,
+      },
+    })
+
+    vim.keymap.set("n", "<C-n>", "<Cmd>Neotree toggle<CR>", { desc = "Toggle Neo-tree" })
+  end,
 }

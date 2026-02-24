@@ -1,0 +1,29 @@
+# direnvrc - Custom direnv configuration
+# Provides custom layout functions for auto-loading environments
+
+# ==============================================================================
+# LAYOUT AUTO - Smart environment detection and loading
+# ==============================================================================
+# Automatically loads .env files and detects project type
+# Usage in .envrc: layout auto
+
+layout_auto() {
+    # Load .env file if it exists
+    if [[ -f .env ]]; then
+        log_status "Loading .env file"
+        dotenv .env
+    fi
+
+    # Auto-detect project type and suggest appropriate layout
+    # (Users can uncomment the specific layout they want in their .envrc)
+
+    if [[ -f pyproject.toml ]] || [[ -f requirements.txt ]] || [[ -f setup.py ]]; then
+        log_status "Python project detected (use 'layout python' or 'layout uv' for venv)"
+    elif [[ -f package.json ]]; then
+        log_status "Node.js project detected (use 'layout node' for PATH setup)"
+    elif [[ -f go.mod ]]; then
+        log_status "Go project detected (use 'layout go' for GOPATH)"
+    elif [[ -f Cargo.toml ]]; then
+        log_status "Rust project detected (use 'layout rust' for cargo)"
+    fi
+}

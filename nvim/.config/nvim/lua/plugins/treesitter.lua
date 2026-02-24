@@ -1,7 +1,12 @@
 return {
   "nvim-treesitter/nvim-treesitter",
   build = ":TSUpdate",
-  main = "nvim-treesitter.configs",
+  event = { "BufReadPost", "BufNewFile" },
+  cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
+  keys = {
+    { "<c-space>", desc = "Increment selection" },
+    { "<bs>", desc = "Decrement selection", mode = "x" },
+  },
   opts = {
     ensure_installed = {
       "python",
@@ -16,12 +21,8 @@ return {
       "json",
       "yaml",
     },
-    highlight = {
-      enable = true,
-    },
-    indent = {
-      enable = true,
-    },
+    highlight = { enable = true },
+    indent = { enable = true },
     incremental_selection = {
       enable = true,
       keymaps = {
@@ -32,4 +33,7 @@ return {
       },
     },
   },
+  config = function(_, opts)
+    require("nvim-treesitter.configs").setup(opts)
+  end,
 }

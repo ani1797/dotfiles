@@ -969,6 +969,9 @@ main() {
     print_summary
 }
 
+# Global associative array for module target overrides from toolkit/module expansion
+declare -A MODULE_TARGETS
+
 # Export PKG_MGR so helpers can reference it
 declare PKG_MGR=""
 

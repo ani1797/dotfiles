@@ -653,11 +653,21 @@ get_machine_module_target() {
 }
 
 # Resolve the final target directory for a module on a machine.
-# Priority: machine-level override > module-level default > $HOME
+# Priority: MODULE_TARGETS (from expansion) > machine-level override > module-level default > $HOME
 resolve_target() {
     local hostname="$1"
     local module_name="$2"
 
+    # First check MODULE_TARGETS from expansion
+    if [[ -n "${MODULE_TARGETS[$module_name]+x}" ]]; then
+        local expansion_target="${MODULE_TARGETS[$module_name]}"
+        if [[ -n "$expansion_target" ]]; then
+            eval echo "$expansion_target"
+            return
+        fi
+    fi
+
+    # Then check machine-level override
     local machine_target
     machine_target="$(get_machine_module_target "$hostname" "$module_name")"
 
@@ -666,6 +676,7 @@ resolve_target() {
         return
     fi
 
+    # Then check module-level default
     local module_target
     module_target="$(get_module_target "$module_name")"
 
@@ -674,6 +685,7 @@ resolve_target() {
         return
     fi
 
+    # Default to $HOME
     echo "$HOME"
 }
 

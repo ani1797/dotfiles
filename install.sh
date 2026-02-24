@@ -19,7 +19,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/config.yaml"
-CURRENT_HOST="$(hostname)"
+CURRENT_HOST=""  # set after core utilities are verified
 BACKUP_DIR=""  # set lazily on first conflict
 BACKUP_TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 
@@ -297,40 +297,6 @@ install_pip_packages() {
     fi
 }
 
-# Run install scripts from deps.yaml. Each entry has:
-#   - run: "command to execute"
-#     provides: "binary-name"  (optional: skip if binary already exists)
-run_install_scripts() {
-    local deps_file="$1"
-
-    local script_count
-    script_count="$(yq -r '.script | length // 0' "$deps_file" 2>/dev/null)"
-
-    if [[ "$script_count" -eq 0 ]]; then
-        return 0
-    fi
-
-    for i in $(seq 0 $((script_count - 1))); do
-        local run_cmd provides
-        run_cmd="$(yq -r ".script[$i].run" "$deps_file")"
-        provides="$(yq -r ".script[$i].provides // \"\"" "$deps_file")"
-
-        # If 'provides' is set, skip if that binary already exists
-        if [[ -n "$provides" ]] && command -v "$provides" >/dev/null 2>&1; then
-            info "  Script skipped (${provides} already available)"
-            continue
-        fi
-
-        info "  Running install script: $run_cmd"
-        if eval "$run_cmd"; then
-            SCRIPTS_RUN+=1
-        else
-            warn "  Install script failed: $run_cmd"
-            ERRORS+=("script failed: $run_cmd")
-        fi
-    done
-}
-
 # ============================================================================
 # BACKUP HELPERS
 # ============================================================================
@@ -387,6 +353,50 @@ backup_conflicts_for_module() {
             rm -rf "$target_file"
         fi
     done < <(find "$module_path" -not -name '.stow-local-ignore' -not -path '*/.git/*' -type f -print0 2>/dev/null)
+}
+
+# ============================================================================
+# CORE UTILITIES CHECK: verify essential commands are available
+# ============================================================================
+
+check_core_utilities() {
+    local -a missing=()
+
+    # Check for hostname command
+    if ! command -v hostname >/dev/null 2>&1; then
+        case "$PKG_MGR" in
+            pacman)  missing+=("inetutils") ;;
+            apt)     missing+=("hostname") ;;
+            dnf|yum) missing+=("hostname") ;;
+            brew)    missing+=("inetutils") ;;
+            *)
+                error "hostname command not found. Please install it manually."
+                exit 1
+                ;;
+        esac
+    fi
+
+    # Check for other core utilities
+    for cmd in find grep sed date mkdir cp rm; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            error "Required core utility '$cmd' not found."
+            error "Please install coreutils or equivalent package."
+            exit 1
+        fi
+    done
+
+    # Install missing hostname package if needed
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        info "Installing core utilities: ${missing[*]}"
+        install_native_packages "$PKG_MGR" "${missing[@]}"
+
+        # Verify hostname is now available
+        if ! command -v hostname >/dev/null 2>&1; then
+            error "'hostname' command still not found after install."
+            error "Please install it manually and re-run."
+            exit 1
+        fi
+    fi
 }
 
 # ============================================================================
@@ -554,6 +564,159 @@ resolve_target() {
 }
 
 # ============================================================================
+# DEPENDENCY COLLECTION: collect all deps from selected modules
+# ============================================================================
+
+# Collects all dependencies from all selected modules into global arrays
+collect_all_dependencies() {
+    local -a module_list=("$@")
+
+    # Global arrays for collected dependencies
+    declare -g -a ALL_NATIVE_PKGS=()
+    declare -g -a ALL_AUR_PKGS=()
+    declare -g -a ALL_CARGO_PKGS=()
+    declare -g -a ALL_PIP_PKGS=()
+    declare -g -a ALL_SCRIPTS=()
+
+    local os_key
+    os_key="$(get_deps_os_key "$PKG_MGR")"
+
+    info "Collecting dependencies from ${#module_list[@]} modules..."
+
+    for module_name in "${module_list[@]}"; do
+        local module_rel_path
+        module_rel_path="$(get_module_path "$module_name")"
+
+        if [[ -z "$module_rel_path" || "$module_rel_path" == "null" ]]; then
+            continue
+        fi
+
+        local module_abs_path="$SCRIPT_DIR/$module_rel_path"
+        if [[ ! -d "$module_abs_path" ]]; then
+            continue
+        fi
+
+        local deps_file="$module_abs_path/deps.yaml"
+        if [[ ! -f "$deps_file" ]]; then
+            continue
+        fi
+
+        # Collect native packages
+        if [[ -n "$os_key" ]]; then
+            while IFS= read -r pkg; do
+                [[ -n "$pkg" ]] && ALL_NATIVE_PKGS+=("$pkg")
+            done < <(yq -r ".packages.${os_key}[]? // empty" "$deps_file" 2>/dev/null)
+        fi
+
+        # Collect AUR packages
+        while IFS= read -r pkg; do
+            [[ -n "$pkg" ]] && ALL_AUR_PKGS+=("$pkg")
+        done < <(yq -r '.aur[]? // empty' "$deps_file" 2>/dev/null)
+
+        # Collect cargo packages
+        while IFS= read -r pkg; do
+            [[ -n "$pkg" ]] && ALL_CARGO_PKGS+=("$pkg")
+        done < <(yq -r '.cargo[]? // empty' "$deps_file" 2>/dev/null)
+
+        # Collect pip packages
+        while IFS= read -r pkg; do
+            [[ -n "$pkg" ]] && ALL_PIP_PKGS+=("$pkg")
+        done < <(yq -r '.pip[]? // empty' "$deps_file" 2>/dev/null)
+
+        # Collect install scripts
+        local script_count
+        script_count="$(yq -r '.script | length // 0' "$deps_file" 2>/dev/null)"
+
+        for i in $(seq 0 $((script_count - 1))); do
+            local run_cmd provides
+            run_cmd="$(yq -r ".script[$i].run" "$deps_file")"
+            provides="$(yq -r ".script[$i].provides // \"\"" "$deps_file")"
+            ALL_SCRIPTS+=("$run_cmd|$provides")
+        done
+    done
+
+    # Remove duplicates
+    if [[ ${#ALL_NATIVE_PKGS[@]} -gt 0 ]]; then
+        mapfile -t ALL_NATIVE_PKGS < <(printf '%s\n' "${ALL_NATIVE_PKGS[@]}" | sort -u)
+    fi
+    if [[ ${#ALL_AUR_PKGS[@]} -gt 0 ]]; then
+        mapfile -t ALL_AUR_PKGS < <(printf '%s\n' "${ALL_AUR_PKGS[@]}" | sort -u)
+    fi
+    if [[ ${#ALL_CARGO_PKGS[@]} -gt 0 ]]; then
+        mapfile -t ALL_CARGO_PKGS < <(printf '%s\n' "${ALL_CARGO_PKGS[@]}" | sort -u)
+    fi
+    if [[ ${#ALL_PIP_PKGS[@]} -gt 0 ]]; then
+        mapfile -t ALL_PIP_PKGS < <(printf '%s\n' "${ALL_PIP_PKGS[@]}" | sort -u)
+    fi
+}
+
+# Install all collected dependencies at once
+install_all_dependencies() {
+    echo ""
+    info "${BOLD}Installing Dependencies${NC}"
+    echo ""
+
+    # Install native packages
+    if [[ ${#ALL_NATIVE_PKGS[@]} -gt 0 ]]; then
+        info "Native packages (${#ALL_NATIVE_PKGS[@]}): ${ALL_NATIVE_PKGS[*]}"
+        if install_native_packages "$PKG_MGR" "${ALL_NATIVE_PKGS[@]}"; then
+            PACKAGES_INSTALLED+=${#ALL_NATIVE_PKGS[@]}
+        else
+            ERRORS+=("some native packages failed")
+        fi
+    fi
+
+    # Install AUR packages
+    if [[ ${#ALL_AUR_PKGS[@]} -gt 0 ]]; then
+        info "AUR packages (${#ALL_AUR_PKGS[@]}): ${ALL_AUR_PKGS[*]}"
+        install_aur_packages "${ALL_AUR_PKGS[@]}"
+    fi
+
+    # Install cargo packages
+    if [[ ${#ALL_CARGO_PKGS[@]} -gt 0 ]]; then
+        info "Cargo packages (${#ALL_CARGO_PKGS[@]}): ${ALL_CARGO_PKGS[*]}"
+        install_cargo_packages "${ALL_CARGO_PKGS[@]}"
+    fi
+
+    # Install pip packages
+    if [[ ${#ALL_PIP_PKGS[@]} -gt 0 ]]; then
+        info "Pip packages (${#ALL_PIP_PKGS[@]}): ${ALL_PIP_PKGS[*]}"
+        install_pip_packages "${ALL_PIP_PKGS[@]}"
+    fi
+
+    # Run install scripts
+    if [[ ${#ALL_SCRIPTS[@]} -gt 0 ]]; then
+        info "Install scripts (${#ALL_SCRIPTS[@]})"
+        for script_entry in "${ALL_SCRIPTS[@]}"; do
+            local run_cmd="${script_entry%%|*}"
+            local provides="${script_entry##*|}"
+
+            # If 'provides' is set, skip if that binary already exists
+            if [[ -n "$provides" ]] && command -v "$provides" >/dev/null 2>&1; then
+                info "  Script skipped (${provides} already available)"
+                continue
+            fi
+
+            info "  Running: $run_cmd"
+            if eval "$run_cmd"; then
+                SCRIPTS_RUN+=1
+            else
+                warn "  Install script failed: $run_cmd"
+                ERRORS+=("script failed: $run_cmd")
+            fi
+        done
+    fi
+
+    if [[ ${#ALL_NATIVE_PKGS[@]} -eq 0 && ${#ALL_AUR_PKGS[@]} -eq 0 && \
+          ${#ALL_CARGO_PKGS[@]} -eq 0 && ${#ALL_PIP_PKGS[@]} -eq 0 && \
+          ${#ALL_SCRIPTS[@]} -eq 0 ]]; then
+        info "No dependencies to install"
+    else
+        success "Dependencies installed"
+    fi
+}
+
+# ============================================================================
 # MODULE PROCESSING
 # ============================================================================
 
@@ -583,52 +746,6 @@ process_module() {
 
     echo ""
     info "${BOLD}[$module_name]${NC} -> $target"
-
-    # --- deps.yaml handling ---
-    local deps_file="$module_abs_path/deps.yaml"
-    if [[ -f "$deps_file" ]]; then
-        # Native packages
-        local os_key
-        os_key="$(get_deps_os_key "$PKG_MGR")"
-        if [[ -n "$os_key" ]]; then
-            local -a native_pkgs=()
-            while IFS= read -r pkg; do
-                [[ -n "$pkg" ]] && native_pkgs+=("$pkg")
-            done < <(yq -r ".packages.${os_key}[]? // empty" "$deps_file" 2>/dev/null)
-
-            if [[ ${#native_pkgs[@]} -gt 0 ]]; then
-                if install_native_packages "$PKG_MGR" "${native_pkgs[@]}"; then
-                    PACKAGES_INSTALLED+=${#native_pkgs[@]}
-                else
-                    ERRORS+=("native packages failed for $module_name")
-                fi
-            fi
-        fi
-
-        # AUR packages (Arch-only)
-        local -a aur_pkgs=()
-        while IFS= read -r pkg; do
-            [[ -n "$pkg" ]] && aur_pkgs+=("$pkg")
-        done < <(yq -r '.aur[]? // empty' "$deps_file" 2>/dev/null)
-        install_aur_packages "${aur_pkgs[@]}"
-
-        # Cargo packages
-        local -a cargo_pkgs=()
-        while IFS= read -r pkg; do
-            [[ -n "$pkg" ]] && cargo_pkgs+=("$pkg")
-        done < <(yq -r '.cargo[]? // empty' "$deps_file" 2>/dev/null)
-        install_cargo_packages "${cargo_pkgs[@]}"
-
-        # Pip packages
-        local -a pip_pkgs=()
-        while IFS= read -r pkg; do
-            [[ -n "$pkg" ]] && pip_pkgs+=("$pkg")
-        done < <(yq -r '.pip[]? // empty' "$deps_file" 2>/dev/null)
-        install_pip_packages "${pip_pkgs[@]}"
-
-        # Install scripts
-        run_install_scripts "$deps_file"
-    fi
 
     # --- Backup conflicting files ---
     backup_conflicts_for_module "$module_abs_path" "$target"
@@ -716,7 +833,6 @@ main() {
     distro="$(detect_distro)"
     PKG_MGR="$(get_package_manager "$distro")"
 
-    info "Host:     $CURRENT_HOST"
     info "Distro:   $distro"
     info "Pkg mgr:  $PKG_MGR"
 
@@ -725,6 +841,13 @@ main() {
         error "Supported: pacman (Arch), apt (Debian/Ubuntu), dnf (Fedora/RHEL), brew (macOS)"
         exit 1
     fi
+
+    # --- Check core utilities and install if missing ---
+    check_core_utilities
+
+    # --- Now we can safely get the hostname ---
+    CURRENT_HOST="$(hostname)"
+    info "Host:     $CURRENT_HOST"
 
     # --- Self-bootstrap: ensure stow + yq ---
     self_bootstrap
@@ -751,7 +874,17 @@ main() {
 
     info "Modules to install (${#module_list[@]}): ${module_list[*]}"
 
-    # --- Process each module ---
+    # --- Collect all dependencies from all modules ---
+    collect_all_dependencies "${module_list[@]}"
+
+    # --- Install all dependencies at once ---
+    install_all_dependencies
+
+    # --- Stow each module ---
+    echo ""
+    info "${BOLD}Stowing Modules${NC}"
+    echo ""
+
     for module_name in "${module_list[@]}"; do
         process_module "$module_name"
     done

@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__BASH_ENV_LOADED+x}" ]] && return
+__BASH_ENV_LOADED=1
+
 # ~/.config/bash/00-environment.bash
 # Basic environment setup - always runs
 

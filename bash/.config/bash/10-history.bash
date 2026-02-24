@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__BASH_HISTORY_LOADED+x}" ]] && return
+__BASH_HISTORY_LOADED=1
+
 # ~/.config/bash/10-history.bash
 # History configuration
 

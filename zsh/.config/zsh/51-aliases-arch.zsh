@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__ZSH_ALIASES_ARCH_LOADED+x}" ]] && return
+__ZSH_ALIASES_ARCH_LOADED=1
+
 # ~/.config/zsh/51-aliases-arch.zsh
 # Arch Linux / CachyOS specific aliases
 

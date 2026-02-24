@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__BASH_PKGFILE_LOADED+x}" ]] && return
+__BASH_PKGFILE_LOADED=1
+
 # ~/.config/bash/42-pkgfile.bash
 # pkgfile "command not found" handler (Arch-specific)
 

@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__BASH_COMPLETION_LOADED+x}" ]] && return
+__BASH_COMPLETION_LOADED=1
+
 # ~/.config/bash/41-bash-completion.bash
 # Enable programmable completion
 

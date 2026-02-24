@@ -1,0 +1,4 @@
+# Terraform - Infrastructure as Code
+# Note: Terraform is typically installed from HashiCorp repositories
+# Users should follow official installation instructions: https://www.terraform.io/downloads
+# The shell aliases will only activate if terraform is available

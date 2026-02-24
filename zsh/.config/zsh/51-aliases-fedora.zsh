@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__ZSH_ALIASES_FEDORA_LOADED+x}" ]] && return
+__ZSH_ALIASES_FEDORA_LOADED=1
+
 # ~/.config/zsh/51-aliases-fedora.zsh
 # Fedora / RHEL specific aliases
 

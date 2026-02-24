@@ -1,0 +1,3 @@
+# Files and patterns to ignore when stowing this module
+# Module metadata (not deployed to target)
+deps\.yaml

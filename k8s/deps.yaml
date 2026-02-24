@@ -1,0 +1,4 @@
+# Kubernetes CLI tools
+# Note: kubectl is typically installed manually or via cloud provider tools
+# Users should install kubectl, helm, etc. based on their needs
+# The shell aliases will only activate if kubectl is available

@@ -1,0 +1,13 @@
+# FZF - Command-line fuzzy finder
+packages:
+  arch:
+    - fzf
+  debian:
+    - fzf
+  fedora:
+    - fzf
+  macos:
+    - fzf
+
+requires:
+  - fzf

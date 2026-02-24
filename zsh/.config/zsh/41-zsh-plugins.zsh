@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__ZSH_PLUGINS_LOADED+x}" ]] && return
+__ZSH_PLUGINS_LOADED=1
+
 # ~/.config/zsh/41-zsh-plugins.zsh
 # Zsh plugins — loads from system packages if available
 

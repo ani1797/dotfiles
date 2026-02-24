@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__ZSH_ALIASES_DEBIAN_LOADED+x}" ]] && return
+__ZSH_ALIASES_DEBIAN_LOADED=1
+
 # ~/.config/zsh/51-aliases-debian.zsh
 # Debian / Ubuntu specific aliases
 

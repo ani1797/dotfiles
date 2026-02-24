@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__BASH_ALIASES_ARCH_LOADED+x}" ]] && return
+__BASH_ALIASES_ARCH_LOADED=1
+
 # ~/.config/bash/51-aliases-arch.bash
 # Arch Linux / CachyOS specific aliases
 

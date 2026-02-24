@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__BASH_ALIASES_UNIVERSAL_LOADED+x}" ]] && return
+__BASH_ALIASES_UNIVERSAL_LOADED=1
+
 # ~/.config/bash/50-aliases-universal.bash
 # Universal aliases that work on all systems
 

@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__ZSH_ENV_LOADED+x}" ]] && return
+__ZSH_ENV_LOADED=1
+
 # ~/.config/zsh/00-environment.zsh
 # Basic environment setup - always runs
 

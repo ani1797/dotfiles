@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__ZSH_HISTORY_LOADED+x}" ]] && return
+__ZSH_HISTORY_LOADED=1
+
 # ~/.config/zsh/10-history.zsh
 # History configuration - works on all zsh installs
 

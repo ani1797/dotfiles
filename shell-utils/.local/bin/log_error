@@ -1,5 +1,0 @@
-#!/bin/sh
-# log_error - Print an error message in red
-# Usage: log_error "message"
-
-printf '\033[0;31m[ERROR]\033[0m %s\n' "$*" >&2

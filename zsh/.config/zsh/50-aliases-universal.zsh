@@ -1,3 +1,7 @@
+# Guard against double-sourcing
+[[ -n "${__ZSH_ALIASES_UNIVERSAL_LOADED+x}" ]] && return
+__ZSH_ALIASES_UNIVERSAL_LOADED=1
+
 # ~/.config/zsh/50-aliases-universal.zsh
 # Universal aliases that work on all systems
 

@@ -577,6 +577,7 @@ collect_all_dependencies() {
     declare -g -a ALL_CARGO_PKGS=()
     declare -g -a ALL_PIP_PKGS=()
     declare -g -a ALL_SCRIPTS=()
+    declare -g -a ALL_REQUIRED_BINARIES=()
 
     local os_key
     os_key="$(get_deps_os_key "$PKG_MGR")"
@@ -632,7 +633,17 @@ collect_all_dependencies() {
             run_cmd="$(yq -r ".script[$i].run" "$deps_file")"
             provides="$(yq -r ".script[$i].provides // \"\"" "$deps_file")"
             ALL_SCRIPTS+=("$run_cmd|$provides")
+
+            # Track binaries that must be available after installation
+            if [[ -n "$provides" ]]; then
+                ALL_REQUIRED_BINARIES+=("$provides")
+            fi
         done
+
+        # Collect explicit required binaries
+        while IFS= read -r binary; do
+            [[ -n "$binary" ]] && ALL_REQUIRED_BINARIES+=("$binary")
+        done < <(yq -r '.requires[]? // empty' "$deps_file" 2>/dev/null)
     done
 
     # Remove duplicates
@@ -647,6 +658,9 @@ collect_all_dependencies() {
     fi
     if [[ ${#ALL_PIP_PKGS[@]} -gt 0 ]]; then
         mapfile -t ALL_PIP_PKGS < <(printf '%s\n' "${ALL_PIP_PKGS[@]}" | sort -u)
+    fi
+    if [[ ${#ALL_REQUIRED_BINARIES[@]} -gt 0 ]]; then
+        mapfile -t ALL_REQUIRED_BINARIES < <(printf '%s\n' "${ALL_REQUIRED_BINARIES[@]}" | sort -u)
     fi
 }
 
@@ -714,6 +728,45 @@ install_all_dependencies() {
     else
         success "Dependencies installed"
     fi
+}
+
+# Verify that all required binaries are available after installation.
+# Returns 0 if all required binaries are available, 1 if any are missing.
+verify_dependencies() {
+    if [[ ${#ALL_REQUIRED_BINARIES[@]} -eq 0 ]]; then
+        return 0
+    fi
+
+    echo ""
+    info "${BOLD}Verifying Dependencies${NC}"
+    echo ""
+
+    local -a missing_binaries=()
+
+    for binary in "${ALL_REQUIRED_BINARIES[@]}"; do
+        if command -v "$binary" >/dev/null 2>&1; then
+            success "  ✓ $binary"
+        else
+            error "  ✗ $binary (not found)"
+            missing_binaries+=("$binary")
+        fi
+    done
+
+    if [[ ${#missing_binaries[@]} -gt 0 ]]; then
+        echo ""
+        error "Missing required binaries (${#missing_binaries[@]}): ${missing_binaries[*]}"
+        error "Cannot proceed with stowing until dependencies are available."
+        error ""
+        error "Possible solutions:"
+        error "  1. Install missing binaries manually"
+        error "  2. Ensure the package manager installed them correctly"
+        error "  3. Check that installation scripts completed successfully"
+        error "  4. Update your PATH to include the binary locations"
+        return 1
+    fi
+
+    success "All required dependencies verified"
+    return 0
 }
 
 # ============================================================================
@@ -879,6 +932,14 @@ main() {
 
     # --- Install all dependencies at once ---
     install_all_dependencies
+
+    # --- Verify all required dependencies are available ---
+    if ! verify_dependencies; then
+        echo ""
+        error "Dependency verification failed. Aborting installation."
+        error "No modules were stowed."
+        exit 1
+    fi
 
     # --- Stow each module ---
     echo ""

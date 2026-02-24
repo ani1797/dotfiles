@@ -52,8 +52,9 @@ The script is the single entrypoint for setup. It performs the following steps:
 1. **Self-bootstraps** -- detects the distro and package manager, then installs `stow` and `yq` automatically if they are missing (supports pacman, apt, dnf, and brew)
 2. **Matches the current hostname** against `machines[]` in config.yaml to determine which modules to install
 3. **Installs per-module dependencies** from each module's `deps.yaml` (native packages, cargo crates, pip packages, and install scripts)
-4. **Backs up conflicting files** -- any real (non-symlink) files that would conflict with stow are moved to `~/.dotfiles-backup/<timestamp>/` before linking
-5. **Stows modules** using `stow --restow --no-folding`, which also cleans up dead symlinks from previously removed files
+4. **Verifies dependencies** -- confirms all required binaries are available on $PATH before proceeding; aborts if any are missing
+5. **Backs up conflicting files** -- any real (non-symlink) files that would conflict with stow are moved to `~/.dotfiles-backup/<timestamp>/` before linking
+6. **Stows modules** using `stow --restow --no-folding`, which also cleans up dead symlinks from previously removed files
 
 The installer is idempotent and safe to run repeatedly.
 
@@ -107,6 +108,10 @@ packages:
   macos:
     - git
 
+# AUR packages (Arch-only, requires paru or yay)
+aur:
+  - some-aur-package
+
 # Cargo crates (installed via cargo install, skipped if already present)
 cargo:
   - yazi-fm
@@ -119,9 +124,15 @@ pip:
 script:
   - run: "curl -sS https://starship.rs/install.sh | sh -s -- --yes"
     provides: starship   # skip if this binary is already on $PATH
+
+# Required binaries that MUST be available before stowing
+# If any are missing after installation, the installer will abort
+requires:
+  - git
+  - starship
 ```
 
-All sections are optional. The `packages` key maps distro families (`arch`, `debian`, `fedora`, `macos`) to the corresponding native package names.
+All sections are optional. The `packages` key maps distro families (`arch`, `debian`, `fedora`, `macos`) to the corresponding native package names. The `requires` field specifies binaries that must be available on `$PATH` after installation completes; if any are missing, the installer aborts before stowing to prevent incomplete module configurations.
 
 ## Development Workflow
 

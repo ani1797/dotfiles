@@ -103,39 +103,18 @@ machines:
   - hostname: "HOME-DESKTOP"
     modules:
       - "antigravity"
-      - "terminal"           # bash, fish, zsh, starship
-      - "dev-tools"          # git, tmux, direnv
-      - "editors"            # nvim
-      - "ssh"
-      - "kitty"
-      - "rofi"
-      - "hyprland"
-      - "waybar"
-      - "theme"
-      - "swaync"
-      - "sddm"
-      - "wayvnc"
-      - "pip"
-      - "uv"
+      - "wayland-desktop"    # Full desktop: hyprland, waybar, swaync, sddm, rofi, kitty, theme, fonts
+      - "workstation-base"   # Dev essentials: shells, git, tmux, direnv, nvim, yazi, fzf, fonts, ssh
+      - "python-dev"         # pip, uv
       - "npm"
-      - "podman"
-      - "fonts"
-      - "shell-utils"        # yazi, fzf
-      - "k8s"
-      - "terraform"
-      - "iximiuz"
+      - "cloud-native"       # k8s, terraform, podman, iximiuz
+      - "wayvnc"
 
   - hostname: "asus-vivobook"
     modules:
-      - "terminal"           # bash, fish, zsh, starship
-      - "dev-tools"          # git, tmux, direnv
-      - "editors"            # nvim
-      - "ssh"
-      - "pip"
-      - "uv"
+      - "workstation-base"   # Dev essentials: shells, git, tmux, direnv, nvim, yazi, fzf, fonts, ssh
+      - "python-dev"         # pip, uv
       - "npm"
-      - "fonts"
-      - "shell-utils"        # yazi, fzf
       - "k8s"
       - "terraform"
       - "iximiuz"
@@ -143,14 +122,11 @@ machines:
   # Codesapces
   - hostname: "codespaces-*"
     modules:
-      - "bash"
+      - "minimal-server"     # bash, starship, git, ssh, direnv
       - "zsh"
-      - "starship"
-      - "dev-tools"          # git, tmux, direnv
+      - "tmux"
       - "editors"            # nvim
-      - "ssh"
-      - "pip"
-      - "uv"
+      - "python-dev"         # pip, uv
       - "npm"
       - "shell-utils"        # yazi, fzf
       - "k8s"
@@ -160,14 +136,11 @@ machines:
   # ArchLinux
   - hostname: "arch-*"
     modules:
-      - "bash"
+      - "minimal-server"     # bash, starship, git, ssh, direnv
       - "zsh"
-      - "starship"
-      - "dev-tools"          # git, tmux, direnv
+      - "tmux"
       - "editors"            # nvim
-      - "ssh"
-      - "pip"
-      - "uv"
+      - "python-dev"         # pip, uv
       - "npm"
       - "shell-utils"        # yazi, fzf
       - "k8s"

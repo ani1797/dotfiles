@@ -3,9 +3,13 @@
 .shelf {
   background-color: rgba(0, 0, 0, 0);
   padding: 8px;
+  min-height: 48px;
+  max-height: 48px;
 
   &__container {
-    background-color: $md-surface-container;
+    background-color: transparentize($md-surface-container, 0.1); // 90% opacity
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px); // Safari support
     border-radius: 24px;
     padding: 4px 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);

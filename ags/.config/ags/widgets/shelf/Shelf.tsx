@@ -7,6 +7,8 @@ export default () => Widget.Window({
   name: 'shelf',
   anchor: ['top', 'left', 'right'],
   exclusivity: 'exclusive',
+  layer: 'top',
+  margins: [0, 0, 0, 0],
   child: Widget.CenterBox({
     className: 'shelf',
     startWidget: Widget.Box({
@@ -18,7 +20,10 @@ export default () => Widget.Window({
     centerWidget: Widget.Box({
       className: 'shelf__center',
       children: [
-        Widget.Label(`WS: ${Hyprland.active.workspace.id}`), // Placeholder
+        Widget.Label({
+          label: Hyprland.active.workspace.bind('id')
+            .as(id => `WS: ${id}`),
+        }),
       ],
     }),
     endWidget: Widget.Box({

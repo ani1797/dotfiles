@@ -55,6 +55,8 @@ modules:
     path: "iximiuz"
   - name: "ags"
     path: "ags"
+  - name: "hyprlock"
+    path: "hyprlock"
 
 # Machine profiles
 # Each machine has a hostname and a list of modules to install.
@@ -89,6 +91,7 @@ machines:
       - "yazi"
       - "iximiuz"
       - "ags"
+      - "hyprlock"
 
   - hostname: "asus-vivobook"
     modules:

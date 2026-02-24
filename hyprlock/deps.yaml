@@ -1,0 +1,9 @@
+# Hyprlock dependencies
+packages:
+  arch:
+    - hyprlock
+  debian:
+    - hyprlock
+  fedora:
+    - hyprlock
+  macos: []

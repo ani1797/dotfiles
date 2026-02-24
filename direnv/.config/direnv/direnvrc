@@ -10,12 +10,14 @@
 
 layout_auto() {
     # Load .oprc file with 1Password secrets first (if exists)
-    # .oprc should contain: export VAR_NAME=op://vault/item/field
+    # .oprc should use properties file format: VAR_NAME=op://vault/item/field
     if [[ -f .oprc ]]; then
         if command -v op >/dev/null 2>&1; then
             log_status "Loading secrets from .oprc via 1Password"
-            # Use op inject to replace secret references with actual values
+            # Use set -a to auto-export all variables, then eval op inject output
+            set -a
             eval "$(op inject -i .oprc 2>/dev/null || cat .oprc)"
+            set +a
         else
             log_error "1Password CLI (op) not found, skipping .oprc"
             log_status "Install: https://developer.1password.com/docs/cli/get-started/"

@@ -11,20 +11,16 @@
     // ── Module Layout ──────────────────────────────────────────
     "modules-left": [
         "custom/arch",
-        "clock",
-        "custom/updates",
-        "mpris",
-        "custom/weather"
+        "temperature"
     ],
     "modules-center": [
         "hyprland/workspaces",
         "wlr/taskbar"
     ],
     "modules-right": [
-        "wireplumber",
         "network",
+        "clock",
         "battery",
-        "custom/sysinfo",
         "custom/notification",
         "custom/power"
     ],
@@ -38,8 +34,8 @@
     },
 
     "clock": {
-        "format": "  {:%I:%M %p}",
-        "format-alt": "  {:%A, %B %d, %Y}",
+        "format": "{:%H:%M}",
+        "format-alt": "{:%A, %B %d, %Y}",
         "tooltip-format": "<tt><small>{calendar}</small></tt>",
         "calendar": {
             "mode": "year",
@@ -88,6 +84,14 @@
         "exec-if": "which wttrbar",
         "return-type": "json",
         "tooltip": true
+    },
+
+    "temperature": {
+        "hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",
+        "critical-threshold": 80,
+        "format": "{temperatureC:.0f}°C",
+        "format-critical": "{temperatureC}°C ",
+        "tooltip": false
     },
 
     // ── Center Modules ─────────────────────────────────────────

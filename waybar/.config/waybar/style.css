@@ -36,6 +36,7 @@ tooltip label {
 
 #custom-arch,
 #clock,
+#temperature,
 #custom-updates,
 #mpris,
 #custom-weather,
@@ -55,6 +56,7 @@ tooltip label {
 
 #custom-arch:hover,
 #clock:hover,
+#temperature:hover,
 #custom-updates:hover,
 #mpris:hover,
 #custom-weather:hover,
@@ -77,6 +79,14 @@ tooltip label {
 
 #clock {
     color: #c0caf5;
+}
+
+#temperature {
+    color: #ff9e64;
+}
+
+#temperature.critical {
+    color: #f7768e;
 }
 
 #custom-updates {

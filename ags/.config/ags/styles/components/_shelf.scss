@@ -1,0 +1,25 @@
+// ags/.config/ags/styles/components/_shelf.scss
+
+.shelf {
+  background-color: rgba(0, 0, 0, 0);
+  padding: 8px;
+
+  &__container {
+    background-color: $md-surface-container;
+    border-radius: 24px;
+    padding: 4px 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &__left,
+  &__center,
+  &__right {
+    @extend .shelf__container;
+    margin: 0 4px;
+  }
+
+  label {
+    color: $md-on-surface;
+    padding: 4px 8px;
+  }
+}

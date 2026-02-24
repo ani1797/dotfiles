@@ -1,0 +1,17 @@
+// ags/.config/ags/styles/main.scss
+
+// Import generated Material You colors
+@import 'material-colors';
+
+// Base styles
+* {
+  all: unset;
+  font-family: 'Inter', 'JetBrainsMono Nerd Font', sans-serif;
+  font-size: 14px;
+}
+
+window {
+  background-color: transparent;
+}
+
+// Placeholder - widgets will be styled in subsequent tasks

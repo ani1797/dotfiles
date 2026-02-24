@@ -1,0 +1,8 @@
+// ags/.config/ags/styles/_material-colors.scss.template
+// This template file provides default Material You colors
+// Copy to _material-colors.scss for initial setup
+// The WallpaperService will regenerate this file with extracted colors
+
+$md-primary: #4285f4;
+$md-surface: #1c1b1f;
+$md-on-surface: #e4e1e6;

@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc && sass styles/main.scss styles/main.css",
-    "watch": "tsc --watch & sass --watch styles/main.scss:styles/main.css",
-    "dev": "ags -c config.js"
+    "build": "cd .config/ags && tsc && sass styles/main.scss styles/main.css",
+    "watch": "cd .config/ags && tsc --watch & sass --watch styles/main.scss:styles/main.css",
+    "dev": "ags -c .config/ags/config.js"
   },
   "dependencies": {
     "@girs/gtk-4.0": "^4.0.0",

@@ -15,3 +15,6 @@ packages:
     - qt5ct
     - papirus-icon-theme
   macos: []
+
+pip:
+  - pillow

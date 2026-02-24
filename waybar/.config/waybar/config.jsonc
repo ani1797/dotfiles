@@ -1,4 +1,4 @@
-// Waybar Configuration — Tokyo Night Floating Pills
+// Waybar Configuration — Material You ChromeOS Style
 {
     "layer": "top",
     "position": "top",
@@ -6,6 +6,7 @@
     "margin-left": 8,
     "margin-right": 8,
     "spacing": 4,
+    "style": "style-material-you.css",
 
     // ── Module Layout ──────────────────────────────────────────
     "modules-left": [

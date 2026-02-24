@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+"""
+Material You Color Generator for Waybar/Swaync
+Extracts dominant color from wallpaper and generates Material Design 3 palette
+"""
+
+import sys
+import json
+from pathlib import Path
+from PIL import Image
+import colorsys
+
+def hex_to_rgb(hex_color):
+    """Convert hex color to RGB tuple"""
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+def rgb_to_hex(r, g, b):
+    """Convert RGB to hex color"""
+    return f"#{int(r):02x}{int(g):02x}{int(b):02x}"
+
+def get_dominant_color(image_path):
+    """Extract dominant color from image"""
+    img = Image.open(image_path)
+    img = img.resize((150, 150))  # Reduce size for faster processing
+    img = img.convert('RGB')
+
+    pixels = list(img.getdata())
+    # Simple average (can be improved with clustering)
+    r_avg = sum(p[0] for p in pixels) / len(pixels)
+    g_avg = sum(p[1] for p in pixels) / len(pixels)
+    b_avg = sum(p[2] for p in pixels) / len(pixels)
+
+    return rgb_to_hex(r_avg, g_avg, b_avg)
+
+def generate_palette(source_color):
+    """Generate Material You-inspired palette from source color"""
+    r, g, b = hex_to_rgb(source_color)
+    h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+
+    def make_color(hue, sat, val):
+        r, g, b = colorsys.hsv_to_rgb(hue, sat, val)
+        return rgb_to_hex(r*255, g*255, b*255)
+
+    # Material You color scheme
+    return {
+        "source": source_color,
+        "primary": make_color(h, s * 0.8, v * 0.9),
+        "primary-container": make_color(h, s * 0.4, v * 0.3),
+        "on-primary": "#ffffff" if v > 0.5 else "#000000",
+        "on-primary-container": make_color(h, s * 0.2, v * 0.95),
+
+        "secondary": make_color((h + 0.08) % 1.0, s * 0.5, v * 0.8),
+        "secondary-container": make_color((h + 0.08) % 1.0, s * 0.3, v * 0.25),
+        "on-secondary": "#ffffff" if v > 0.5 else "#000000",
+        "on-secondary-container": make_color((h + 0.08) % 1.0, s * 0.2, v * 0.9),
+
+        "surface": "#1c1b1f",
+        "surface-dim": "#141318",
+        "surface-bright": "#3b383e",
+        "surface-container-lowest": "#0f0e13",
+        "surface-container-low": "#24232a",
+        "surface-container": "#28272d",
+        "surface-container-high": "#333238",
+        "surface-container-highest": "#3e3d42",
+
+        "on-surface": "#e6e1e5",
+        "on-surface-variant": "#c7c5ca",
+
+        "outline": "#938f96",
+        "outline-variant": "#49454e",
+
+        "error": "#f2b8b5",
+        "on-error": "#601410",
+
+        "background": "#1c1b1f",
+        "on-background": "#e6e1e5",
+    }
+
+def export_css(palette, output_path):
+    """Export palette as CSS variables"""
+    css = ":root {\n"
+    for key, value in palette.items():
+        css += f"  --md-{key}: {value};\n"
+    css += "}\n"
+
+    Path(output_path).write_text(css)
+    print(f"✓ Generated CSS: {output_path}")
+
+def export_json(palette, output_path):
+    """Export palette as JSON"""
+    Path(output_path).write_text(json.dumps(palette, indent=2))
+    print(f"✓ Generated JSON: {output_path}")
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: material-you-colors <wallpaper-image>")
+        sys.exit(1)
+
+    wallpaper = sys.argv[1]
+    if not Path(wallpaper).exists():
+        print(f"Error: Wallpaper not found: {wallpaper}")
+        sys.exit(1)
+
+    print(f"Extracting colors from: {wallpaper}")
+    source_color = get_dominant_color(wallpaper)
+    print(f"Dominant color: {source_color}")
+
+    palette = generate_palette(source_color)
+
+    # Output directory
+    output_dir = Path.home() / ".config" / "theme"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Export files
+    export_css(palette, output_dir / "material-you.css")
+    export_json(palette, output_dir / "material-you.json")
+
+    print("\n✓ Material You colors generated successfully!")
+    print(f"  Primary: {palette['primary']}")
+    print(f"  Secondary: {palette['secondary']}")
+
+if __name__ == "__main__":
+    main()

@@ -1,210 +1,161 @@
-/* ═══════════════════════════════════════════════════════════
-   Waybar — Tokyo Night Floating Pills
-   Palette: night=#1a1b26 storm=#24283b bg_hover=#292e42
-            fg=#c0caf5 fg_dim=#a9b1d6 comment=#565f89
-            blue=#7aa2f7 magenta=#bb9af7 cyan=#7dcfff
-            green=#9ece6a red=#f7768e orange=#ff9e64
-            yellow=#e0af68 teal=#73daca
-   ═══════════════════════════════════════════════════════════ */
+/* Waybar Material You Theme - ChromeOS Style */
 
-/* ── Global ───────────────────────────────────────────── */
+@import url("../../theme/material-you.css");
 
 * {
-    font-family: "JetBrainsMono Nerd Font", monospace;
-    font-size: 12px;
+    font-family: "Inter", "JetBrainsMono Nerd Font", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
     min-height: 0;
 }
 
 window#waybar {
     background: transparent;
-    color: #c0caf5;
 }
 
-tooltip {
-    background: #1a1b26;
-    border: 1px solid #7aa2f7;
-    border-radius: 10px;
-    color: #c0caf5;
+/* Floating pill containers */
+.modules-left,
+.modules-center,
+.modules-right {
+    background: var(--md-surface-container);
+    border-radius: 24px;
+    padding: 4px 12px;
+    margin: 0 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(20px);
 }
 
-tooltip label {
-    color: #c0caf5;
-    padding: 4px 8px;
-}
-
-/* ── Pill Base ────────────────────────────────────────── */
-
+/* Module styling */
 #custom-arch,
 #clock,
 #custom-updates,
 #mpris,
 #custom-weather,
 #workspaces,
+#taskbar,
 #wireplumber,
 #network,
 #battery,
 #custom-sysinfo,
 #custom-notification,
 #custom-power {
-    background: rgba(36, 40, 59, 0.85);
-    border-radius: 20px;
-    padding: 4px 14px;
-    margin: 2px 3px;
-    transition: all 0.3s ease;
+    color: var(--md-on-surface);
+    padding: 4px 8px;
+    margin: 0 2px;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Hover effects */
 #custom-arch:hover,
 #clock:hover,
 #custom-updates:hover,
-#mpris:hover,
-#custom-weather:hover,
-#wireplumber:hover,
-#network:hover,
-#battery:hover,
-#custom-sysinfo:hover,
 #custom-notification:hover,
 #custom-power:hover {
-    background: rgba(41, 46, 66, 0.95);
+    background: var(--md-surface-container-high);
 }
 
-/* ── Left Modules ─────────────────────────────────────── */
-
+/* Primary accent for launcher */
 #custom-arch {
-    color: #7aa2f7;
-    font-size: 16px;
+    color: var(--md-primary);
+    font-size: 18px;
     padding: 4px 12px;
 }
 
-#clock {
-    color: #c0caf5;
-}
-
-#custom-updates {
-    color: #9ece6a;
-}
-
-#mpris {
-    color: #bb9af7;
-}
-
-#custom-weather {
-    color: #7dcfff;
-}
-
-/* ── Center — Workspaces ──────────────────────────────── */
-
-#workspaces {
-    padding: 2px 6px;
-}
-
+/* Workspaces */
 #workspaces button {
-    color: #565f89;
+    color: var(--md-on-surface-variant);
     background: transparent;
-    border-radius: 14px;
-    padding: 2px 10px;
+    padding: 4px 10px;
     margin: 0 2px;
-    transition: all 0.3s ease;
-    border: none;
-}
-
-#workspaces button:hover {
-    color: #c0caf5;
-    background: rgba(41, 46, 66, 0.6);
+    border-radius: 12px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #workspaces button.active {
-    color: #1a1b26;
-    background: #7dcfff;
-    font-weight: bold;
+    color: var(--md-on-primary-container);
+    background: var(--md-primary-container);
 }
 
-#workspaces button.urgent {
-    color: #1a1b26;
-    background: #f7768e;
+#workspaces button:hover {
+    background: var(--md-surface-container-highest);
+    color: var(--md-on-surface);
 }
 
-/* ── Center — Taskbar (active apps, icon-only) ───────── */
-
-#taskbar {
-    background: transparent;
-    padding: 0;
-    margin: 0;
+/* Clock - prominent */
+#clock {
+    font-weight: 600;
+    color: var(--md-on-surface);
 }
 
+/* Taskbar */
 #taskbar button {
-    color: #a9b1d6;
-    background: rgba(36, 40, 59, 0.85);
-    border-radius: 14px;
-    padding: 4px 8px;
-    margin: 2px 2px;
-    transition: all 0.3s ease;
-    border: none;
-}
-
-#taskbar button:hover {
-    color: #c0caf5;
-    background: rgba(41, 46, 66, 0.95);
+    background: transparent;
+    color: var(--md-on-surface-variant);
+    border-radius: 8px;
+    padding: 2px 8px;
+    margin: 0 2px;
 }
 
 #taskbar button.active {
-    color: #c0caf5;
-    background: rgba(122, 162, 247, 0.25);
+    background: var(--md-secondary-container);
+    color: var(--md-on-secondary-container);
 }
 
-/* ── Right Modules ────────────────────────────────────── */
-
-#wireplumber {
-    color: #e0af68;
-}
-
-#wireplumber.muted {
-    color: #565f89;
-}
-
-#network {
-    color: #73daca;
-}
-
-#network.disconnected {
-    color: #565f89;
-}
-
+/* System indicators */
 #battery {
-    color: #9ece6a;
+    color: var(--md-secondary);
 }
 
 #battery.charging {
-    color: #73daca;
+    color: var(--md-primary);
 }
 
 #battery.warning:not(.charging) {
-    color: #ff9e64;
+    color: var(--md-error);
 }
 
-#battery.critical:not(.charging) {
-    color: #f7768e;
-    animation: blink 1s ease infinite alternate;
+#network.disconnected {
+    color: var(--md-error);
 }
 
-@keyframes blink {
-    to {
-        color: #1a1b26;
-        background: #f7768e;
-    }
+#wireplumber.muted {
+    color: var(--md-error);
 }
 
-#custom-sysinfo {
-    color: #7dcfff;
+/* Custom modules */
+#custom-power {
+    color: var(--md-error);
+    font-size: 16px;
 }
 
 #custom-notification {
-    color: #c0caf5;
+    color: var(--md-primary);
 }
 
-#custom-power {
-    color: #f7768e;
+/* MPRIS media player */
+#mpris {
+    color: var(--md-secondary);
 }
 
-#custom-power:hover {
-    background: rgba(247, 118, 142, 0.2);
+#mpris.paused {
+    color: var(--md-on-surface-variant);
+}
+
+/* Updates indicator */
+#custom-updates {
+    color: var(--md-on-surface-variant);
+}
+
+/* Tooltips */
+tooltip {
+    background: var(--md-surface-container-highest);
+    color: var(--md-on-surface);
+    border-radius: 12px;
+    border: 1px solid var(--md-outline-variant);
+    padding: 8px 12px;
+}
+
+tooltip label {
+    color: var(--md-on-surface);
 }

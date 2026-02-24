@@ -94,7 +94,7 @@ toolkits:
   - name: "minimal-server"
     modules: ["bash", "starship", "git", "ssh", "direnv"]
   - name: "workstation-base"
-    modules: ["bash", "fish", "zsh", "starship", "git", "tmux", "direnv", "nvim", "yazi", "fzf", "fonts", "ssh"]
+    modules: ["bash", "fish", "zsh", "starship", "git", "tmux", "direnv", "nvim", "yazi", "fzf", "ssh"]
 
 # Machine profiles
 # Each machine has a hostname and a list of modules to install.
@@ -104,7 +104,7 @@ machines:
     modules:
       - "antigravity"
       - "wayland-desktop"    # Full desktop: hyprland, waybar, swaync, sddm, rofi, kitty, theme, fonts
-      - "workstation-base"   # Dev essentials: shells, git, tmux, direnv, nvim, yazi, fzf, fonts, ssh
+      - "workstation-base"   # Dev essentials: shells, git, tmux, direnv, nvim, yazi, fzf, ssh
       - "python-dev"         # pip, uv
       - "npm"
       - "cloud-native"       # k8s, terraform, podman, iximiuz
@@ -112,7 +112,8 @@ machines:
 
   - hostname: "asus-vivobook"
     modules:
-      - "workstation-base"   # Dev essentials: shells, git, tmux, direnv, nvim, yazi, fzf, fonts, ssh
+      - "workstation-base"   # Dev essentials: shells, git, tmux, direnv, nvim, yazi, fzf, ssh
+      - "fonts"              # Fonts for GUI applications
       - "python-dev"         # pip, uv
       - "npm"
       - "k8s"

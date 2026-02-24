@@ -449,6 +449,21 @@ self_bootstrap() {
 # CONFIG.YAML PARSING
 # ============================================================================
 
+# Check if a name refers to a toolkit (returns 0 if yes, 1 if no).
+is_toolkit() {
+    local name="$1"
+    local result
+    result="$(yq -r ".toolkits[]? | select(.name == \"$name\") | .name" "$CONFIG_FILE" 2>/dev/null)"
+    [[ -n "$result" ]]
+}
+
+# Get the list of module names for a toolkit.
+# Returns newline-separated module names.
+get_toolkit_modules() {
+    local toolkit_name="$1"
+    yq -r ".toolkits[]? | select(.name == \"$toolkit_name\") | .modules[]?" "$CONFIG_FILE" 2>/dev/null
+}
+
 # Find the machine index in config.yaml that matches the given hostname.
 # Supports glob patterns (e.g., "codespaces-*") and case-insensitive matching.
 # Prints the 0-based index, or returns 1 if no match.

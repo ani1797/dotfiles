@@ -1,9 +1,0 @@
-# ags/.gitignore
-node_modules/
-dist/
-package-lock.json
-*.log
-.config/ags/styles/main.css
-.config/ags/styles/main.css.map
-.config/ags/styles/_material-colors.scss
-.config/ags/styles/exports/*

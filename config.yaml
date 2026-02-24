@@ -25,8 +25,14 @@ modules:
     path: "ssh"
   - name: "kitty"
     path: "kitty"
+  - name: "rofi"
+    path: "rofi"
   - name: "hyprland"
     path: "hyprland"
+  - name: "waybar"
+    path: "waybar"
+  - name: "swaync"
+    path: "swaync"
   - name: "theme"
     path: "theme"
   - name: "sddm"
@@ -47,8 +53,6 @@ modules:
     path: "yazi"
   - name: "iximiuz"
     path: "iximiuz"
-  - name: "ags"
-    path: "ags"
 
 # Machine profiles
 # Each machine has a hostname and a list of modules to install.
@@ -68,8 +72,11 @@ machines:
       - "tmux"
       - "ssh"
       - "kitty"
+      - "rofi"
       - "hyprland"
+      - "waybar"
       - "theme"
+      - "swaync"
       - "sddm"
       - "wayvnc"
       - "pip"
@@ -79,7 +86,6 @@ machines:
       - "fonts"
       - "yazi"
       - "iximiuz"
-      - "ags"
 
   - hostname: "asus-vivobook"
     modules:

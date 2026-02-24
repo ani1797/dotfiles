@@ -28,6 +28,8 @@ class WallpaperService extends Service {
   private _rotationInterval = 3600000; // 1 hour
   private _rotationTimer: number | null = null;
   private _isDark = true;
+  private _settingWallpaper = false;
+  private _syncScript: string;
 
   private colorExtractor = new ColorExtractor();
   private colorExport: ColorExport;
@@ -44,6 +46,7 @@ class WallpaperService extends Service {
     super();
 
     const configDir = `${GLib.get_home_dir()}/.config/ags`;
+    this._syncScript = `${configDir}/scripts/sync-colors.sh`;
     this.colorExport = new ColorExport(configDir);
 
     // Initialize
@@ -66,6 +69,12 @@ class WallpaperService extends Service {
   }
 
   async setWallpaper(path: string): Promise<void> {
+    if (this._settingWallpaper) {
+      console.warn('[WallpaperService] Already setting wallpaper, ignoring call');
+      return;
+    }
+
+    this._settingWallpaper = true;
     try {
       console.log(`[WallpaperService] Setting wallpaper: ${path}`);
 
@@ -81,6 +90,8 @@ class WallpaperService extends Service {
       await this.updateColors(path);
     } catch (error) {
       console.error('[WallpaperService] Failed to set wallpaper:', error);
+    } finally {
+      this._settingWallpaper = false;
     }
   }
 
@@ -106,8 +117,7 @@ class WallpaperService extends Service {
 
   private async syncColors(): Promise<void> {
     try {
-      const syncScript = `${GLib.get_home_dir()}/.config/ags/scripts/sync-colors.sh`;
-      await execAsync(syncScript);
+      await execAsync(this._syncScript);
       console.log('[WallpaperService] Colors synced to system');
     } catch (error) {
       console.error('[WallpaperService] Sync failed:', error);
@@ -120,9 +130,19 @@ class WallpaperService extends Service {
     }
 
     this._rotationTimer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this._rotationInterval / 1000, () => {
-      this.rotateWallpaper();
+      this.rotateWallpaper().catch(err => {
+        console.error('[WallpaperService] Timer rotation failed:', err);
+      });
       return true; // Continue timer
     });
+  }
+
+  stop(): void {
+    if (this._rotationTimer) {
+      GLib.source_remove(this._rotationTimer);
+      this._rotationTimer = null;
+      console.log('[WallpaperService] Rotation stopped');
+    }
   }
 
   private async rotateWallpaper(): Promise<void> {
@@ -159,16 +179,21 @@ class WallpaperService extends Service {
     }
   }
 
-  setDarkMode(isDark: boolean): void {
+  async setDarkMode(isDark: boolean): Promise<void> {
     if (this._isDark === isDark) return;
 
     this._isDark = isDark;
 
     // Re-export colors with new mode
     if (this._currentColors) {
-      const scheme = isDark ? this._currentColors.dark : this._currentColors.light;
-      this.colorExport.exportAll(scheme, isDark);
-      this.syncColors();
+      try {
+        const scheme = isDark ? this._currentColors.dark : this._currentColors.light;
+        await this.colorExport.exportAll(scheme, isDark);
+        await this.syncColors();
+        console.log(`[WallpaperService] Switched to ${isDark ? 'dark' : 'light'} mode`);
+      } catch (error) {
+        console.error('[WallpaperService] Failed to apply dark mode:', error);
+      }
     }
   }
 }

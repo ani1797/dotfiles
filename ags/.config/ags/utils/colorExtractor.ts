@@ -1,9 +1,9 @@
 // ags/.config/ags/utils/colorExtractor.ts
 
-import { argbFromHex, themeFromSourceColor, hexFromArgb, Scheme } from '@material/material-color-utilities';
+import { argbFromHex, themeFromSourceColor, hexFromArgb, Scheme, Theme } from '@material/material-color-utilities';
 import ColorThief from 'colorthief';
 import sharp from 'sharp';
-import { readFile, stat } from 'fs/promises';
+import { stat } from 'fs/promises';
 import { createHash } from 'crypto';
 import type { MaterialYouTheme, ColorScheme } from '../types/material-you';
 
@@ -55,7 +55,7 @@ export class ColorExtractor {
     }
   }
 
-  private convertTheme(theme: any, source: string): MaterialYouTheme {
+  private convertTheme(theme: Theme, source: string): MaterialYouTheme {
     const dark = theme.schemes.dark;
     const light = theme.schemes.light;
 

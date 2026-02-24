@@ -168,3 +168,8 @@ This repository is designed for managing personal configuration files. The main 
 - install.sh self-bootstraps its own dependencies (`stow` and `yq`), so no manual pre-installation is needed
 - The repository structure follows a modular approach for easy management of different configuration types
 - Shell config files use a guard pattern (`[[ -n "${__<MODULE>_LOADED+x}" ]] && return`) to prevent double-sourcing
+- Toolkits group related modules for easier configuration
+- Machines can reference toolkits by name instead of listing all modules
+- Toolkit target overrides apply to all modules in that toolkit
+- First occurrence of a module wins (duplicates are warned and skipped)
+- Fully backwards compatible with configs that don't use toolkits

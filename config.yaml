@@ -70,6 +70,32 @@ toolkits:
   - name: "shell-utils"
     modules: ["yazi", "fzf"]
 
+  # Desktop Environment
+  - name: "wayland-desktop"
+    modules: ["hyprland", "waybar", "swaync", "sddm", "rofi", "kitty", "theme", "fonts"]
+  - name: "minimal-desktop"
+    modules: ["hyprland", "waybar", "kitty", "rofi"]
+
+  # Language-Specific
+  - name: "python-dev"
+    modules: ["pip", "uv"]
+  - name: "node-dev"
+    modules: ["npm", "direnv"]
+
+  # DevOps & Infrastructure
+  - name: "containers"
+    modules: ["podman", "k8s"]
+  - name: "cloud-native"
+    modules: ["k8s", "terraform", "podman", "iximiuz"]
+
+  # Workflow Profiles
+  - name: "remote-access"
+    modules: ["ssh", "wayvnc"]
+  - name: "minimal-server"
+    modules: ["bash", "starship", "git", "ssh", "direnv"]
+  - name: "workstation-base"
+    modules: ["bash", "fish", "zsh", "starship", "git", "tmux", "direnv", "nvim", "yazi", "fzf", "fonts", "ssh"]
+
 # Machine profiles
 # Each machine has a hostname and a list of modules to install.
 # Module refs are either a plain string (module name) or an object with name + target override.

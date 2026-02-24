@@ -1,8 +1,8 @@
-// ags/.config/ags/config.ts
+// ags/.config/ags/config.js
 
-import { App } from 'resource:///com/github/Aylur/ags/app.js';
+const { App } = await Service.import('app');
 
-// Import services (auto-initialize as singletons)
+// Import services
 import './services/wallpaper.js';
 
 // Basic configuration

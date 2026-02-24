@@ -3,8 +3,10 @@ packages:
   arch:
     - nodejs
     - npm
-    - typescript
-    - dart-sass
+    - meson
+    - ninja
+    - gjs
+    - gtk4-layer-shell
     - imagemagick
     - libnotify
     - networkmanager
@@ -15,8 +17,10 @@ packages:
   debian:
     - nodejs
     - npm
-    - typescript
-    - dart-sass
+    - meson
+    - ninja-build
+    - gjs
+    - libgtk-layer-shell-dev
     - imagemagick
     - libnotify-bin
     - network-manager
@@ -26,8 +30,10 @@ packages:
   fedora:
     - nodejs
     - npm
-    - typescript
-    - dart-sass
+    - meson
+    - ninja-build
+    - gjs
+    - gtk4-layer-shell
     - ImageMagick
     - libnotify
     - NetworkManager
@@ -46,3 +52,6 @@ script:
         rm -rf /tmp/ags-build
       fi
     provides: ags
+  - run: |
+      cd "$HOME/.config/ags"
+      npm install

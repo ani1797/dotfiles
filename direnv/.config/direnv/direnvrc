@@ -10,6 +10,7 @@
 
 layout_auto() {
     # Load .oprc file with 1Password secrets first (if exists)
+    # .oprc should contain: export VAR_NAME=op://vault/item/field
     if [[ -f .oprc ]]; then
         if command -v op >/dev/null 2>&1; then
             log_status "Loading secrets from .oprc via 1Password"

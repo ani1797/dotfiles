@@ -1,0 +1,48 @@
+# ags/deps.yaml
+packages:
+  arch:
+    - nodejs
+    - npm
+    - typescript
+    - dart-sass
+    - imagemagick
+    - libnotify
+    - networkmanager
+    - wireplumber
+    - bluez
+    - power-profiles-daemon
+    - polkit-gnome
+  debian:
+    - nodejs
+    - npm
+    - typescript
+    - dart-sass
+    - imagemagick
+    - libnotify-bin
+    - network-manager
+    - wireplumber
+    - bluez
+    - power-profiles-daemon
+  fedora:
+    - nodejs
+    - npm
+    - typescript
+    - dart-sass
+    - ImageMagick
+    - libnotify
+    - NetworkManager
+    - wireplumber
+    - bluez
+    - power-profiles-daemon
+  macos: []
+
+script:
+  - run: |
+      if ! command -v ags &>/dev/null; then
+        git clone --depth=1 https://github.com/Aylur/ags.git /tmp/ags-build
+        cd /tmp/ags-build
+        meson setup build
+        meson install -C build
+        rm -rf /tmp/ags-build
+      fi
+    provides: ags

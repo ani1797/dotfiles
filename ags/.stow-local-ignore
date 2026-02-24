@@ -1,0 +1,7 @@
+# ags/.stow-local-ignore
+node_modules
+.git
+package-lock.json
+tsconfig.json
+dist
+*.log

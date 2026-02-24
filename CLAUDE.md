@@ -9,7 +9,10 @@ This is a dotfiles repository that uses GNU Stow for managing configuration file
 ## Key Components
 
 - **install.sh**: Unified installer that self-bootstraps, reads config.yaml, installs per-module dependencies from deps.yaml, backs up conflicts, and stows modules
-- **config.yaml**: Configuration file with two top-level keys: `modules[]` (module definitions) and `machines[]` (hostname-to-module mappings)
+- **config.yaml**: Configuration file with three top-level keys:
+  - `modules[]` (module definitions)
+  - `toolkits[]` (toolkit groupings of related modules)
+  - `machines[]` (hostname-to-module/toolkit mappings)
 - **deps.yaml**: Per-module dependency manifests (placed inside each module directory) declaring native packages, cargo crates, pip packages, and install scripts
 - **Module directories**:
   - `bash/` - Contains Bash configuration files (e.g., .bashrc)
@@ -60,7 +63,7 @@ The installer is idempotent and safe to run repeatedly.
 
 ## Config Schema (config.yaml)
 
-config.yaml has two top-level keys: `modules` and `machines`.
+config.yaml has three top-level keys: `modules`, `toolkits`, and `machines`.
 
 ### modules[]
 Defines every available module. Each entry has a `name`, a `path` (directory in this repo), and an optional `target` (defaults to `$HOME`):
@@ -73,8 +76,26 @@ modules:
     target: "/opt/myapp"   # optional module-level target override
 ```
 
+### toolkits[]
+Defines named groups of related modules. Each entry has a `name` and a list of `modules[]`:
+```yaml
+toolkits:
+  - name: "terminal"
+    modules: ["bash", "fish", "zsh", "starship"]
+  - name: "dev-tools"
+    modules: ["git", "tmux", "direnv"]
+```
+
+Toolkits simplify machine configuration by grouping commonly-used modules. They only contain module names (no nested toolkits).
+
 ### machines[]
-Each machine entry has a `hostname` (matched against `$(hostname)`) and a list of modules to install. Module references are either a plain string (module name) or an object with `name` + `target` override:
+Each machine entry has a `hostname` (matched against `$(hostname)`) and a list of modules to install. Module references can be:
+- Plain string: either a module name or toolkit name
+- Object with `name` + `target` override (works for both modules and toolkits)
+
+When a toolkit is referenced with a target override, that target applies to all modules in the toolkit.
+
+Example:
 ```yaml
 machines:
   - hostname: "HOME-DESKTOP"

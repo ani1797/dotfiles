@@ -11,7 +11,8 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./dist",
-    "rootDir": ".config/ags"
+    "rootDir": ".config/ags",
+    "typeRoots": ["./node_modules/@types", "./.config/ags/types"]
   },
   "include": [".config/ags/**/*.ts", ".config/ags/**/*.tsx"],
   "exclude": ["node_modules", "dist"]

@@ -53,5 +53,5 @@ script:
       fi
     provides: ags
   - run: |
-      cd "$HOME/.config/ags"
+      cd "$HOME/.local/share/dotfiles/ags"
       npm install

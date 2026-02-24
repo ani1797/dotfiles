@@ -8,8 +8,6 @@
     "dev": "ags -c .config/ags/config.js"
   },
   "dependencies": {
-    "@girs/gtk-4.0": "^4.0.0",
-    "@girs/glib-2.0": "^2.0.0",
     "@material/material-color-utilities": "^0.3.0",
     "colorthief": "^2.4.0",
     "sharp": "^0.33.0",

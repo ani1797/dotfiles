@@ -37,7 +37,7 @@ packages:
   macos: []
 
 aur:
-  - ags
+  - aylurs-gtk-shell
 
 script:
   - run: |

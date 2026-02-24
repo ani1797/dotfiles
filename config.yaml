@@ -58,6 +58,18 @@ modules:
   - name: "iximiuz"
     path: "iximiuz"
 
+# Toolkit definitions
+# Each toolkit groups related modules for easier machine configuration.
+toolkits:
+  - name: "terminal"
+    modules: ["bash", "fish", "zsh", "starship"]
+  - name: "editors"
+    modules: ["nvim"]
+  - name: "dev-tools"
+    modules: ["git", "tmux", "direnv"]
+  - name: "shell-utils"
+    modules: ["yazi", "fzf"]
+
 # Machine profiles
 # Each machine has a hostname and a list of modules to install.
 # Module refs are either a plain string (module name) or an object with name + target override.

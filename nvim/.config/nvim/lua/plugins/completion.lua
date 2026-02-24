@@ -13,7 +13,9 @@ return {
 
     cmp.setup({
       snippet = {
-        expand = function(args) luasnip.lsp_expand(args.body) end,
+        expand = function(args)
+          luasnip.lsp_expand(args.body)
+        end,
       },
       mapping = cmp.mapping.preset.insert({
         ["<C-b>"] = cmp.mapping.scroll_docs(-4),
@@ -31,9 +33,13 @@ return {
           end
         end, { "i", "s" }),
         ["<S-Tab>"] = cmp.mapping(function(fallback)
-          if cmp.visible() then cmp.select_prev_item()
-          elseif luasnip.jumpable(-1) then luasnip.jump(-1)
-          else fallback() end
+          if cmp.visible() then
+            cmp.select_prev_item()
+          elseif luasnip.jumpable(-1) then
+            luasnip.jump(-1)
+          else
+            fallback()
+          end
         end, { "i", "s" }),
       }),
       sources = cmp.config.sources({

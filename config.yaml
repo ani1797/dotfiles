@@ -53,6 +53,8 @@ modules:
     path: "yazi"
   - name: "iximiuz"
     path: "iximiuz"
+  - name: "ags"
+    path: "ags"
 
 # Machine profiles
 # Each machine has a hostname and a list of modules to install.
@@ -86,6 +88,7 @@ machines:
       - "fonts"
       - "yazi"
       - "iximiuz"
+      - "ags"
 
   - hostname: "asus-vivobook"
     modules:

@@ -3,8 +3,6 @@ packages:
   arch:
     - nodejs
     - npm
-    - meson
-    - ninja
     - gjs
     - gtk4-layer-shell
     - imagemagick
@@ -17,8 +15,6 @@ packages:
   debian:
     - nodejs
     - npm
-    - meson
-    - ninja-build
     - gjs
     - libgtk-layer-shell-dev
     - imagemagick
@@ -30,8 +26,6 @@ packages:
   fedora:
     - nodejs
     - npm
-    - meson
-    - ninja-build
     - gjs
     - gtk4-layer-shell
     - ImageMagick
@@ -42,16 +36,10 @@ packages:
     - power-profiles-daemon
   macos: []
 
+aur:
+  - ags
+
 script:
-  - run: |
-      if ! command -v ags &>/dev/null; then
-        git clone --depth=1 https://github.com/Aylur/ags.git /tmp/ags-build
-        cd /tmp/ags-build
-        meson setup build
-        meson install -C build
-        rm -rf /tmp/ags-build
-      fi
-    provides: ags
   - run: |
       cd "$HOME/.local/share/dotfiles/ags"
       npm install

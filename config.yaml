@@ -77,14 +77,9 @@ machines:
   - hostname: "HOME-DESKTOP"
     modules:
       - "antigravity"
-      - "bash"
-      - "zsh"
-      - "fish"
-      - "starship"
-      - "direnv"
-      - "git"
-      - "nvim"
-      - "tmux"
+      - "terminal"           # bash, fish, zsh, starship
+      - "dev-tools"          # git, tmux, direnv
+      - "editors"            # nvim
       - "ssh"
       - "kitty"
       - "rofi"
@@ -99,29 +94,22 @@ machines:
       - "npm"
       - "podman"
       - "fonts"
-      - "yazi"
-      - "fzf"
+      - "shell-utils"        # yazi, fzf
       - "k8s"
       - "terraform"
       - "iximiuz"
 
   - hostname: "asus-vivobook"
     modules:
-      - "bash"
-      - "zsh"
-      - "fish"
-      - "starship"
-      - "direnv"
-      - "git"
-      - "nvim"
-      - "tmux"
+      - "terminal"           # bash, fish, zsh, starship
+      - "dev-tools"          # git, tmux, direnv
+      - "editors"            # nvim
       - "ssh"
       - "pip"
       - "uv"
       - "npm"
       - "fonts"
-      - "yazi"
-      - "fzf"
+      - "shell-utils"        # yazi, fzf
       - "k8s"
       - "terraform"
       - "iximiuz"
@@ -132,16 +120,13 @@ machines:
       - "bash"
       - "zsh"
       - "starship"
-      - "direnv"
-      - "git"
-      - "nvim"
-      - "tmux"
+      - "dev-tools"          # git, tmux, direnv
+      - "editors"            # nvim
       - "ssh"
       - "pip"
       - "uv"
       - "npm"
-      - "yazi"
-      - "fzf"
+      - "shell-utils"        # yazi, fzf
       - "k8s"
       - "terraform"
       - "iximiuz"
@@ -152,16 +137,13 @@ machines:
       - "bash"
       - "zsh"
       - "starship"
-      - "direnv"
-      - "git"
-      - "nvim"
-      - "tmux"
+      - "dev-tools"          # git, tmux, direnv
+      - "editors"            # nvim
       - "ssh"
       - "pip"
       - "uv"
       - "npm"
-      - "yazi"
-      - "fzf"
+      - "shell-utils"        # yazi, fzf
       - "k8s"
       - "terraform"
       - "iximiuz"

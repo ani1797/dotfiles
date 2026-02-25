@@ -1,15 +1,16 @@
 provides: labctl
 
+# Define installation script once using YAML anchor
+script_install: &install_script
+  run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
+  provides: labctl
+
 packages:
   arch:
-    - run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
-      provides: labctl
+    - *install_script
   debian:
-    - run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
-      provides: labctl
+    - *install_script
   fedora:
-    - run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
-      provides: labctl
+    - *install_script
   macos:
-    - run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
-      provides: labctl
+    - *install_script

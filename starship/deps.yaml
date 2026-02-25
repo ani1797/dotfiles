@@ -1,13 +1,16 @@
 provides: starship
 
+# Define installation script once using YAML anchor
+script_install: &install_script
+  run: curl -sS https://starship.rs/install.sh | sh -s -- --yes
+  provides: starship
+
 packages:
   arch:
     - starship
   debian:
-    - run: curl -sS https://starship.rs/install.sh | sh -s -- --yes
-      provides: starship
+    - *install_script
   fedora:
-    - run: curl -sS https://starship.rs/install.sh | sh -s -- --yes
-      provides: starship
+    - *install_script
   macos:
     - starship

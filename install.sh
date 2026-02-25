@@ -32,6 +32,7 @@ declare -i SCRIPTS_RUN=0
 declare -i FILES_BACKED_UP=0
 declare -a ERRORS=()
 declare -a STOWED_MODULES=()
+declare -A DISCOVERED_MODULES
 
 # ============================================================================
 # COLOR LOGGING
@@ -443,6 +444,42 @@ check_and_install_prerequisites() {
     fi
 
     success "Prerequisites checked"
+}
+
+# ============================================================================
+# MODULE DISCOVERY
+# ============================================================================
+
+# Discover modules by scanning for directories with deps.yaml
+# Returns associative array: module_name -> directory_path
+discover_modules() {
+    declare -g -A DISCOVERED_MODULES
+
+    info "Discovering modules..."
+
+    local count=0
+    while IFS= read -r -d '' deps_file; do
+        local module_dir
+        module_dir="$(dirname "$deps_file")"
+
+        # Skip if not a directory
+        [[ ! -d "$module_dir" ]] && continue
+
+        # Module name = directory name
+        local module_name
+        module_name="$(basename "$module_dir")"
+
+        # Store absolute path
+        DISCOVERED_MODULES["$module_name"]="$module_dir"
+        ((count++))
+    done < <(find "$SCRIPT_DIR" -mindepth 2 -maxdepth 2 -name "deps.yaml" -print0 2>/dev/null)
+
+    info "Discovered $count modules"
+
+    if [[ $count -eq 0 ]]; then
+        error "No modules discovered (no directories with deps.yaml found)"
+        exit 1
+    fi
 }
 
 # ============================================================================

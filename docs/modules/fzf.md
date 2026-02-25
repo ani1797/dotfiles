@@ -19,7 +19,7 @@ Command-line fuzzy finder with Tokyo Night theme and multi-shell integration.
 ## Deployment
 
 ```bash
-cd /home/anirudh/.local/share/dotfiles
+cd ~/.local/share/dotfiles
 ./install.sh
 ```
 
@@ -91,12 +91,7 @@ packages:
   debian:  [fzf]
   fedora:  [fzf]
   macos:   [fzf]
-
-requires:
-  - fzf
 ```
-
-The `requires` field ensures fzf binary is available before stowing config files.
 
 ## Troubleshooting
 

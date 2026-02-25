@@ -1,0 +1,150 @@
+# Module definitions
+# Each module has a name, path (directory in this repo), and optional target (defaults to $HOME)
+modules:
+  - name: "antigravity"
+    path: "antigravity"
+  - name: "bash"
+    path: "bash"
+  - name: "zsh"
+    path: "zsh"
+  - name: "fish"
+    path: "fish"
+  - name: "starship"
+    path: "starship"
+  - name: "direnv"
+    path: "direnv"
+  - name: "git"
+    path: "git"
+  - name: "nvim"
+    path: "nvim"
+  - name: "tmux"
+    path: "tmux"
+  - name: "ssh"
+    path: "ssh"
+  - name: "kitty"
+    path: "kitty"
+  - name: "rofi"
+    path: "rofi"
+  - name: "hyprland"
+    path: "hyprland"
+  - name: "waybar"
+    path: "waybar"
+  - name: "swaync"
+    path: "swaync"
+  - name: "theme"
+    path: "theme"
+  - name: "sddm"
+    path: "sddm"
+  - name: "wayvnc"
+    path: "wayvnc"
+  - name: "pip"
+    path: "pip"
+  - name: "uv"
+    path: "uv"
+  - name: "npm"
+    path: "npm"
+  - name: "podman"
+    path: "podman"
+  - name: "fonts"
+    path: "fonts"
+  - name: "yazi"
+    path: "yazi"
+  - name: "fzf"
+    path: "fzf"
+  - name: "k8s"
+    path: "k8s"
+  - name: "terraform"
+    path: "terraform"
+  - name: "iximiuz"
+    path: "iximiuz"
+
+# Toolkit definitions
+# Each toolkit groups related modules for easier machine configuration.
+toolkits:
+  - name: "terminal"
+    modules: ["bash", "fish", "zsh", "starship"]
+  - name: "editors"
+    modules: ["nvim"]
+  - name: "dev-tools"
+    modules: ["git", "tmux", "direnv"]
+  - name: "shell-utils"
+    modules: ["yazi", "fzf"]
+
+  # Desktop Environment
+  - name: "wayland-desktop"
+    modules: ["hyprland", "waybar", "swaync", "sddm", "rofi", "kitty", "theme", "fonts"]
+  - name: "minimal-desktop"
+    modules: ["hyprland", "waybar", "kitty", "rofi"]
+
+  # Language-Specific
+  - name: "python-dev"
+    modules: ["pip", "uv"]
+  - name: "node-dev"
+    modules: ["npm", "direnv"]
+
+  # DevOps & Infrastructure
+  - name: "containers"
+    modules: ["podman", "k8s"]
+  - name: "cloud-native"
+    modules: ["k8s", "terraform", "podman", "iximiuz"]
+
+  # Workflow Profiles
+  - name: "remote-access"
+    modules: ["ssh", "wayvnc"]
+  - name: "minimal-server"
+    modules: ["bash", "starship", "git", "ssh", "direnv"]
+  - name: "workstation-base"
+    modules: ["bash", "fish", "zsh", "starship", "git", "tmux", "direnv", "nvim", "yazi", "fzf", "ssh"]
+
+# Machine profiles
+# Each machine has a hostname and a list of modules to install.
+# Module refs are either a plain string (module name) or an object with name + target override.
+machines:
+  - hostname: "HOME-DESKTOP"
+    modules:
+      - "antigravity"
+      - "wayland-desktop"    # Full desktop: hyprland, waybar, swaync, sddm, rofi, kitty, theme, fonts
+      - "workstation-base"   # Dev essentials: shells, git, tmux, direnv, nvim, yazi, fzf, ssh
+      - "python-dev"         # pip, uv
+      - "npm"
+      - "cloud-native"       # k8s, terraform, podman, iximiuz
+      - "wayvnc"
+
+  - hostname: "asus-vivobook"
+    modules:
+      - "workstation-base"   # Dev essentials: shells, git, tmux, direnv, nvim, yazi, fzf, ssh
+      - "fonts"              # Fonts for GUI applications
+      - "python-dev"         # pip, uv
+      - "npm"
+      - "k8s"
+      - "terraform"
+      - "iximiuz"
+
+  # Codesapces
+  - hostname: "codespaces-*"
+    modules:
+      - "minimal-server"     # bash, starship, git, ssh, direnv
+      - "zsh"
+      - "tmux"
+      - "editors"            # nvim
+      - "python-dev"         # pip, uv
+      - "npm"
+      - "shell-utils"        # yazi, fzf
+      - "k8s"
+      - "terraform"
+      - "iximiuz"
+
+  # ArchLinux
+  - hostname: "arch-*"
+    modules:
+      - "minimal-server"     # bash, starship, git, ssh, direnv
+      - "zsh"
+      - "tmux"
+      - "editors"            # nvim
+      - "python-dev"         # pip, uv
+      - "npm"
+      - "shell-utils"        # yazi, fzf
+      - "k8s"
+      - "terraform"
+      - "iximiuz"
+

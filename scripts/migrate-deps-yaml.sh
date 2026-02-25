@@ -4,6 +4,10 @@
 
 set -euo pipefail
 
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 MODULE_DIR" >&2
+    exit 1
+fi
 MODULE_DIR="$1"
 
 if [[ ! -f "$MODULE_DIR/deps.yaml" ]]; then
@@ -24,7 +28,7 @@ PROVIDES=$(yq -r '.script[]?.provides // empty' "$MODULE_DIR/deps.yaml" 2>/dev/n
 
 if [[ -n "$PROVIDES" ]]; then
     echo "  Adding provides: $PROVIDES"
-    yq -y -i ".provides = \"$PROVIDES\"" "$MODULE_DIR/deps.yaml"
+    yq -y -i --arg provides "$PROVIDES" '.provides = $provides' "$MODULE_DIR/deps.yaml"
 fi
 
 echo "  Migration complete"

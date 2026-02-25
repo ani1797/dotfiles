@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # migrate-deps-yaml.sh - Migrate deps.yaml to new format
 # Adds top-level 'provides' field (extracted from script sections)
-# Converts platform-specific scripts from top-level to inline
 
 set -euo pipefail
 

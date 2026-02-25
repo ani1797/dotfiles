@@ -709,8 +709,8 @@ collect_all_dependencies() {
     os_key="$(get_deps_os_key "$PKG_MGR")"
 
     info "Collecting dependencies from ${#module_list[@]} modules..."
-    info "Package manager: $PKG_MGR, OS key: $os_key"
 
+    local deps_files_found=0
     for module_name in "${module_list[@]}"; do
         local module_rel_path
         module_rel_path="$(get_module_path "$module_name")"
@@ -728,6 +728,8 @@ collect_all_dependencies() {
         if [[ ! -f "$deps_file" ]]; then
             continue
         fi
+
+        ((deps_files_found++))
 
         # Collect native packages
         if [[ -n "$os_key" ]]; then
@@ -768,6 +770,9 @@ collect_all_dependencies() {
         done
 
     done
+
+    info "Found $deps_files_found modules with deps.yaml"
+    info "Collected: ${#ALL_NATIVE_PKGS[@]} native, ${#ALL_AUR_PKGS[@]} AUR, ${#ALL_CARGO_PKGS[@]} cargo, ${#ALL_PIP_PKGS[@]} pip, ${#ALL_SCRIPTS[@]} scripts"
 
     # Remove duplicates
     if [[ ${#ALL_NATIVE_PKGS[@]} -gt 0 ]]; then

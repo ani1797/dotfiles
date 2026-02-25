@@ -118,19 +118,7 @@ machines:
       - k8s
       - terraform
       - iximiuz
-  # Test profile: minimal server setup for CI/playground testing
-  - hostname: playground-test-minimal
+
+  - hostname: LAPTOP-0T9I5OMD # MS Work Laptop
     modules:
-      - bash
-      - git
-      - starship
-      - scripts
-      - direnv
-      - fzf
-  # Test profile: cloud-native development stack
-  - hostname: playground-test-cloud
-    modules:
-      - terminal
-      - dev-tools
-      - cloud-native
-      - python-dev
+      - workstation-base

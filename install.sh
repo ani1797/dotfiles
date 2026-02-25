@@ -365,7 +365,13 @@ backup_conflicts_for_module() {
     local target_dir="$2"
 
     # Walk through the module directory and check each corresponding target path
-    while IFS= read -r -d '' src_file; do
+    # Use mapfile to avoid process substitution hang with set -e and ERR trap
+    local -a src_files
+    mapfile -d '' src_files < <(find "$module_path" -not -name '.stow-local-ignore' -not -path '*/.git/*' -type f -print0 2>/dev/null)
+
+    for src_file in "${src_files[@]}"; do
+        [[ -z "$src_file" ]] && continue
+
         local rel="${src_file#"$module_path"/}"
         local target_file="$target_dir/$rel"
 
@@ -374,7 +380,7 @@ backup_conflicts_for_module() {
             backup_file "$target_file" "$target_dir"
             rm -rf "$target_file"
         fi
-    done < <(find "$module_path" -not -name '.stow-local-ignore' -not -path '*/.git/*' -type f -print0 2>/dev/null)
+    done
 }
 
 # ============================================================================
@@ -479,7 +485,27 @@ discover_modules() {
     info "Discovering modules..."
 
     local count=0
-    while IFS= read -r -d '' deps_file; do
+
+    # Temporarily disable both errexit and ERR trap for process substitution
+    # The interaction between set -e, ERR trap, and process substitution
+    # causes the script to hang
+    trap - ERR
+    set +e
+    local -a deps_files
+    mapfile -d '' deps_files < <(find "$SCRIPT_DIR" -mindepth 2 -maxdepth 2 -name "deps.yaml" -print0 2>/dev/null)
+    local find_status=$?
+    set -e
+    trap 'error "Script failed at line $LINENO (exit code $?)"' ERR
+
+    # Check if find succeeded
+    if [[ $find_status -ne 0 && $find_status -ne 141 ]]; then
+        error "find command failed with status $find_status"
+        exit 1
+    fi
+
+    for deps_file in "${deps_files[@]}"; do
+        [[ -z "$deps_file" ]] && continue
+
         local module_dir
         module_dir="$(dirname "$deps_file")"
 
@@ -492,8 +518,8 @@ discover_modules() {
 
         # Store absolute path
         DISCOVERED_MODULES["$module_name"]="$module_dir"
-        ((count++))
-    done < <(find "$SCRIPT_DIR" -mindepth 2 -maxdepth 2 -name "deps.yaml" -print0 2>/dev/null)
+        ((count++)) || true
+    done
 
     info "Discovered $count modules"
 
@@ -756,7 +782,7 @@ collect_all_dependencies() {
             continue
         fi
 
-        ((deps_files_found++))
+        ((deps_files_found++)) || true
 
         # Collect provides field for verification
         local provides
@@ -764,10 +790,12 @@ collect_all_dependencies() {
         if [[ -n "$provides" ]]; then
             # Handle both string and array formats
             if [[ "$provides" == "["* ]]; then
-                # Array format
-                while IFS= read -r binary; do
+                # Array format - use mapfile to avoid process substitution hang
+                local -a binaries
+                mapfile -t binaries < <(yq -r '.provides[]? // empty' "$deps_file" 2>/dev/null)
+                for binary in "${binaries[@]}"; do
                     [[ -n "$binary" ]] && ALL_REQUIRED_BINARIES+=("$binary")
-                done < <(yq -r '.provides[]? // empty' "$deps_file" 2>/dev/null)
+                done
             else
                 # String format
                 ALL_REQUIRED_BINARIES+=("$provides")
@@ -1088,9 +1116,14 @@ main() {
 
     # --- Find modules for this machine ---
     local -a module_list=()
-    while IFS= read -r mod; do
-        [[ -n "$mod" ]] && module_list+=("$mod")
-    done < <(expand_machine_modules "$CURRENT_HOST")
+    mapfile -t module_list < <(expand_machine_modules "$CURRENT_HOST")
+
+    # Remove empty entries
+    local -a filtered_modules=()
+    for mod in "${module_list[@]}"; do
+        [[ -n "$mod" ]] && filtered_modules+=("$mod")
+    done
+    module_list=("${filtered_modules[@]}")
 
     if [[ ${#module_list[@]} -eq 0 ]]; then
         error "No modules found for hostname '$CURRENT_HOST'."

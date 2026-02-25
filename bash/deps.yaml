@@ -5,19 +5,15 @@ packages:
     - bash
     - bash-completion
     - eza
-    - fzf
   debian:
     - bash
     - bash-completion
     - eza
-    - fzf
   fedora:
     - bash
     - bash-completion
     - eza
-    - fzf
   macos:
     - bash
     - bash-completion@2
     - eza
-    - fzf

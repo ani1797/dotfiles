@@ -145,15 +145,9 @@ pip:
 script:
   - run: "curl -sS https://starship.rs/install.sh | sh -s -- --yes"
     provides: starship   # skip if this binary is already on $PATH
-
-# Required binaries that MUST be available before stowing
-# If any are missing after installation, the installer will abort
-requires:
-  - git
-  - starship
 ```
 
-All sections are optional. The `packages` key maps distro families (`arch`, `debian`, `fedora`, `macos`) to the corresponding native package names. The `requires` field specifies binaries that must be available on `$PATH` after installation completes; if any are missing, the installer aborts before stowing to prevent incomplete module configurations.
+All sections are optional. The `packages` key maps distro families (`arch`, `debian`, `fedora`, `macos`) to the corresponding native package names.
 
 ## Development Workflow
 

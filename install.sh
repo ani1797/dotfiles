@@ -766,10 +766,6 @@ collect_all_dependencies() {
             fi
         done
 
-        # Collect explicit required binaries
-        while IFS= read -r binary; do
-            [[ -n "$binary" ]] && ALL_REQUIRED_BINARIES+=("$binary")
-        done < <(yq -r '.requires[]? // empty' "$deps_file" 2>/dev/null)
     done
 
     # Remove duplicates
@@ -880,18 +876,13 @@ verify_dependencies() {
 
     if [[ ${#missing_binaries[@]} -gt 0 ]]; then
         echo ""
-        error "Missing required binaries (${#missing_binaries[@]}): ${missing_binaries[*]}"
-        error "Cannot proceed with stowing until dependencies are available."
-        error ""
-        error "Possible solutions:"
-        error "  1. Install missing binaries manually"
-        error "  2. Ensure the package manager installed them correctly"
-        error "  3. Check that installation scripts completed successfully"
-        error "  4. Update your PATH to include the binary locations"
-        return 1
+        warning "Missing binaries (${#missing_binaries[@]}): ${missing_binaries[*]}"
+        warning "Some dependencies may not be available yet."
+        warning "Continuing with installation..."
+        return 0
     fi
 
-    success "All required dependencies verified"
+    success "All dependencies verified"
     return 0
 }
 
@@ -1059,13 +1050,8 @@ main() {
     # --- Install all dependencies at once ---
     install_all_dependencies
 
-    # --- Verify all required dependencies are available ---
-    if ! verify_dependencies; then
-        echo ""
-        error "Dependency verification failed. Aborting installation."
-        error "No modules were stowed."
-        exit 1
-    fi
+    # --- Verify dependencies (non-blocking) ---
+    verify_dependencies
 
     # --- Stow each module ---
     echo ""

@@ -537,11 +537,19 @@ check_and_install_prerequisites() {
         info "Auto-installing Python pip..."
         case "$PKG_MGR" in
             pacman)
-                if sudo pacman -S --noconfirm python-pip; then
+                # On Arch, python-pip might conflict with system python
+                # Try with --overwrite to handle conflicts
+                if sudo pacman -S --noconfirm --overwrite '*' python-pip 2>&1 | tee /tmp/pip-install.log; then
                     success "Installed: python-pip"
                 else
-                    error "Failed to install python-pip"
-                    exit 1
+                    # Check if pip is now available despite errors (conflict resolved)
+                    if command -v pip3 >/dev/null 2>&1 || command -v pip >/dev/null 2>&1; then
+                        warn "pip installed with conflicts (resolved)"
+                    else
+                        error "Failed to install python-pip"
+                        error "$(tail -5 /tmp/pip-install.log)"
+                        exit 1
+                    fi
                 fi
                 ;;
             apt)

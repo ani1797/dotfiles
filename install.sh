@@ -724,61 +724,80 @@ collect_all_dependencies() {
 
     local deps_files_found=0
     for module_name in "${module_list[@]}"; do
-        # Look up module in discovered modules
         if [[ -z "${DISCOVERED_MODULES[$module_name]+x}" ]]; then
             continue
         fi
 
-        local module_abs_path="${DISCOVERED_MODULES[$module_name]}"
-        if [[ ! -d "$module_abs_path" ]]; then
-            continue
-        fi
+        local module_path="${DISCOVERED_MODULES[$module_name]}"
+        local deps_file="$module_path/deps.yaml"
 
-        local deps_file="$module_abs_path/deps.yaml"
         if [[ ! -f "$deps_file" ]]; then
             continue
         fi
 
         ((deps_files_found++))
 
-        # Collect native packages
-        if [[ -n "$os_key" ]]; then
-            while IFS= read -r pkg; do
-                [[ -n "$pkg" ]] && ALL_NATIVE_PKGS+=("$pkg")
-            done < <(yq -r ".packages.${os_key}[]? // empty" "$deps_file" 2>/dev/null)
-        fi
-
-        # Collect AUR packages
-        while IFS= read -r pkg; do
-            [[ -n "$pkg" ]] && ALL_AUR_PKGS+=("$pkg")
-        done < <(yq -r '.aur[]? // empty' "$deps_file" 2>/dev/null)
-
-        # Collect cargo packages
-        while IFS= read -r pkg; do
-            [[ -n "$pkg" ]] && ALL_CARGO_PKGS+=("$pkg")
-        done < <(yq -r '.cargo[]? // empty' "$deps_file" 2>/dev/null)
-
-        # Collect pip packages
-        while IFS= read -r pkg; do
-            [[ -n "$pkg" ]] && ALL_PIP_PKGS+=("$pkg")
-        done < <(yq -r '.pip[]? // empty' "$deps_file" 2>/dev/null)
-
-        # Collect install scripts
-        local script_count
-        script_count="$(yq -r '.script | length // 0' "$deps_file" 2>/dev/null)"
-
-        for i in $(seq 0 $((script_count - 1))); do
-            local run_cmd provides
-            run_cmd="$(yq -r ".script[$i].run" "$deps_file")"
-            provides="$(yq -r ".script[$i].provides // \"\"" "$deps_file")"
-            ALL_SCRIPTS+=("$run_cmd|$provides")
-
-            # Track binaries that must be available after installation
-            if [[ -n "$provides" ]]; then
+        # Collect provides field for verification
+        local provides
+        provides="$(yq -r '.provides // empty' "$deps_file" 2>/dev/null)"
+        if [[ -n "$provides" ]]; then
+            # Handle both string and array formats
+            if [[ "$provides" == "["* ]]; then
+                # Array format
+                while IFS= read -r binary; do
+                    [[ -n "$binary" ]] && ALL_REQUIRED_BINARIES+=("$binary")
+                done < <(yq -r '.provides[]? // empty' "$deps_file" 2>/dev/null)
+            else
+                # String format
                 ALL_REQUIRED_BINARIES+=("$provides")
             fi
-        done
+        fi
 
+        # Parse packages for this OS
+        if [[ -z "$os_key" ]]; then
+            continue
+        fi
+
+        # Get count of package entries
+        local pkg_count
+        pkg_count="$(yq -r ".packages.${os_key} | length // 0" "$deps_file" 2>/dev/null)"
+
+        for i in $(seq 0 $((pkg_count - 1))); do
+            local entry_type
+            entry_type="$(yq -r ".packages.${os_key}[$i] | type" "$deps_file" 2>/dev/null)"
+
+            if [[ "$entry_type" == "!!str" ]] || [[ "$entry_type" == "string" ]]; then
+                # String entry - parse prefix
+                local pkg
+                pkg="$(yq -r ".packages.${os_key}[$i]" "$deps_file" 2>/dev/null)"
+
+                case "$pkg" in
+                    aur:*)
+                        ALL_AUR_PKGS+=("${pkg#aur:}")
+                        ;;
+                    cargo:*)
+                        ALL_CARGO_PKGS+=("${pkg#cargo:}")
+                        ;;
+                    pip:*)
+                        ALL_PIP_PKGS+=("${pkg#pip:}")
+                        ;;
+                    *)
+                        ALL_NATIVE_PKGS+=("$pkg")
+                        ;;
+                esac
+            else
+                # Object entry - install script
+                local run_cmd provides_binary
+                run_cmd="$(yq -r ".packages.${os_key}[$i].run" "$deps_file" 2>/dev/null)"
+                provides_binary="$(yq -r ".packages.${os_key}[$i].provides // \"\"" "$deps_file" 2>/dev/null)"
+
+                ALL_SCRIPTS+=("$run_cmd|$provides_binary")
+
+                if [[ -n "$provides_binary" ]]; then
+                    ALL_REQUIRED_BINARIES+=("$provides_binary")
+                fi
+            fi
+        done
     done
 
     info "Found $deps_files_found modules with deps.yaml"

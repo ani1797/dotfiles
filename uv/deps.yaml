@@ -1,7 +1,6 @@
-# uv module dependencies
-# uv is typically self-installed via its installer script
 packages:
   arch: []
   debian: []
   fedora: []
   macos: []
+provides: uv

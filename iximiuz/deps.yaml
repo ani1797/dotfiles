@@ -1,14 +1,9 @@
-# iximiuz module dependencies
-# labctl CLI for iximiuz Labs (remote Linux/Docker/K8s playgrounds)
-
 packages:
   arch: []
   debian: []
   fedora: []
   macos: []
-
-# Official installer script
-# Downloads latest release to ~/.iximiuz/labctl/bin
 script:
-  - run: "curl -sf https://labs.iximiuz.com/cli/install.sh | sh"
+  - run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
     provides: labctl
+provides: labctl

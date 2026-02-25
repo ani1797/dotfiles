@@ -1,4 +1,3 @@
-# direnv module dependencies
 packages:
   arch:
     - direnv
@@ -8,3 +7,4 @@ packages:
     - direnv
   macos:
     - direnv
+provides: direnv

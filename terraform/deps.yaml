@@ -2,3 +2,9 @@
 # Note: Terraform is typically installed from HashiCorp repositories
 # Users should follow official installation instructions: https://www.terraform.io/downloads
 # The shell aliases will only activate if terraform is available
+packages:
+  arch: []
+  debian: []
+  fedora: []
+  macos: []
+provides: terraform

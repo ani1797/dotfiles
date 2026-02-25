@@ -1,4 +1,3 @@
-# podman module dependencies
 packages:
   arch:
     - podman
@@ -14,3 +13,4 @@ packages:
     - skopeo
   macos:
     - podman
+provides: podman

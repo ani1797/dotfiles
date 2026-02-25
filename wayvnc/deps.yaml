@@ -1,5 +1,3 @@
-# wayvnc module dependencies
-# openssl needed by configure-wayvnc for TLS certificate generation
 packages:
   arch:
     - wayvnc
@@ -11,3 +9,4 @@ packages:
     - wayvnc
     - openssl
   macos: []
+provides: wayvnc

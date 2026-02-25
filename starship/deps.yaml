@@ -1,4 +1,3 @@
-# starship module dependencies
 packages:
   arch:
     - starship
@@ -6,9 +5,7 @@ packages:
   fedora: []
   macos:
     - starship
-
-# On Debian/Fedora, starship is not in native repos; use the official installer.
-# The 'provides' check skips re-running if starship is already on $PATH.
 script:
-  - run: "curl -sS https://starship.rs/install.sh | sh -s -- --yes"
+  - run: curl -sS https://starship.rs/install.sh | sh -s -- --yes
     provides: starship
+provides: starship

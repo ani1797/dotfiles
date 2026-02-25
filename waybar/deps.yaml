@@ -1,5 +1,3 @@
-# waybar module dependencies
-# Status bar + supporting tools for widgets
 packages:
   arch:
     - waybar
@@ -12,6 +10,6 @@ packages:
     - waybar
     - playerctl
   macos: []
-
 aur:
   - wttrbar
+provides: waybar

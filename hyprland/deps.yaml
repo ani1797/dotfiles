@@ -1,5 +1,3 @@
-# hyprland module dependencies
-# Compositor + autostarted services + keybind tools
 packages:
   arch:
     - hyprland
@@ -35,3 +33,4 @@ packages:
     - brightnessctl
     - playerctl
   macos: []
+provides: hyprctl

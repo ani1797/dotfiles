@@ -1,7 +1,6 @@
-# pip module dependencies
-# pip comes bundled with Python; no extra packages needed
 packages:
   arch: []
   debian: []
   fedora: []
   macos: []
+provides: pip

@@ -1,5 +1,3 @@
-# yazi module dependencies
-# Terminal file manager + preview dependencies
 packages:
   arch:
     - yazi
@@ -43,6 +41,4 @@ packages:
     - fzf
     - zoxide
     - imagemagick
-
-# yazi is in official repos on Arch and Homebrew on macOS;
-# on Debian/Fedora, install manually via cargo install yazi-fm yazi-cli
+provides: yazi

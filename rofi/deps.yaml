@@ -1,4 +1,3 @@
-# rofi module dependencies
 packages:
   arch:
     - rofi-wayland
@@ -7,3 +6,4 @@ packages:
   fedora:
     - rofi
   macos: []
+provides: rofi

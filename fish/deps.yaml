@@ -1,5 +1,3 @@
-# fish module dependencies
-# Note: starship is owned by the starship module -- not listed here
 packages:
   arch:
     - eza
@@ -13,3 +11,4 @@ packages:
   macos:
     - eza
     - fish
+provides: fish

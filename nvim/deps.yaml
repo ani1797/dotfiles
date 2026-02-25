@@ -1,4 +1,3 @@
-# nvim module dependencies
 packages:
   arch:
     - neovim
@@ -19,8 +18,6 @@ packages:
     - node-typescript-language-server
     - gopls
     - rust-analyzer
-    # Note: bash-language-server not available as native Debian package
-    # Install via npm: npm install -g bash-language-server
   fedora:
     - neovim
     - ripgrep
@@ -30,8 +27,6 @@ packages:
     - rust-analyzer
     - gopls
     - nodejs-bash-language-server
-    # Note: typescript-language-server not available as native Fedora package
-    # Install via npm: npm install -g typescript-language-server
   macos:
     - neovim
     - ripgrep
@@ -42,3 +37,4 @@ packages:
     - rust-analyzer
     - gopls
     - bash-language-server
+provides: nvim

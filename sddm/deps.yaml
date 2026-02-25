@@ -1,5 +1,3 @@
-# sddm module dependencies
-# Display manager with custom theme
 packages:
   arch:
     - sddm
@@ -10,3 +8,4 @@ packages:
   fedora:
     - sddm
   macos: []
+provides: sddm

@@ -359,90 +359,90 @@ backup_conflicts_for_module() {
 # CORE UTILITIES CHECK: verify essential commands are available
 # ============================================================================
 
-check_core_utilities() {
-    local -a missing=()
+# ============================================================================
+# PREREQUISITE CHECK AND AUTO-INSTALL
+# ============================================================================
 
-    # Check for hostname command
+check_and_install_prerequisites() {
+    info "Checking prerequisites..."
+
+    # Check core utilities (fail-fast if missing)
+    local -a missing_core=()
+    for cmd in stow yq git find grep sed date mkdir cp rm; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            missing_core+=("$cmd")
+        fi
+    done
+
+    if [[ ${#missing_core[@]} -gt 0 ]]; then
+        error "Missing required tools: ${missing_core[*]}"
+        error "Install via your package manager:"
+        case "$PKG_MGR" in
+            pacman) error "  sudo pacman -S stow yq git" ;;
+            apt)    error "  sudo apt-get install stow yq git" ;;
+            dnf)    error "  sudo dnf install stow yq git" ;;
+            brew)   error "  brew install stow yq git" ;;
+        esac
+        exit 1
+    fi
+
+    # Check hostname command specifically
     if ! command -v hostname >/dev/null 2>&1; then
         case "$PKG_MGR" in
-            pacman)  missing+=("inetutils") ;;
-            apt)     missing+=("hostname") ;;
-            dnf|yum) missing+=("hostname") ;;
-            brew)    missing+=("inetutils") ;;
-            *)
-                error "hostname command not found. Please install it manually."
-                exit 1
-                ;;
+            pacman) missing_core+=("inetutils") ;;
+            *)      missing_core+=("hostname") ;;
         esac
+        error "Missing hostname command. Install: ${missing_core[*]}"
+        exit 1
     fi
 
-    # Check for other core utilities
-    for cmd in find grep sed date mkdir cp rm; do
-        if ! command -v "$cmd" >/dev/null 2>&1; then
-            error "Required core utility '$cmd' not found."
-            error "Please install coreutils or equivalent package."
-            exit 1
-        fi
-    done
-
-    # Install missing hostname package if needed
-    if [[ ${#missing[@]} -gt 0 ]]; then
-        info "Installing core utilities: ${missing[*]}"
-        install_native_packages "$PKG_MGR" "${missing[@]}"
-
-        # Verify hostname is now available
-        if ! command -v hostname >/dev/null 2>&1; then
-            error "'hostname' command still not found after install."
-            error "Please install it manually and re-run."
-            exit 1
-        fi
-    fi
-}
-
-# ============================================================================
-# SELF-BOOTSTRAP: install stow + yq if missing
-# ============================================================================
-
-self_bootstrap() {
-    local -a missing=()
-
-    for cmd in stow yq; do
-        if ! command -v "$cmd" >/dev/null 2>&1; then
-            missing+=("$cmd")
-        fi
-    done
-
-    if [[ ${#missing[@]} -eq 0 ]]; then
-        return 0
-    fi
-
-    info "Missing required tools: ${missing[*]}"
-    info "Installing via $PKG_MGR..."
-
-    # On macOS, ensure Homebrew is available first
-    if [[ "$PKG_MGR" == "brew" ]] && ! command -v brew >/dev/null 2>&1; then
-        info "Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        if [[ -f /opt/homebrew/bin/brew ]]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-        elif [[ -f /usr/local/bin/brew ]]; then
-            eval "$(/usr/local/bin/brew shellenv)"
+    # Auto-install cargo if missing
+    if ! command -v cargo >/dev/null 2>&1; then
+        info "Installing Rust via rustup (non-interactive, no sudo)..."
+        if curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path; then
+            # shellcheck source=/dev/null
+            [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+            success "Cargo installed"
+        else
+            warn "Failed to install cargo - cargo: packages will be skipped"
         fi
     fi
 
-    install_native_packages "$PKG_MGR" "${missing[@]}"
-    PACKAGES_INSTALLED+=${#missing[@]}
+    # Check Python/pip (fail-fast if missing)
+    if ! command -v pip3 >/dev/null 2>&1 && ! command -v pip >/dev/null 2>&1; then
+        error "Python pip not found"
+        error "Install via your package manager:"
+        case "$PKG_MGR" in
+            pacman) error "  sudo pacman -S python-pip" ;;
+            apt)    error "  sudo apt-get install python3-pip" ;;
+            dnf)    error "  sudo dnf install python3-pip" ;;
+            brew)   error "  brew install python3" ;;
+        esac
+        exit 1
+    fi
 
-    # Verify they installed correctly
-    for cmd in "${missing[@]}"; do
-        if ! command -v "$cmd" >/dev/null 2>&1; then
-            error "'$cmd' still not found after install. Cannot continue."
-            error "Please install '$cmd' manually and re-run."
-            exit 1
+    # Auto-install paru (Arch only)
+    if [[ "$PKG_MGR" == "pacman" ]] && ! command -v paru >/dev/null 2>&1; then
+        info "Installing paru from AUR (non-interactive)..."
+
+        # Check for base-devel
+        if ! pacman -Qq base-devel >/dev/null 2>&1; then
+            warn "base-devel not installed - paru installation may fail"
+            warn "Install: sudo pacman -S base-devel"
         fi
-    done
 
-    success "Bootstrap tools installed"
+        local temp_dir
+        temp_dir=$(mktemp -d)
+
+        if git clone https://aur.archlinux.org/paru.git "$temp_dir/paru" 2>/dev/null; then
+            (cd "$temp_dir/paru" && makepkg -si --noconfirm) && success "Paru installed" || warn "Paru installation failed"
+            rm -rf "$temp_dir"
+        else
+            warn "Failed to clone paru repo - AUR packages will be skipped"
+        fi
+    fi
+
+    success "Prerequisites checked"
 }
 
 # ============================================================================
@@ -1019,14 +1019,11 @@ main() {
     fi
 
     # --- Check core utilities and install if missing ---
-    check_core_utilities
+    check_and_install_prerequisites
 
     # --- Now we can safely get the hostname ---
     CURRENT_HOST="$(hostname)"
     info "Host:     $CURRENT_HOST"
-
-    # --- Self-bootstrap: ensure stow + yq ---
-    self_bootstrap
 
     # --- Validate config.yaml ---
     if [[ ! -f "$CONFIG_FILE" ]]; then

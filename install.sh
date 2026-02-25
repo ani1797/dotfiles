@@ -709,6 +709,7 @@ collect_all_dependencies() {
     os_key="$(get_deps_os_key "$PKG_MGR")"
 
     info "Collecting dependencies from ${#module_list[@]} modules..."
+    info "Package manager: $PKG_MGR, OS key: $os_key"
 
     for module_name in "${module_list[@]}"; do
         local module_rel_path

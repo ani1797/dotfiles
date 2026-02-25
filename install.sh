@@ -1057,6 +1057,9 @@ main() {
         exit 1
     fi
 
+    # --- Discover modules from directory structure ---
+    discover_modules
+
     # --- Find modules for this machine ---
     local -a module_list=()
     while IFS= read -r mod; do
@@ -1066,8 +1069,6 @@ main() {
     if [[ ${#module_list[@]} -eq 0 ]]; then
         error "No modules found for hostname '$CURRENT_HOST'."
         error "Check that config.yaml has a machines[] entry with hostname: \"$CURRENT_HOST\""
-        error "Available hostnames:"
-        yq -r '.machines[].hostname' "$CONFIG_FILE" | while read -r h; do echo "  - $h"; done
         exit 1
     fi
 

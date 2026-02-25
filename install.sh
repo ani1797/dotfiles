@@ -876,9 +876,9 @@ verify_dependencies() {
 
     if [[ ${#missing_binaries[@]} -gt 0 ]]; then
         echo ""
-        warning "Missing binaries (${#missing_binaries[@]}): ${missing_binaries[*]}"
-        warning "Some dependencies may not be available yet."
-        warning "Continuing with installation..."
+        warn "Missing binaries (${#missing_binaries[@]}): ${missing_binaries[*]}"
+        warn "Some dependencies may not be available yet."
+        warn "Continuing with installation..."
         return 0
     fi
 

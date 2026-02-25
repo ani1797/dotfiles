@@ -540,6 +540,59 @@ esac
 """
         return self.playground.upload_script(script_content, '/tmp/test-install.sh')
 
+    def test_install_dependencies(self) -> TestCase:
+        """Install required dependencies for dotfiles installation"""
+        # Detect package manager and install dependencies
+        script_content = """#!/bin/bash
+# Install dotfiles dependencies
+set -e
+
+if command -v pacman &> /dev/null; then
+    echo "Installing dependencies via pacman..."
+    sudo pacman -Sy --noconfirm stow yq git
+elif command -v apt &> /dev/null; then
+    echo "Installing dependencies via apt..."
+    sudo apt update
+    sudo apt install -y stow git
+    # Install yq for Debian/Ubuntu
+    sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+    sudo chmod +x /usr/local/bin/yq
+else
+    echo "ERROR: No supported package manager found"
+    exit 1
+fi
+
+echo "Dependencies installed successfully"
+"""
+        if not self.playground.upload_script(script_content, '/tmp/install-deps.sh'):
+            return TestCase(
+                name="Install dependencies",
+                result=TestResult.FAIL,
+                message="Failed to upload dependency install script"
+            )
+
+        start_time = time.time()
+        result = self.playground.execute('/tmp/install-deps.sh', timeout=300, use_shell=False)
+        duration = time.time() - start_time
+
+        if result.returncode == 0:
+            return TestCase(
+                name="Install dependencies",
+                result=TestResult.PASS,
+                message=f"Dependencies installed in {duration:.0f}s"
+            )
+        else:
+            error_lines = [line for line in (result.stdout + result.stderr).split('\n')
+                          if 'error' in line.lower() or 'failed' in line.lower()]
+            error_summary = '\n  '.join(error_lines[:5]) if error_lines else (result.stdout + result.stderr)[:200]
+
+            return TestCase(
+                name="Install dependencies",
+                result=TestResult.FAIL,
+                message=f"Failed to install dependencies (exit code {result.returncode})\n  {error_summary}",
+                details={'output': result.stdout[:1000], 'stderr': result.stderr[:1000]}
+            )
+
     def test_dry_run(self) -> TestCase:
         """Run installation in dry-run mode as safety check"""
         # Upload helper script

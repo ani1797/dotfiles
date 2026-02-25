@@ -394,14 +394,72 @@ backup_conflicts_for_module() {
 check_and_install_prerequisites() {
     info "Checking prerequisites..."
 
-    # Check core utilities (fail-fast if missing)
+    # Check core utilities and try to auto-install if missing
     local -a missing_core=()
+    local -a auto_installable=()
+
     for cmd in stow yq git find grep sed date mkdir cp rm; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
             missing_core+=("$cmd")
+            # stow, yq, git can be auto-installed
+            if [[ "$cmd" == "stow" || "$cmd" == "yq" || "$cmd" == "git" ]]; then
+                auto_installable+=("$cmd")
+            fi
         fi
     done
 
+    # Try to auto-install stow, yq, git if missing
+    if [[ ${#auto_installable[@]} -gt 0 ]]; then
+        info "Auto-installing missing tools: ${auto_installable[*]}"
+
+        local install_success=false
+        case "$PKG_MGR" in
+            pacman)
+                if sudo pacman -Sy --noconfirm "${auto_installable[@]}"; then
+                    success "Installed: ${auto_installable[*]}"
+                    install_success=true
+                else
+                    warn "Failed to auto-install some packages"
+                fi
+                ;;
+            apt)
+                if sudo apt-get update && sudo apt-get install -y "${auto_installable[@]}"; then
+                    success "Installed: ${auto_installable[*]}"
+                    install_success=true
+                else
+                    warn "Failed to auto-install some packages"
+                fi
+                ;;
+            dnf)
+                if sudo dnf install -y "${auto_installable[@]}"; then
+                    success "Installed: ${auto_installable[*]}"
+                    install_success=true
+                else
+                    warn "Failed to auto-install some packages"
+                fi
+                ;;
+            brew)
+                if brew install "${auto_installable[@]}"; then
+                    success "Installed: ${auto_installable[*]}"
+                    install_success=true
+                else
+                    warn "Failed to auto-install some packages"
+                fi
+                ;;
+        esac
+
+        # If install succeeded, re-check which tools are still missing
+        if [[ "$install_success" == "true" ]]; then
+            missing_core=()
+            for cmd in stow yq git find grep sed date mkdir cp rm; do
+                if ! command -v "$cmd" >/dev/null 2>&1; then
+                    missing_core+=("$cmd")
+                fi
+            done
+        fi
+    fi
+
+    # Check if any core utilities are still missing after auto-install attempt
     if [[ ${#missing_core[@]} -gt 0 ]]; then
         error "Missing required tools: ${missing_core[*]}"
         error "Install via your package manager:"
@@ -414,14 +472,52 @@ check_and_install_prerequisites() {
         exit 1
     fi
 
-    # Check hostname command specifically
+    # Check hostname command specifically and try to auto-install
     if ! command -v hostname >/dev/null 2>&1; then
+        local hostname_pkg
         case "$PKG_MGR" in
-            pacman) missing_core+=("inetutils") ;;
-            *)      missing_core+=("hostname") ;;
+            pacman) hostname_pkg="inetutils" ;;
+            *)      hostname_pkg="hostname" ;;
         esac
-        error "Missing hostname command. Install: ${missing_core[*]}"
-        exit 1
+
+        info "Auto-installing hostname command ($hostname_pkg)..."
+        case "$PKG_MGR" in
+            pacman)
+                if sudo pacman -S --noconfirm "$hostname_pkg"; then
+                    success "Installed: $hostname_pkg"
+                else
+                    error "Failed to install $hostname_pkg"
+                    exit 1
+                fi
+                ;;
+            apt)
+                if sudo apt-get install -y "$hostname_pkg"; then
+                    success "Installed: $hostname_pkg"
+                else
+                    error "Failed to install $hostname_pkg"
+                    exit 1
+                fi
+                ;;
+            dnf)
+                if sudo dnf install -y "$hostname_pkg"; then
+                    success "Installed: $hostname_pkg"
+                else
+                    error "Failed to install $hostname_pkg"
+                    exit 1
+                fi
+                ;;
+            brew)
+                # hostname usually available on macOS
+                error "Missing hostname command on macOS - unexpected"
+                exit 1
+                ;;
+        esac
+
+        # Verify it's now available
+        if ! command -v hostname >/dev/null 2>&1; then
+            error "hostname still not available after install"
+            exit 1
+        fi
     fi
 
     # Auto-install cargo if missing
@@ -436,17 +532,49 @@ check_and_install_prerequisites() {
         fi
     fi
 
-    # Check Python/pip (fail-fast if missing)
+    # Check Python/pip and try to auto-install if missing
     if ! command -v pip3 >/dev/null 2>&1 && ! command -v pip >/dev/null 2>&1; then
-        error "Python pip not found"
-        error "Install via your package manager:"
+        info "Auto-installing Python pip..."
         case "$PKG_MGR" in
-            pacman) error "  sudo pacman -S python-pip" ;;
-            apt)    error "  sudo apt-get install python3-pip" ;;
-            dnf)    error "  sudo dnf install python3-pip" ;;
-            brew)   error "  brew install python3" ;;
+            pacman)
+                if sudo pacman -S --noconfirm python-pip; then
+                    success "Installed: python-pip"
+                else
+                    error "Failed to install python-pip"
+                    exit 1
+                fi
+                ;;
+            apt)
+                if sudo apt-get install -y python3-pip; then
+                    success "Installed: python3-pip"
+                else
+                    error "Failed to install python3-pip"
+                    exit 1
+                fi
+                ;;
+            dnf)
+                if sudo dnf install -y python3-pip; then
+                    success "Installed: python3-pip"
+                else
+                    error "Failed to install python3-pip"
+                    exit 1
+                fi
+                ;;
+            brew)
+                if brew install python3; then
+                    success "Installed: python3"
+                else
+                    error "Failed to install python3"
+                    exit 1
+                fi
+                ;;
         esac
-        exit 1
+
+        # Verify pip is now available
+        if ! command -v pip3 >/dev/null 2>&1 && ! command -v pip >/dev/null 2>&1; then
+            error "pip still not available after install"
+            exit 1
+        fi
     fi
 
     # Auto-install paru (Arch only)

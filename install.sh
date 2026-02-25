@@ -596,12 +596,10 @@ expand_machine_modules() {
             while IFS= read -r module_name; do
                 [[ -z "$module_name" ]] && continue
 
-                # Check if module is defined in modules[]
-                local module_path
-                module_path="$(get_module_path "$module_name")"
-                if [[ -z "$module_path" || "$module_path" == "null" ]]; then
-                    warn "Module '$module_name' in toolkit '$name' not found in modules[] -- skipping"
-                    ERRORS+=("module '$module_name' from toolkit '$name' not defined")
+                # Check if module exists in discovered modules
+                if [[ -z "${DISCOVERED_MODULES[$module_name]+x}" ]]; then
+                    warn "Module '$module_name' in toolkit '$name' not found (no directory with deps.yaml) -- skipping"
+                    ERRORS+=("module '$module_name' from toolkit '$name' not found")
                     continue
                 fi
 
@@ -622,12 +620,10 @@ expand_machine_modules() {
             done <<< "$toolkit_modules"
         else
             # Regular module reference
-            # Check if module is defined in modules[]
-            local module_path
-            module_path="$(get_module_path "$name")"
-            if [[ -z "$module_path" || "$module_path" == "null" ]]; then
-                warn "Module or toolkit '$name' not found -- skipping"
-                ERRORS+=("module/toolkit '$name' not defined")
+            # Check if module exists in discovered modules
+            if [[ -z "${DISCOVERED_MODULES[$name]+x}" ]]; then
+                warn "Module '$name' not found (no directory with deps.yaml) -- skipping"
+                ERRORS+=("module '$name' not found")
                 continue
             fi
 
@@ -647,18 +643,6 @@ expand_machine_modules() {
             fi
         fi
     done
-}
-
-# Get the module path from the modules[] definition.
-get_module_path() {
-    local module_name="$1"
-    yq -r ".modules[] | select(.name == \"$module_name\") | .path" "$CONFIG_FILE"
-}
-
-# Get the module-level default target (empty string if not set).
-get_module_target() {
-    local module_name="$1"
-    yq -r ".modules[] | select(.name == \"$module_name\") | .target // \"\"" "$CONFIG_FILE"
 }
 
 # Get the machine-level target override for a specific module (empty string if not set).
@@ -713,15 +697,6 @@ resolve_target() {
         return
     fi
 
-    # Then check module-level default
-    local module_target
-    module_target="$(get_module_target "$module_name")"
-
-    if [[ -n "$module_target" ]]; then
-        eval echo "$module_target"
-        return
-    fi
-
     # Default to $HOME
     echo "$HOME"
 }
@@ -749,14 +724,12 @@ collect_all_dependencies() {
 
     local deps_files_found=0
     for module_name in "${module_list[@]}"; do
-        local module_rel_path
-        module_rel_path="$(get_module_path "$module_name")"
-
-        if [[ -z "$module_rel_path" || "$module_rel_path" == "null" ]]; then
+        # Look up module in discovered modules
+        if [[ -z "${DISCOVERED_MODULES[$module_name]+x}" ]]; then
             continue
         fi
 
-        local module_abs_path="$SCRIPT_DIR/$module_rel_path"
+        local module_abs_path="${DISCOVERED_MODULES[$module_name]}"
         if [[ ! -d "$module_abs_path" ]]; then
             continue
         fi
@@ -936,17 +909,14 @@ verify_dependencies() {
 process_module() {
     local module_name="$1"
 
-    # Look up module definition
-    local module_rel_path
-    module_rel_path="$(get_module_path "$module_name")"
-
-    if [[ -z "$module_rel_path" || "$module_rel_path" == "null" ]]; then
-        warn "Module '$module_name' not found in modules[] definitions -- skipping"
-        ERRORS+=("module '$module_name' not defined in modules[]")
+    # Look up module in discovered modules
+    if [[ -z "${DISCOVERED_MODULES[$module_name]+x}" ]]; then
+        warn "Module '$module_name' not found -- skipping"
+        ERRORS+=("module '$module_name' not found")
         return 0
     fi
 
-    local module_abs_path="$SCRIPT_DIR/$module_rel_path"
+    local module_abs_path="${DISCOVERED_MODULES[$module_name]}"
     if [[ ! -d "$module_abs_path" ]]; then
         warn "Module directory does not exist: $module_abs_path -- skipping"
         ERRORS+=("module dir missing: $module_abs_path")
@@ -966,7 +936,7 @@ process_module() {
     # --- Stow ---
     mkdir -p "$target"
 
-    if stow --restow --no-folding --verbose --dir="$SCRIPT_DIR" --target="$target" "$module_rel_path" 2>&1; then
+    if stow --restow --no-folding --verbose --dir="$SCRIPT_DIR" --target="$target" "$module_name" 2>&1; then
         success "  Stowed $module_name"
         MODULES_STOWED+=1
         STOWED_MODULES+=("$module_name")

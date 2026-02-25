@@ -1,9 +1,15 @@
-packages:
-  arch: []
-  debian: []
-  fedora: []
-  macos: []
-script:
-  - run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
-    provides: labctl
 provides: labctl
+
+packages:
+  arch:
+    - run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
+      provides: labctl
+  debian:
+    - run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
+      provides: labctl
+  fedora:
+    - run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
+      provides: labctl
+  macos:
+    - run: curl -sf https://labs.iximiuz.com/cli/install.sh | sh
+      provides: labctl

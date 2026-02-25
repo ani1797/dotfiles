@@ -1,11 +1,13 @@
+provides: starship
+
 packages:
   arch:
     - starship
-  debian: []
-  fedora: []
+  debian:
+    - run: curl -sS https://starship.rs/install.sh | sh -s -- --yes
+      provides: starship
+  fedora:
+    - run: curl -sS https://starship.rs/install.sh | sh -s -- --yes
+      provides: starship
   macos:
     - starship
-script:
-  - run: curl -sS https://starship.rs/install.sh | sh -s -- --yes
-    provides: starship
-provides: starship

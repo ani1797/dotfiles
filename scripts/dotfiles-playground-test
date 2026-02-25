@@ -1,0 +1,1060 @@
+#!/usr/bin/env python3
+"""
+Dotfiles Installation Test Suite
+
+Automated testing script for validating dotfiles installation across different
+Linux distributions using labctl playground environments.
+
+Author: ani1797
+Version: 1.0.0
+Repository: https://github.com/ani1797/dotfiles
+
+Tests:
+1. Setup Verification - Package manager, dependencies, baseline system state
+2. Bootstrap - Repository clone, file verification, hostname override
+3. Installation - Dry-run validation, actual installation, error monitoring
+4. Verification - Binary presence, symlinks, shell initialization, git config
+
+Requirements:
+- labctl (https://github.com/iximiuz/labctl)
+- Python 3.7+
+- Access to labctl playground environments
+
+Known Limitations:
+- Complex shell commands with 'sh -c' may have timing issues in some environments
+- Playground environments start with minimal packages - python3 needs installation
+- Some tests may require adjustment based on playground base image changes
+
+Usage:
+    ./scripts/dotfiles-playground-test [OPTIONS]
+
+Examples:
+    # Test on both Arch and Ubuntu with minimal profile
+    ./scripts/dotfiles-playground-test
+
+    # Test only Arch Linux, keep playground for inspection
+    ./scripts/dotfiles-playground-test --playgrounds archlinux --skip-cleanup
+
+    # Test cloud-native profile with JSON export
+    ./scripts/dotfiles-playground-test --profile cloud --json results.json
+
+    # CI mode
+    ./scripts/dotfiles-playground-test --no-color --json results.json
+
+Exit Codes:
+    0 - All tests passed
+    1 - Some tests failed or critical error occurred
+"""
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+import time
+import re
+import shlex
+from typing import Dict, List, Any, Optional, Tuple
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+# Version
+VERSION = "1.0.0"
+
+# ANSI Color codes
+COLORS = {
+    'RED': '\033[91m',
+    'GREEN': '\033[92m',
+    'YELLOW': '\033[93m',
+    'BLUE': '\033[94m',
+    'CYAN': '\033[96m',
+    'RESET': '\033[0m',
+    'BOLD': '\033[1m',
+}
+
+# Test symbols
+SYMBOLS = {
+    'PASS': '✓',
+    'FAIL': '✗',
+    'WARN': '⚠',
+    'INFO': 'ℹ',
+    'TIME': '⏱',
+}
+
+
+class TestResult(Enum):
+    """Test result categories"""
+    PASS = "PASS"
+    WARN = "WARN"
+    FAIL = "FAIL"
+    CRITICAL = "CRITICAL"
+
+
+@dataclass
+class TestCase:
+    """Individual test case result"""
+    name: str
+    result: TestResult
+    message: str
+    duration: float = 0.0
+    details: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class TestSuiteResult:
+    """Results for an entire test suite"""
+    suite_name: str
+    test_cases: List[TestCase] = field(default_factory=list)
+    duration: float = 0.0
+
+    @property
+    def passed(self) -> int:
+        return sum(1 for tc in self.test_cases if tc.result == TestResult.PASS)
+
+    @property
+    def warnings(self) -> int:
+        return sum(1 for tc in self.test_cases if tc.result == TestResult.WARN)
+
+    @property
+    def failed(self) -> int:
+        return sum(1 for tc in self.test_cases if tc.result in (TestResult.FAIL, TestResult.CRITICAL))
+
+    @property
+    def success(self) -> bool:
+        return self.failed == 0
+
+
+class PlaygroundManager:
+    """Manages labctl playground lifecycle"""
+
+    def __init__(self, playground_name: str, verbose: bool = False):
+        self.playground_name = playground_name
+        self.playground_id: Optional[str] = None
+        self.verbose = verbose
+
+    def create(self, timeout: int = 120) -> str:
+        """
+        Start a playground and capture its ID.
+
+        Args:
+            timeout: Maximum time to wait for creation in seconds
+
+        Returns:
+            Playground ID
+
+        Raises:
+            RuntimeError: If playground creation fails
+        """
+        cmd = ['labctl', 'playground', 'start', '--quiet', self.playground_name]
+
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=True
+            )
+
+            # Extract playground ID from output (format: "Playground <id> started")
+            output = result.stdout.strip()
+            match = re.search(r'[0-9a-f]{4,}', output)
+            if match:
+                self.playground_id = match.group(0)
+                if self.verbose:
+                    print(f"Created playground: {self.playground_id}")
+                return self.playground_id
+            else:
+                raise RuntimeError(f"Could not parse playground ID from: {output}")
+
+        except subprocess.TimeoutExpired:
+            raise RuntimeError(f"Playground creation timed out after {timeout}s")
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"Failed to create playground: {e.stderr}")
+
+    def wait_for_ready(self, timeout: int = 10, interval: int = 2) -> bool:
+        """
+        Verify SSH connectivity is working.
+
+        Note: labctl playground start already waits for initialization,
+        so this is mainly a sanity check that SSH is functional.
+
+        Args:
+            timeout: Maximum time to wait in seconds
+            interval: Time between polling attempts in seconds
+
+        Returns:
+            True if SSH connection is ready
+
+        Raises:
+            RuntimeError: If SSH is not functional
+        """
+        if not self.playground_id:
+            raise RuntimeError("No playground ID - call create() first")
+
+        start_time = time.time()
+        last_error = None
+
+        while time.time() - start_time < timeout:
+            try:
+                # Simple connectivity test without bash -c wrapper
+                cmd = ['labctl', 'ssh', self.playground_id, '--', 'echo', 'ready']
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=5, stdin=subprocess.DEVNULL)
+
+                if result.returncode == 0 and 'ready' in result.stdout:
+                    if self.verbose:
+                        print(f"SSH connection verified")
+                    return True
+                last_error = f"Command returned {result.returncode}"
+            except subprocess.TimeoutExpired:
+                last_error = "SSH command timed out"
+            except Exception as e:
+                last_error = str(e)
+
+            time.sleep(interval)
+
+        raise RuntimeError(f"SSH connection not functional after {timeout}s: {last_error}")
+
+    def upload_script(self, script_content: str, remote_path: str) -> bool:
+        """
+        Upload a script to the playground.
+
+        Args:
+            script_content: Content of the script to upload
+            remote_path: Path where script should be created
+
+        Returns:
+            True if upload succeeded, False otherwise
+        """
+        if not self.playground_id:
+            raise RuntimeError("No playground ID - call create() first")
+
+        # Create script using heredoc to avoid quoting issues
+        # Split content into chunks to avoid command line length limits
+        commands = [
+            f"cat > {remote_path} << 'DOTFILES_TEST_EOF'",
+            script_content,
+            "DOTFILES_TEST_EOF",
+            f"chmod +x {remote_path}"
+        ]
+
+        full_cmd = '\n'.join(commands)
+        cmd = ['labctl', 'ssh', self.playground_id, '--', 'sh', '-c', full_cmd]
+
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=30,
+                stdin=subprocess.DEVNULL
+            )
+            return result.returncode == 0
+        except Exception as e:
+            if self.verbose:
+                print(f"Failed to upload script: {e}")
+            return False
+
+    def execute(self, command: str, timeout: int = 60, use_shell: bool = True) -> subprocess.CompletedProcess:
+        """
+        Run a command via labctl ssh.
+
+        Args:
+            command: Command to execute
+            timeout: Command timeout in seconds
+            use_shell: If True, wrap command in 'sh -c' for shell features
+
+        Returns:
+            CompletedProcess with stdout/stderr
+
+        Raises:
+            RuntimeError: If playground ID is not set
+        """
+        if not self.playground_id:
+            raise RuntimeError("No playground ID - call create() first")
+
+        if use_shell:
+            # Use sh -c for complex commands (pipelines, redirects, &&, environment variables, etc.)
+            cmd = ['labctl', 'ssh', self.playground_id, '--', 'sh', '-c', command]
+        else:
+            # For simple commands, pass directly (more reliable, faster)
+            # Use shlex.split() to properly handle quoted strings
+            cmd = ['labctl', 'ssh', self.playground_id, '--'] + shlex.split(command)
+
+        if self.verbose:
+            print(f"Executing: {command[:80]}...")
+
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            stdin=subprocess.DEVNULL  # Prevent commands from waiting for stdin
+        )
+
+        return result
+
+    def destroy(self) -> None:
+        """
+        Cleanup playground.
+
+        Attempts to destroy the playground. Logs errors but doesn't raise
+        exceptions to ensure cleanup continues even on failure.
+        """
+        if not self.playground_id:
+            if self.verbose:
+                print("  No playground to destroy")
+            return
+
+        cmd = ['labctl', 'playground', 'destroy', self.playground_id]
+
+        try:
+            print(f"  Destroying playground {self.playground_id}...")
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30, check=True)
+            print(f"  {SYMBOLS['PASS']} Playground {self.playground_id} destroyed")
+            if self.verbose and result.stdout:
+                print(f"     {result.stdout.strip()}")
+        except subprocess.TimeoutExpired:
+            print(f"  {SYMBOLS['WARN']} Timeout destroying playground {self.playground_id}")
+            print(f"     Manual cleanup: labctl playground destroy {self.playground_id}")
+        except subprocess.CalledProcessError as e:
+            print(f"  {SYMBOLS['WARN']} Failed to destroy playground {self.playground_id}")
+            if self.verbose and e.stderr:
+                print(f"     Error: {e.stderr.strip()}")
+            print(f"     Manual cleanup: labctl playground destroy {self.playground_id}")
+        except Exception as e:
+            print(f"  {SYMBOLS['WARN']} Unexpected error destroying playground {self.playground_id}: {e}")
+            print(f"     Manual cleanup: labctl playground destroy {self.playground_id}")
+
+
+class BaseTest:
+    """Base class for test suites"""
+
+    def __init__(self, playground: PlaygroundManager, config: Dict[str, Any]):
+        self.playground = playground
+        self.config = config
+        self.results: List[TestCase] = []
+
+    def run(self) -> TestSuiteResult:
+        """
+        Execute all test methods and collect results.
+
+        Returns:
+            TestSuiteResult with all test case results
+        """
+        suite_name = self.__class__.__name__
+        start_time = time.time()
+
+        # Discover and run all test methods (methods starting with 'test_')
+        test_methods = [
+            getattr(self, method) for method in dir(self)
+            if method.startswith('test_') and callable(getattr(self, method))
+        ]
+
+        for test_method in test_methods:
+            test_start = time.time()
+            try:
+                result = test_method()
+                if result:
+                    result.duration = time.time() - test_start
+                    self.results.append(result)
+            except Exception as e:
+                self.results.append(TestCase(
+                    name=test_method.__name__,
+                    result=TestResult.CRITICAL,
+                    message=f"Unhandled exception: {e}",
+                    duration=time.time() - test_start
+                ))
+
+        duration = time.time() - start_time
+        return TestSuiteResult(
+            suite_name=suite_name,
+            test_cases=self.results,
+            duration=duration
+        )
+
+
+class SetupTest(BaseTest):
+    """Test playground environment setup"""
+
+    def test_playground_reachable(self) -> TestCase:
+        """Check if playground is reachable via SSH"""
+        result = self.playground.execute('echo hello', use_shell=False)
+
+        if result.returncode == 0 and 'hello' in result.stdout:
+            return TestCase(
+                name="Playground SSH connectivity",
+                result=TestResult.PASS,
+                message="SSH connection working"
+            )
+        else:
+            return TestCase(
+                name="Playground SSH connectivity",
+                result=TestResult.CRITICAL,
+                message="Cannot reach playground via SSH"
+            )
+
+    def test_package_manager(self) -> TestCase:
+        """Verify package manager availability"""
+        # Try pacman first (Arch)
+        result = self.playground.execute('pacman --version', use_shell=False)
+        if result.returncode == 0:
+            return TestCase(
+                name="Package manager",
+                result=TestResult.PASS,
+                message="pacman available"
+            )
+
+        # Try apt (Debian/Ubuntu)
+        result = self.playground.execute('apt --version', use_shell=False)
+        if result.returncode == 0:
+            return TestCase(
+                name="Package manager",
+                result=TestResult.PASS,
+                message="apt available"
+            )
+
+        return TestCase(
+            name="Package manager",
+            result=TestResult.FAIL,
+            message="No supported package manager found"
+        )
+
+    def test_dependencies(self) -> TestCase:
+        """Check that basic dependencies are available"""
+        missing = []
+        for dep in ['git', 'python3']:
+            result = self.playground.execute(f'{dep} --version', use_shell=False)
+            if result.returncode != 0:
+                missing.append(dep)
+
+        if not missing:
+            return TestCase(
+                name="Basic dependencies",
+                result=TestResult.PASS,
+                message="git and python3 available"
+            )
+        else:
+            return TestCase(
+                name="Basic dependencies",
+                result=TestResult.WARN,
+                message=f"Missing: {', '.join(missing)}"
+            )
+
+
+class BootstrapTest(BaseTest):
+    """Test dotfiles repository bootstrap"""
+
+    def test_clone_repository(self) -> TestCase:
+        """Clone dotfiles repository to test location"""
+        repo_url = self.config.get('repo_url', 'https://github.com/ani1797/dotfiles.git')
+        branch = self.config.get('repo_branch', 'main')
+
+        cmd = f'git clone --branch {branch} --depth 1 {repo_url} /tmp/dotfiles-test'
+        result = self.playground.execute(cmd, timeout=120, use_shell=False)
+
+        if result.returncode == 0:
+            return TestCase(
+                name="Clone repository",
+                result=TestResult.PASS,
+                message=f"Cloned {branch} branch"
+            )
+        else:
+            error_msg = result.stderr if result.stderr else result.stdout
+            return TestCase(
+                name="Clone repository",
+                result=TestResult.CRITICAL,
+                message=f"Failed to clone: {error_msg[:200]}"
+            )
+
+    def test_verify_files(self) -> TestCase:
+        """Verify required files exist in cloned repo"""
+        missing = []
+        for file in ['config.yaml', 'install.sh']:
+            result = self.playground.execute(f'test -f /tmp/dotfiles-test/{file}', use_shell=False)
+            if result.returncode != 0:
+                missing.append(file)
+
+        if not missing:
+            return TestCase(
+                name="Verify repository files",
+                result=TestResult.PASS,
+                message="All required files present"
+            )
+        else:
+            return TestCase(
+                name="Verify repository files",
+                result=TestResult.CRITICAL,
+                message=f"Missing files: {', '.join(missing)}"
+            )
+
+    def test_override_hostname(self) -> TestCase:
+        """Override hostname to match test profile"""
+        profile = self.config.get('profile', 'minimal')
+        hostname = f"playground-test-{profile}"
+
+        cmd = f'sudo hostnamectl set-hostname {hostname}'
+        result = self.playground.execute(cmd, timeout=10, use_shell=True)
+
+        if result.returncode == 0:
+            # Verify hostname was set
+            verify = self.playground.execute('hostname', use_shell=False)
+            if hostname in verify.stdout:
+                return TestCase(
+                    name="Override hostname",
+                    result=TestResult.PASS,
+                    message=f"Hostname set to {hostname}"
+                )
+
+        return TestCase(
+            name="Override hostname",
+            result=TestResult.WARN,
+            message="Failed to override hostname (may not affect test)"
+        )
+
+
+class InstallationTest(BaseTest):
+    """Test dotfiles installation process"""
+
+    def _setup_install_script(self) -> bool:
+        """Upload helper script for installation tests"""
+        script_content = """#!/bin/bash
+# Dotfiles installation test runner
+set -e
+
+cd /tmp/dotfiles-test
+
+case "$1" in
+  dry-run)
+    DRY_RUN=true ./install.sh
+    ;;
+  install)
+    ./install.sh
+    ;;
+  *)
+    echo "Usage: $0 {dry-run|install}"
+    exit 1
+    ;;
+esac
+"""
+        return self.playground.upload_script(script_content, '/tmp/test-install.sh')
+
+    def test_dry_run(self) -> TestCase:
+        """Run installation in dry-run mode as safety check"""
+        # Upload helper script
+        if not self._setup_install_script():
+            return TestCase(
+                name="Dry-run installation",
+                result=TestResult.FAIL,
+                message="Failed to upload test script"
+            )
+
+        result = self.playground.execute('/tmp/test-install.sh dry-run', timeout=300, use_shell=False)
+
+        if result.returncode == 0:
+            return TestCase(
+                name="Dry-run installation",
+                result=TestResult.PASS,
+                message="Dry-run completed successfully"
+            )
+        else:
+            return TestCase(
+                name="Dry-run installation",
+                result=TestResult.FAIL,
+                message=f"Dry-run failed (exit code {result.returncode})",
+                details={'output': result.stdout[:500] + result.stderr[:500]}
+            )
+
+    def test_actual_installation(self) -> TestCase:
+        """Run actual dotfiles installation"""
+        # Upload helper script (needed since test methods are independent)
+        if not self._setup_install_script():
+            return TestCase(
+                name="Installation",
+                result=TestResult.FAIL,
+                message="Failed to upload test script"
+            )
+
+        install_timeout = self.config.get('install_timeout', 900)
+
+        start_time = time.time()
+        result = self.playground.execute('/tmp/test-install.sh install', timeout=install_timeout, use_shell=False)
+        duration = time.time() - start_time
+
+        # Check for errors in output
+        error_patterns = ['error:', 'failed:', 'fatal:']
+        errors = []
+        combined_output = (result.stdout + result.stderr).lower()
+        for pattern in error_patterns:
+            if pattern in combined_output:
+                errors.append(pattern)
+
+        if result.returncode == 0:
+            return TestCase(
+                name="Installation",
+                result=TestResult.PASS,
+                message=f"Installation completed in {duration:.0f}s",
+                details={
+                    'duration': duration,
+                    'output': result.stdout[-1000:]  # Last 1000 chars
+                }
+            )
+        else:
+            return TestCase(
+                name="Installation",
+                result=TestResult.FAIL,
+                message=f"Installation failed (exit code {result.returncode})",
+                details={
+                    'duration': duration,
+                    'errors': errors,
+                    'output': (result.stdout + result.stderr)[-1000:]
+                }
+            )
+
+
+class VerificationTest(BaseTest):
+    """Test installation verification"""
+
+    def test_binaries_exist(self) -> TestCase:
+        """Check that critical binaries are installed"""
+        binaries = ['git', 'stow', 'starship', 'bash']
+        missing = []
+
+        for binary in binaries:
+            result = self.playground.execute(f'{binary} --version', use_shell=False)
+            if result.returncode != 0:
+                missing.append(binary)
+
+        if not missing:
+            return TestCase(
+                name="Binary verification",
+                result=TestResult.PASS,
+                message=f"All {len(binaries)} critical binaries present"
+            )
+        else:
+            return TestCase(
+                name="Binary verification",
+                result=TestResult.FAIL,
+                message=f"Missing binaries: {', '.join(missing)}"
+            )
+
+    def test_symlinks(self) -> TestCase:
+        """Verify symlinks were created in HOME"""
+        # Create a script to count symlinks
+        script_content = """#!/bin/bash
+ls -la ~ | grep -c " -> " || echo "0"
+"""
+        if not self.playground.upload_script(script_content, '/tmp/test-symlinks.sh'):
+            return TestCase(
+                name="Symlink creation",
+                result=TestResult.WARN,
+                message="Could not upload test script"
+            )
+
+        result = self.playground.execute('/tmp/test-symlinks.sh', timeout=10, use_shell=False)
+
+        if result.returncode == 0:
+            symlink_count = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
+            if symlink_count > 0:
+                return TestCase(
+                    name="Symlink creation",
+                    result=TestResult.PASS,
+                    message=f"{symlink_count} symlinks created"
+                )
+
+        return TestCase(
+            name="Symlink creation",
+            result=TestResult.WARN,
+            message="Could not verify symlinks"
+        )
+
+    def test_shell_initialization(self) -> TestCase:
+        """Test shell initialization"""
+        # Create a simple test script
+        script_content = """#!/bin/bash
+source ~/.bashrc && echo "OK"
+"""
+        if not self.playground.upload_script(script_content, '/tmp/test-shell.sh'):
+            return TestCase(
+                name="Shell initialization",
+                result=TestResult.WARN,
+                message="Could not upload test script"
+            )
+
+        result = self.playground.execute('/tmp/test-shell.sh', timeout=10, use_shell=False)
+
+        if result.returncode == 0 and 'OK' in result.stdout:
+            return TestCase(
+                name="Shell initialization",
+                result=TestResult.PASS,
+                message="Bash profile loads successfully"
+            )
+        else:
+            return TestCase(
+                name="Shell initialization",
+                result=TestResult.WARN,
+                message="Shell initialization may have issues",
+                details={'stderr': result.stderr[:200]}
+            )
+
+    def test_git_config(self) -> TestCase:
+        """Verify git configuration is applied"""
+        result = self.playground.execute('git config --global user.name', use_shell=False)
+
+        if result.returncode == 0 and result.stdout.strip():
+            return TestCase(
+                name="Git configuration",
+                result=TestResult.PASS,
+                message=f"Git user: {result.stdout.strip()}"
+            )
+        else:
+            return TestCase(
+                name="Git configuration",
+                result=TestResult.WARN,
+                message="Git configuration not found"
+            )
+
+
+class TestRunner:
+    """Orchestrates test execution and collects results"""
+
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.playground: Optional[PlaygroundManager] = None
+        self.suite_results: List[TestSuiteResult] = []
+
+    def run_tests(self, playground_name: str) -> bool:
+        """
+        Run all test suites for a playground.
+
+        Args:
+            playground_name: Name of the labctl playground to test
+
+        Returns:
+            True if all tests passed, False otherwise
+        """
+        # Create and initialize playground
+        self.playground = PlaygroundManager(playground_name, verbose=self.config.get('verbose', False))
+
+        try:
+            self.playground.create()
+            self.playground.wait_for_ready()
+        except Exception as e:
+            # If playground creation fails, add a critical error result
+            self.suite_results.append(TestSuiteResult(
+                suite_name="PlaygroundSetup",
+                test_cases=[TestCase(
+                    name="Playground creation",
+                    result=TestResult.CRITICAL,
+                    message=f"Failed to create/connect to playground: {e}"
+                )],
+                duration=0.0
+            ))
+            return False
+
+        # Run test suites in order
+        test_suites = [
+            SetupTest,
+            BootstrapTest,
+            InstallationTest,
+            VerificationTest,
+        ]
+
+        for suite_class in test_suites:
+            suite = suite_class(self.playground, self.config)
+            result = suite.run()
+            self.suite_results.append(result)
+
+            # Stop on critical failure
+            if not result.success and any(tc.result == TestResult.CRITICAL for tc in result.test_cases):
+                break
+
+        # Determine overall success
+        return all(suite.success for suite in self.suite_results)
+
+
+class Reporter:
+    """Handles test result reporting"""
+
+    def __init__(self, use_color: bool = True):
+        self.use_color = use_color
+
+    def _colorize(self, text: str, color: str) -> str:
+        """Apply color to text if colors are enabled"""
+        if not self.use_color:
+            return text
+        return f"{COLORS.get(color, '')}{text}{COLORS['RESET']}"
+
+    def _get_symbol(self, result: TestResult) -> str:
+        """Get symbol for test result"""
+        symbol_map = {
+            TestResult.PASS: self._colorize(SYMBOLS['PASS'], 'GREEN'),
+            TestResult.WARN: self._colorize(SYMBOLS['WARN'], 'YELLOW'),
+            TestResult.FAIL: self._colorize(SYMBOLS['FAIL'], 'RED'),
+            TestResult.CRITICAL: self._colorize(SYMBOLS['FAIL'], 'RED'),
+        }
+        return symbol_map.get(result, SYMBOLS['INFO'])
+
+    def print_header(self) -> None:
+        """Print test suite header"""
+        print("=" * 60)
+        print(self._colorize(f"       Dotfiles Installation Test Suite v{VERSION}", 'BOLD'))
+        print("=" * 60)
+        print()
+
+    def print_suite_start(self, suite_name: str, suite_number: int, total_suites: int) -> None:
+        """Print suite start banner"""
+        print(f"[{suite_number}/{total_suites}] {suite_name}")
+
+    def print_test_case(self, test_case: TestCase) -> None:
+        """Print individual test case result"""
+        symbol = self._get_symbol(test_case.result)
+        print(f"  {symbol} {test_case.message}")
+        if test_case.duration > 0:
+            print(f"  {SYMBOLS['TIME']} Time: {test_case.duration:.1f}s")
+
+    def print_suite_result(self, suite_result: TestSuiteResult) -> None:
+        """Print test suite results"""
+        for test_case in suite_result.test_cases:
+            self.print_test_case(test_case)
+        print()
+
+    def print_summary(self, suite_results: List[TestSuiteResult]) -> None:
+        """Print final summary"""
+        total_passed = sum(s.passed for s in suite_results)
+        total_warnings = sum(s.warnings for s in suite_results)
+        total_failed = sum(s.failed for s in suite_results)
+        total_duration = sum(s.duration for s in suite_results)
+
+        print("=" * 60)
+        print(self._colorize("                    TEST SUMMARY", 'BOLD'))
+        print("=" * 60)
+
+        passed_str = self._colorize(f"Passed: {total_passed}", 'GREEN')
+        warnings_str = self._colorize(f"Warnings: {total_warnings}", 'YELLOW')
+        failed_str = self._colorize(f"Failed: {total_failed}", 'RED' if total_failed > 0 else 'GREEN')
+
+        print(f"{passed_str} | {warnings_str} | {failed_str}")
+        print(f"Duration: {total_duration:.0f}s")
+        print()
+
+        if total_failed == 0:
+            print(self._colorize(f"{SYMBOLS['PASS']} All tests passed!", 'GREEN'))
+        else:
+            print(self._colorize(f"{SYMBOLS['FAIL']} Some tests failed!", 'RED'))
+
+    def export_json(self, suite_results: List[TestSuiteResult], output_path: str) -> None:
+        """Export results to JSON file"""
+        data = {
+            'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+            'suites': [
+                {
+                    'name': suite.suite_name,
+                    'duration': suite.duration,
+                    'passed': suite.passed,
+                    'warnings': suite.warnings,
+                    'failed': suite.failed,
+                    'test_cases': [
+                        {
+                            'name': tc.name,
+                            'result': tc.result.value,
+                            'message': tc.message,
+                            'duration': tc.duration,
+                            'details': tc.details
+                        }
+                        for tc in suite.test_cases
+                    ]
+                }
+                for suite in suite_results
+            ]
+        }
+
+        with open(output_path, 'w') as f:
+            json.dump(data, f, indent=2)
+
+        print(f"\nResults exported to: {output_path}")
+
+
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments"""
+    parser = argparse.ArgumentParser(
+        description='Test dotfiles installation in labctl playgrounds',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Test on both Arch and Ubuntu with minimal profile
+  %(prog)s
+
+  # Test only Arch Linux, keep playground for inspection
+  %(prog)s --playgrounds archlinux --skip-cleanup
+
+  # Test cloud-native profile with JSON export
+  %(prog)s --profile cloud --json results.json
+
+  # CI mode
+  %(prog)s --no-color --json results.json
+        """
+    )
+
+    parser.add_argument(
+        '--playgrounds',
+        default='archlinux,ubuntu-24-04',
+        help='Comma-separated list of playground names (default: archlinux,ubuntu-24-04)'
+    )
+    parser.add_argument(
+        '--profile',
+        choices=['minimal', 'cloud'],
+        default='minimal',
+        help='Test profile to use (default: minimal)'
+    )
+    parser.add_argument(
+        '--skip-cleanup',
+        action='store_true',
+        help='Don\'t destroy playgrounds after testing (for debugging)'
+    )
+    parser.add_argument(
+        '--timeout',
+        type=int,
+        default=900,
+        help='Maximum installation time in seconds (default: 900)'
+    )
+    parser.add_argument(
+        '--json',
+        metavar='FILE',
+        help='Export results to JSON file'
+    )
+    parser.add_argument(
+        '--no-color',
+        action='store_true',
+        help='Disable colored output'
+    )
+    parser.add_argument(
+        '--verbose',
+        action='store_true',
+        help='Show detailed command output'
+    )
+    parser.add_argument(
+        '--repo-branch',
+        default='main',
+        help='Test specific branch (default: main)'
+    )
+
+    return parser.parse_args()
+
+
+def check_prerequisites() -> bool:
+    """
+    Check that required tools are available.
+
+    Returns:
+        True if all prerequisites are met, False otherwise
+    """
+    # Check for labctl
+    try:
+        result = subprocess.run(['labctl', '--version'], capture_output=True, timeout=5)
+        if result.returncode != 0:
+            print(f"{SYMBOLS['FAIL']} labctl is not available or not working properly")
+            return False
+    except FileNotFoundError:
+        print(f"{SYMBOLS['FAIL']} labctl is not installed")
+        print("Install from: https://github.com/iximiuz/labctl")
+        return False
+    except Exception as e:
+        print(f"{SYMBOLS['FAIL']} Error checking labctl: {e}")
+        return False
+
+    return True
+
+
+def main() -> int:
+    """Main entry point"""
+    args = parse_args()
+
+    # Check prerequisites
+    if not check_prerequisites():
+        return 1
+
+    # Validate JSON output path
+    if args.json:
+        json_dir = os.path.dirname(os.path.abspath(args.json))
+        if not os.path.exists(json_dir):
+            print(f"{SYMBOLS['FAIL']} Output directory does not exist: {json_dir}")
+            return 1
+
+    # Build configuration
+    config = {
+        'profile': args.profile,
+        'skip_cleanup': args.skip_cleanup,
+        'install_timeout': args.timeout,
+        'verbose': args.verbose,
+        'repo_branch': args.repo_branch,
+        'repo_url': 'https://github.com/ani1797/dotfiles.git',  # TODO: Make configurable
+    }
+
+    # Create reporter
+    reporter = Reporter(use_color=not args.no_color)
+    reporter.print_header()
+
+    # Parse playground list
+    playgrounds = [p.strip() for p in args.playgrounds.split(',')]
+
+    # Track all created playgrounds for cleanup
+    created_playgrounds: List[PlaygroundManager] = []
+    all_results = []
+    overall_success = True
+
+    try:
+        for playground in playgrounds:
+            print(f"\nTesting on playground: {playground}")
+            print("-" * 60)
+
+            runner = TestRunner(config)
+
+            # Run tests - playground will be created here
+            success = runner.run_tests(playground)
+
+            # Track playground for cleanup
+            if runner.playground:
+                created_playgrounds.append(runner.playground)
+
+            all_results.extend(runner.suite_results)
+
+            # Print results for this playground
+            for i, suite_result in enumerate(runner.suite_results, 1):
+                reporter.print_suite_start(suite_result.suite_name, i, len(runner.suite_results))
+                reporter.print_suite_result(suite_result)
+
+            overall_success = overall_success and success
+
+    except KeyboardInterrupt:
+        print("\n\nTest interrupted by user.")
+        overall_success = False
+
+    except Exception as e:
+        print(f"\n\nUnexpected error: {e}")
+        overall_success = False
+
+    finally:
+        # Ensure all playgrounds are cleaned up
+        if not config['skip_cleanup'] and created_playgrounds:
+            print(f"\nCleaning up {len(created_playgrounds)} playground(s)...")
+            for pg in created_playgrounds:
+                try:
+                    pg.destroy()
+                except Exception as e:
+                    print(f"Error during cleanup: {e}")
+
+    # Print final summary
+    if all_results:
+        reporter.print_summary(all_results)
+
+    # Export JSON if requested
+    if args.json and all_results:
+        reporter.export_json(all_results, args.json)
+
+    return 0 if overall_success else 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())

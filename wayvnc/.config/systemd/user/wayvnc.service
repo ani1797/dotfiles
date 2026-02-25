@@ -1,0 +1,17 @@
+[Unit]
+Description=WayVNC - Wayland VNC Server
+Documentation=man:wayvnc(1)
+After=graphical-session.target
+BindsTo=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/sudo /usr/bin/wayvnc --log-level=info -C %h/.config/wayvnc/config
+Restart=on-failure
+RestartSec=5
+
+# Pass Wayland session environment
+Environment=WAYLAND_DISPLAY=wayland-1
+
+[Install]
+WantedBy=graphical-session.target

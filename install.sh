@@ -22,6 +22,7 @@ CONFIG_FILE="$SCRIPT_DIR/config.yaml"
 CURRENT_HOST=""  # set after core utilities are verified
 BACKUP_DIR=""  # set lazily on first conflict
 BACKUP_TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
+DRY_RUN="${DRY_RUN:-false}"
 
 # Counters for summary
 declare -i MODULES_STOWED=0
@@ -147,6 +148,11 @@ install_native_packages() {
         return 0
     fi
 
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "  [DRY-RUN] Would install: ${missing_pkgs[*]}"
+        return 0
+    fi
+
     info "  Installing native packages: ${missing_pkgs[*]}"
 
     case "$pkg_mgr" in
@@ -215,6 +221,11 @@ install_aur_packages() {
         return 0
     fi
 
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "  [DRY-RUN] Would install from AUR: ${missing_pkgs[*]}"
+        return 0
+    fi
+
     # Detect AUR helper
     local aur_helper=""
     if command -v paru &>/dev/null; then
@@ -260,6 +271,11 @@ install_cargo_packages() {
         return 0
     fi
 
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "  [DRY-RUN] Would install via cargo: ${missing[*]}"
+        return 0
+    fi
+
     info "  Installing cargo packages: ${missing[*]}"
     for pkg in "${missing[@]}"; do
         if cargo install "$pkg"; then
@@ -287,6 +303,11 @@ install_pip_packages() {
     local pip_cmd="pip3"
     if ! command -v pip3 >/dev/null 2>&1; then
         pip_cmd="pip"
+    fi
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "  [DRY-RUN] Would install via pip: ${pkgs[*]}"
+        return 0
     fi
 
     info "  Installing pip packages: ${pkgs[*]}"
@@ -865,6 +886,11 @@ install_all_dependencies() {
             # If 'provides' is set, skip if that binary already exists
             if [[ -n "$provides" ]] && command -v "$provides" >/dev/null 2>&1; then
                 info "  Script skipped (${provides} already available)"
+                continue
+            fi
+
+            if [[ "$DRY_RUN" == "true" ]]; then
+                info "  [DRY-RUN] Would run script: $run_cmd"
                 continue
             fi
 

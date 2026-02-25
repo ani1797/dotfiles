@@ -4,8 +4,8 @@
 
 set -euo pipefail
 
-# shellcheck source=direnv-lib
-source "$(dirname "$0")/direnv-lib"
+# shellcheck source=../../.config/direnv/cli-lib.sh
+source "${XDG_CONFIG_HOME:-$HOME/.config}/direnv/cli-lib.sh"
 
 echo "=== Direnv Configuration Status ==="
 echo

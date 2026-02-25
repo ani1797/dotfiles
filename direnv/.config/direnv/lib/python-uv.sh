@@ -12,7 +12,7 @@ layout_uv() {
         return 1
     fi
 
-    local venv_dir="$(direnv_layout_dir)/uv-venv"
+    local venv_dir=".venv"
 
     if [[ ! -d "$venv_dir" ]]; then
         log_status "Creating UV virtual environment with $python_version"

@@ -163,9 +163,9 @@
         "return-type": "json",
         "format": "{icon}",
         "format-icons": {
-            "notification": "<span foreground='#f7768e'> </span>",
+            "notification": " ",
             "none": " ",
-            "dnd-notification": "<span foreground='#f7768e'> </span>",
+            "dnd-notification": " ",
             "dnd-none": " ",
             "inhibited-notification": " ",
             "inhibited-none": " ",

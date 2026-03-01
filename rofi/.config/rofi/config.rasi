@@ -14,65 +14,96 @@ configuration {
 }
 
 * {
-    bg-col:  #24283b;           // Tokyo Night Storm
-    bg-transparent: #24283bd9;  // Transparent bg (85% opacity)
-    search-bg: #1a1b26e6;       // Search bar bg
-    border-col: #7aa2f7;        // Tokyo Night Blue
-    glass-hover: #ffffff18;     // Light glass effect (subtle white overlay)
-    selected-col: #7aa2f740;    // Subtle blue highlight
-    blue: #7aa2f7;              // Tokyo Night Blue
-    fg-col: #c0caf5;            // Tokyo Night Foreground
-    fg-dim: #a9b1d6;            // Dimmed text
-    grey: #565f89;              // Tokyo Night Comment
+    // Material Design 3 Color System - Deep Purple Theme
+    // Primary Colors
+    primary: #D0BCFF;
+    on-primary: #381E72;
+    primary-container: #4F378B;
+    on-primary-container: #EADDFF;
 
+    // Secondary Colors
+    secondary: #CCC2DC;
+    on-secondary: #332D41;
+    secondary-container: #4A4458;
+    on-secondary-container: #E8DEF8;
+
+    // Tertiary Colors
+    tertiary: #EFB8C8;
+    on-tertiary: #492532;
+    tertiary-container: #633B48;
+    on-tertiary-container: #FFD8E4;
+
+    // Error Colors
+    error: #F2B8B5;
+    on-error: #601410;
+    error-container: #8C1D18;
+    on-error-container: #F9DEDC;
+
+    // Surface System (AMOLED Black)
+    background: #000000;
+    on-background: #E6E1E5;
+    surface: #000000;
+    on-surface: #E6E1E5;
+    on-surface-variant: #CAC4D0;
+    surface-dim: #1A1B1E;
+    surface-container-low: #1A1B1E;
+    surface-container: #1E1E21;
+    surface-container-high: #282829;
+    surface-container-highest: #33333D;
+
+    // Outline Colors
+    outline: #938F99;
+    outline-variant: #49454F;
+
+    // Utility
     background-color: transparent;
-    text-color: @fg-col;
+    text-color: @on-surface;
     font: "JetBrainsMono Nerd Font 10";
 }
 
 window {
     transparency: "real";
-    background-color: @bg-transparent;
-    border: 2px;
-    border-color: @blue;
-    border-radius: 16px;
-    width: 800px;
-    padding: 20px;
+    background-color: @background;
+    border: 0px;
+    border-radius: 28px;
+    width: 700px;
+    padding: 24px;
 }
 
 mainbox {
     background-color: transparent;
     spacing: 20px;
-    padding: 5px;
+    padding: 0px;
 }
 
 inputbar {
-    background-color: @search-bg;
-    border: 0px;
+    background-color: @surface-container-highest;
+    border: 2px;
+    border-color: @primary;
     border-radius: 12px;
-    padding: 15px 20px;
+    padding: 12px 16px;
     spacing: 12px;
     children: [prompt, entry];
 }
 
 prompt {
     background-color: transparent;
-    text-color: @blue;
+    text-color: @primary;
     font: "JetBrainsMono Nerd Font Bold 11";
 }
 
 entry {
     background-color: transparent;
-    text-color: @fg-col;
-    placeholder: "Search...";
-    placeholder-color: @grey;
+    text-color: @on-surface;
+    placeholder: "Search applications...";
+    placeholder-color: @on-surface-variant;
 }
 
 listview {
     background-color: transparent;
-    columns: 4;
+    columns: 2;
     lines: 4;
-    spacing: 10px;
+    spacing: 12px;
     cycle: true;
     dynamic: true;
     layout: vertical;
@@ -81,89 +112,90 @@ listview {
 }
 
 element {
-    background-color: transparent;
-    text-color: @fg-dim;
+    background-color: @surface-container-high;
+    text-color: @on-surface;
     orientation: vertical;
-    border-radius: 12px;
-    padding: 20px 10px;
-    spacing: 8px;
+    border-radius: 16px;
+    padding: 16px;
+    spacing: 12px;
+    transition: background-color 400ms cubic-bezier(0.05, 0.7, 0.1, 1.0), border-color 400ms cubic-bezier(0.05, 0.7, 0.1, 1.0);
 }
 
 element normal.normal {
-    background-color: transparent;
-    text-color: @fg-dim;
+    background-color: @surface-container-high;
+    text-color: @on-surface;
 }
 
 element alternate.normal {
-    background-color: transparent;
-    text-color: @fg-dim;
-}
-
-element normal.urgent {
-    background-color: transparent;
-    text-color: #f7768e;
-}
-
-element alternate.urgent {
-    background-color: transparent;
-    text-color: #f7768e;
-}
-
-element normal.active {
-    background-color: transparent;
-    text-color: @blue;
-}
-
-element alternate.active {
-    background-color: transparent;
-    text-color: @blue;
+    background-color: @surface-container-high;
+    text-color: @on-surface;
 }
 
 element selected.normal {
-    background-color: @glass-hover;
-    text-color: @fg-col;
+    background-color: @primary-container;
+    text-color: @on-primary-container;
     border: 2px;
-    border-color: @blue;
+    border-color: @primary;
 }
 
 element alternate.selected.normal {
-    background-color: @glass-hover;
-    text-color: @fg-col;
+    background-color: @primary-container;
+    text-color: @on-primary-container;
     border: 2px;
-    border-color: @blue;
+    border-color: @primary;
+}
+
+element normal.urgent {
+    background-color: @surface-container-high;
+    text-color: @error;
+}
+
+element alternate.urgent {
+    background-color: @surface-container-high;
+    text-color: @error;
 }
 
 element selected.urgent {
-    background-color: @glass-hover;
-    text-color: #f7768e;
+    background-color: @error-container;
+    text-color: @error;
     border: 2px;
-    border-color: #f7768e;
+    border-color: @error;
 }
 
 element alternate.selected.urgent {
-    background-color: @glass-hover;
-    text-color: #f7768e;
+    background-color: @error-container;
+    text-color: @error;
     border: 2px;
-    border-color: #f7768e;
+    border-color: @error;
+}
+
+element normal.active {
+    background-color: @surface-container-high;
+    text-color: @primary;
+}
+
+element alternate.active {
+    background-color: @surface-container-high;
+    text-color: @primary;
 }
 
 element selected.active {
-    background-color: @glass-hover;
-    text-color: @blue;
+    background-color: @primary-container;
+    text-color: @on-primary-container;
     border: 2px;
-    border-color: @blue;
+    border-color: @primary;
 }
 
 element alternate.selected.active {
-    background-color: @glass-hover;
-    text-color: @blue;
+    background-color: @primary-container;
+    text-color: @on-primary-container;
     border: 2px;
-    border-color: @blue;
+    border-color: @primary;
 }
 
 element-icon {
     background-color: transparent;
-    size: 48px;
+    size: 64px;
     cursor: inherit;
     horizontal-align: 0.5;
 }
@@ -172,49 +204,57 @@ element-text {
     background-color: transparent;
     text-color: inherit;
     cursor: inherit;
-    vertical-align: 0.5;
     horizontal-align: 0.5;
+    font: "JetBrainsMono Nerd Font 13";
 }
 
 message {
-    background-color: @search-bg;
+    background-color: @surface-container-highest;
     border: 0px;
     border-radius: 12px;
-    padding: 15px;
+    padding: 16px;
 }
 
 textbox {
     background-color: transparent;
-    text-color: @fg-col;
-    padding: 5px;
+    text-color: @on-surface-variant;
+    padding: 0px;
     horizontal-align: 0.5;
 }
 
 error-message {
-    background-color: @bg-transparent;
+    background-color: @error-container;
     border: 2px;
-    border-color: #f7768e;
+    border-color: @error;
     border-radius: 12px;
-    padding: 15px;
+    padding: 16px;
 }
 
 mode-switcher {
-    background-color: @search-bg;
+    background-color: @surface-container-highest;
     border: 0px;
     border-radius: 12px;
-    spacing: 0;
+    spacing: 4px;
+    padding: 4px;
 }
 
 button {
     background-color: transparent;
-    text-color: @grey;
-    padding: 12px 20px;
+    text-color: @on-surface-variant;
+    padding: 8px 16px;
     border-radius: 8px;
     horizontal-align: 0.5;
     vertical-align: 0.5;
+    font: "JetBrainsMono Nerd Font 11";
+    transition: background-color 300ms cubic-bezier(0.2, 0.0, 0, 1.0);
+}
+
+button:hover {
+    background-color: @surface-container-high;
+    text-color: @on-surface;
 }
 
 button selected {
-    background-color: @blue;
-    text-color: @bg-col;
+    background-color: @primary-container;
+    text-color: @on-primary-container;
 }

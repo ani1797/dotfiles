@@ -6,7 +6,7 @@
     "margin-left": 8,
     "margin-right": 8,
     "spacing": 4,
-    "style": "style-material-you.css",
+    "style": "style.css",
 
     // ── Module Layout ──────────────────────────────────────────
     "modules-left": [

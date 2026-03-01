@@ -118,7 +118,6 @@ element {
     border-radius: 16px;
     padding: 16px;
     spacing: 12px;
-    transition: background-color 400ms cubic-bezier(0.05, 0.7, 0.1, 1.0), border-color 400ms cubic-bezier(0.05, 0.7, 0.1, 1.0);
 }
 
 element normal.normal {
@@ -246,12 +245,6 @@ button {
     horizontal-align: 0.5;
     vertical-align: 0.5;
     font: "JetBrainsMono Nerd Font 11";
-    transition: background-color 300ms cubic-bezier(0.2, 0.0, 0, 1.0);
-}
-
-button:hover {
-    background-color: @surface-container-high;
-    text-color: @on-surface;
 }
 
 button selected {

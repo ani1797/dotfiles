@@ -1,0 +1,186 @@
+// Waybar Configuration — Material You ChromeOS Style
+{
+    "layer": "top",
+    "position": "top",
+    "margin-top": 8,
+    "margin-left": 8,
+    "margin-right": 8,
+    "spacing": 4,
+    "style": "style-material-you.css",
+
+    // ── Module Layout ──────────────────────────────────────────
+    "modules-left": [
+        "custom/arch",
+        "temperature"
+    ],
+    "modules-center": [
+        "hyprland/workspaces",
+        "wlr/taskbar"
+    ],
+    "modules-right": [
+        "network",
+        "clock",
+        "battery",
+        "custom/notification",
+        "custom/power"
+    ],
+
+    // ── Left Modules ───────────────────────────────────────────
+
+    "custom/arch": {
+        "format": " ",
+        "on-click": "rofi -show drun",
+        "tooltip": false
+    },
+
+    "clock": {
+        "format": "{:%H:%M}",
+        "format-alt": "{:%A, %B %d, %Y}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "year",
+            "mode-mon-col": 3,
+            "weeks-pos": "right",
+            "on-scroll": 1,
+            "format": {
+                "months": "<span color='#c0caf5'><b>{}</b></span>",
+                "days": "<span color='#a9b1d6'>{}</span>",
+                "weeks": "<span color='#565f89'>W{}</span>",
+                "weekdays": "<span color='#7aa2f7'><b>{}</b></span>",
+                "today": "<span color='#ff9e64'><b><u>{}</u></b></span>"
+            }
+        }
+    },
+
+    "custom/updates": {
+        "format": "  {}",
+        "interval": 3600,
+        "exec": "checkupdates 2>/dev/null | wc -l",
+        "exec-if": "which checkupdates",
+        "on-click": "kitty -e sh -c 'yay -Syu; echo Done.; read'",
+        "tooltip-format": "{}",
+        "signal": 8
+    },
+
+    "mpris": {
+        "format": "{player_icon}  {artist} — {title}",
+        "format-paused": "{player_icon}  {status_icon} {artist} — {title}",
+        "player-icons": {
+            "default": "",
+            "firefox": "",
+            "spotify": ""
+        },
+        "status-icons": {
+            "paused": ""
+        },
+        "max-length": 40,
+        "ignored-players": ["firefox"]
+    },
+
+    "custom/weather": {
+        "format": "{}",
+        "interval": 900,
+        "exec": "~/.config/waybar/scripts/weather.sh 2>/dev/null",
+        "exec-if": "which wttrbar",
+        "return-type": "json",
+        "tooltip": true
+    },
+
+    "temperature": {
+        "hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",
+        "critical-threshold": 80,
+        "format": "{temperatureC:.0f}°C",
+        "format-critical": "{temperatureC}°C ",
+        "tooltip": false
+    },
+
+    // ── Center Modules ─────────────────────────────────────────
+
+    "hyprland/workspaces": {
+        "format": "{id}",
+        "on-click": "activate",
+        "sort-by-number": true,
+        "active-only": false,
+        "all-outputs": true,
+        "persistent-workspaces": {
+            "*": 3
+        }
+    },
+
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "icon-size": 18,
+        "tooltip-format": "{title}",
+        "on-click": "activate",
+        "on-click-middle": "close"
+    },
+
+    // ── Right Modules ──────────────────────────────────────────
+
+    "wireplumber": {
+        "format": "{icon}  {volume}%",
+        "format-muted": "  muted",
+        "format-icons": ["", "", ""],
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-click-right": "~/.config/waybar/scripts/audio-switcher.sh",
+        "on-scroll-up": "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+",
+        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-",
+        "tooltip-format": "{node_name}: {volume}%"
+    },
+
+    "network": {
+        "format-wifi": "  {essid}",
+        "format-ethernet": "  {ipaddr}",
+        "format-disconnected": "  offline",
+        "tooltip-format-wifi": "  {essid}\n  {ipaddr}/{cidr}\n  {signalStrength}% signal\n  {bandwidthUpBits}↑ {bandwidthDownBits}↓",
+        "tooltip-format-ethernet": "  {ipaddr}\n  {ipaddr}/{cidr}\n  {bandwidthUpBits}↑ {bandwidthDownBits}↓",
+        "tooltip-format-disconnected": "No connection",
+        "max-length": 20,
+        "on-click": "kitty -e nmtui"
+    },
+
+    "battery": {
+        "format": "{icon}  {capacity}%",
+        "format-charging": "  {capacity}%",
+        "format-plugged": "  {capacity}%",
+        "format-icons": ["", "", "", "", ""],
+        "states": {
+            "warning": 20,
+            "critical": 10
+        },
+        "tooltip-format": "{timeTo}\n{power}W draw"
+    },
+
+    "custom/sysinfo": {
+        "format": " ",
+        "on-click": "kitty --session ~/.config/waybar/scripts/sysinfo-session.conf",
+        "tooltip": false
+    },
+
+    "custom/notification": {
+        "exec": "swaync-client -swb",
+        "exec-if": "which swaync-client",
+        "return-type": "json",
+        "format": "{icon}",
+        "format-icons": {
+            "notification": "<span foreground='#f7768e'> </span>",
+            "none": " ",
+            "dnd-notification": "<span foreground='#f7768e'> </span>",
+            "dnd-none": " ",
+            "inhibited-notification": " ",
+            "inhibited-none": " ",
+            "dnd-inhibited-notification": " ",
+            "dnd-inhibited-none": " "
+        },
+        "on-click": "swaync-client -t -sw",
+        "on-click-right": "swaync-client -d -sw",
+        "escape": true,
+        "tooltip": false
+    },
+
+    "custom/power": {
+        "format": " ",
+        "on-click": "~/.config/waybar/scripts/power-menu.sh",
+        "tooltip": false
+    }
+}

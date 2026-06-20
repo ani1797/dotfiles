@@ -1,0 +1,73 @@
+# Global gitignore — patterns excluded from every repo on this machine.
+# Managed by chezmoi.
+
+# ── OS cruft ────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ── Editors & IDEs ──────────────────────────────────────────────────────────
+*.swp
+*.swo
+*~
+.*.swp
+.netrwhist
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.iml
+*.sublime-workspace
+*.sublime-project
+.nvimlog
+.luarc.json
+.cache/
+
+# ── Build / dependency directories ──────────────────────────────────────────
+node_modules/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.tox/
+dist/
+build/
+*.o
+*.a
+*.so
+*.dylib
+
+# ── AI agent directories ─────────────────────────────────────────────────────
+.claude/
+.agy/
+.gemini/
+.copilot/
+
+# ── Secrets & local overrides ───────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.sample
+.envrc.private
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ── Runtime / temp ──────────────────────────────────────────────────────────
+*.log
+*.pid
+*.seed
+*.pid.lock
+*.sock
+.tmp/
+tmp/

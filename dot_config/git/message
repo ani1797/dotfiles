@@ -1,0 +1,15 @@
+# <type>(<scope>): <subject>  — 50 chars max, imperative mood, no trailing dot
+#
+# <body>  — wrap at 72 chars; explain *what* and *why*, not *how*.
+#
+# <footer>  — breaking changes, issue refs, Co-authored-by, etc.
+#
+# Types:  feat fix docs style refactor perf test build ci chore revert
+# Scope:  optional, one word, lowercase (e.g. parser, ci, deps)
+#
+# Examples:
+#   feat(parser): support trailing commas in arglists
+#   fix(ci): pin actions/checkout to v4 to avoid node16 deprecation
+#   refactor!: drop Python 3.8 support
+#
+# Lines starting with '#' are ignored.

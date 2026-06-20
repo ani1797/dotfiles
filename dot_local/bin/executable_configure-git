@@ -1,0 +1,197 @@
+#!/usr/bin/env bash
+# configure-git — bootstrap ~/.gitconfig.local with identity & signing config
+#
+# On a shared/multi-user machine, each Linux user runs this independently.
+# Their signing keys are ADDED to a shared ~/.config/git/allowed_signers
+# (never overwritten) so `git log --show-signature` works for any committer.
+#
+# Usage:
+#   configure-git                # interactive — prompts for name/key
+#   configure-git --list-keys    # show signing keys on GitHub, then exit
+#
+# Name detection order:
+#   1. $GIT_COMMITTER_NAME (set by GitHub Codespaces)
+#   2. GECOS field from the Linux user account (getent passwd)
+#   3. Fallback to $USER / whoami
+#
+# Requires: gh (GitHub CLI, authenticated), ssh-keygen (for fingerprints)
+
+set -euo pipefail
+
+GITCONFIG_LOCAL="${HOME}/.gitconfig.local"
+ALLOWED_SIGNERS_FILE="${HOME}/.config/git/allowed_signers"
+
+# ── Colour helpers ───────────────────────────────────────────────────────────
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  C_BOLD=$'\033[1m'; C_DIM=$'\033[2m'; C_RESET=$'\033[0m'
+  C_CYAN=$'\033[36m'; C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'; C_RED=$'\033[31m'
+else
+  C_BOLD=""; C_DIM=""; C_RESET=""
+  C_CYAN=""; C_GREEN=""; C_YELLOW=""; C_RED=""
+fi
+
+info()  { printf '%s▸%s %s\n' "${C_CYAN}" "${C_RESET}" "$*"; }
+ok()    { printf '%s✓%s %s\n' "${C_GREEN}" "${C_RESET}" "$*"; }
+warn()  { printf '%s⚠%s %s\n' "${C_YELLOW}" "${C_RESET}" "$*" >&2; }
+die()   { printf '%s✗ %s%s\n' "${C_RED}" "$*" "${C_RESET}" >&2; exit 1; }
+
+# ── Flags ────────────────────────────────────────────────────────────────────
+LIST_ONLY=false
+for arg in "$@"; do
+  case "$arg" in
+    --list-keys) LIST_ONLY=true ;;
+    --help|-h)
+      printf 'Usage: configure-git [--list-keys]\n'
+      printf '  --list-keys   Show signing keys registered on GitHub, then exit.\n'
+      exit 0 ;;
+  esac
+done
+
+# ── Prerequisites ────────────────────────────────────────────────────────────
+command -v gh &>/dev/null       || die "gh (GitHub CLI) is required but not found on PATH."
+gh auth status &>/dev/null 2>&1 || die "gh is not authenticated. Run 'gh auth login' first."
+
+# ── Fingerprint helper ───────────────────────────────────────────────────────
+# Compute the SHA256 fingerprint of a raw public key string.
+# Uses a tmpfile so ssh-keygen -l -f can read it.
+key_fingerprint() {
+  local key="$1"
+  local tmpf
+  tmpf="$(mktemp)"
+  printf '%s\n' "$key" > "$tmpf"
+  ssh-keygen -l -f "$tmpf" 2>/dev/null | awk '{print $2}' || echo "(unknown)"
+  rm -f "$tmpf"
+}
+
+# ── Fetch GitHub username ────────────────────────────────────────────────────
+info "Fetching GitHub account info …"
+gh_username="$(gh api /user --jq '.login')" \
+  || die "Failed to fetch GitHub username."
+gh_id="$(gh api /user --jq '.id')"          \
+  || die "Failed to fetch GitHub user id."
+
+# ── Fetch signing keys from GitHub ──────────────────────────────────────────
+info "Fetching SSH signing keys for ${gh_username} from GitHub …"
+mapfile -t key_titles < <(gh api "/users/${gh_username}/ssh_signing_keys" --jq '.[].title')
+mapfile -t key_values < <(gh api "/users/${gh_username}/ssh_signing_keys" --jq '.[].key')
+
+if [[ ${#key_values[@]} -eq 0 ]]; then
+  warn "No SSH signing keys found on your GitHub account."
+  warn "Add one at: https://github.com/settings/keys  (SSH keys → New SSH key → type: Signing)"
+  if [[ "${LIST_ONLY}" == true ]]; then exit 0; fi
+  git_signing_key=""
+elif [[ "${LIST_ONLY}" == true ]]; then
+  printf '\n%sSSH signing keys for %s:%s\n' "${C_BOLD}" "${gh_username}" "${C_RESET}"
+  for i in "${!key_titles[@]}"; do
+    fp="$(key_fingerprint "${key_values[$i]}")"
+    printf '  %s[%d]%s %-30s  %s%s%s\n' \
+      "${C_CYAN}" $((i + 1)) "${C_RESET}" \
+      "${key_titles[$i]}" \
+      "${C_DIM}" "$fp" "${C_RESET}"
+  done
+  exit 0
+fi
+
+# ── Detect name ──────────────────────────────────────────────────────────────
+detect_name() {
+  if [[ -n "${GIT_COMMITTER_NAME:-}" ]]; then
+    printf '%s' "${GIT_COMMITTER_NAME}"; return
+  fi
+  local gecos
+  gecos="$(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f5 | cut -d, -f1)" || true
+  if [[ -n "${gecos}" ]]; then
+    printf '%s' "${gecos}"; return
+  fi
+  printf '%s' "${USER:-$(whoami)}"
+}
+
+# ── Resolve name ─────────────────────────────────────────────────────────────
+default_name="$(detect_name)"
+printf '%suser.name%s [%s]: ' "${C_BOLD}" "${C_RESET}" "${default_name}"
+read -r input_name
+git_name="${input_name:-${default_name}}"
+
+# ── Resolve email (GitHub noreply) ───────────────────────────────────────────
+noreply_email="${gh_id}+${gh_username}@users.noreply.github.com"
+info "Using GitHub noreply email: ${noreply_email}"
+git_email="${noreply_email}"
+
+# ── Resolve signing key ──────────────────────────────────────────────────────
+# Show keys with fingerprints so the user can match to their ssh-add -l output
+if [[ ${#key_values[@]} -eq 1 ]]; then
+  git_signing_key="${key_values[0]}"
+  fp="$(key_fingerprint "${key_values[0]}")"
+  ok "Using signing key: ${key_titles[0]}  ${C_DIM}${fp}${C_RESET}"
+else
+  # Pre-compute all fingerprints for display
+  printf '\n%sSelect a signing key:%s\n' "${C_BOLD}" "${C_RESET}"
+  printf '  %s(Tip: run `ssh-add -l` to see fingerprints of keys loaded in your agent)%s\n' \
+    "${C_DIM}" "${C_RESET}"
+  for i in "${!key_titles[@]}"; do
+    fp="$(key_fingerprint "${key_values[$i]}")"
+    printf '  %s[%d]%s %-30s  %s%s%s\n' \
+      "${C_CYAN}" $((i + 1)) "${C_RESET}" \
+      "${key_titles[$i]}" \
+      "${C_DIM}" "$fp" "${C_RESET}"
+  done
+  printf '%s' "Choice [1]: "
+  read -r choice
+  choice="${choice:-1}"
+  if ! [[ "$choice" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > ${#key_values[@]} )); then
+    die "Invalid selection: ${choice}"
+  fi
+  git_signing_key="${key_values[$((choice - 1))]}"
+  fp="$(key_fingerprint "${git_signing_key}")"
+  ok "Using signing key: ${key_titles[$((choice - 1))]}  ${C_DIM}${fp}${C_RESET}"
+fi
+
+# ── Write ~/.gitconfig.local ─────────────────────────────────────────────────
+if [[ -f "${GITCONFIG_LOCAL}" ]]; then
+  warn "Existing ${GITCONFIG_LOCAL} will be overwritten."
+  printf '%s' "Continue? [Y/n]: "
+  read -r confirm
+  if [[ "${confirm,,}" == "n" ]]; then
+    info "Aborted."
+    exit 0
+  fi
+fi
+
+{
+  printf '# Generated by configure-git — %s\n' "$(date -Iseconds)"
+  printf '#\n'
+  printf '# Machine-local git identity. Included by ~/.config/git/config.\n'
+  printf '# Re-run configure-git to regenerate.\n\n'
+  printf '[user]\n'
+  printf '\tname = %s\n' "${git_name}"
+  printf '\temail = %s\n' "${git_email}"
+  if [[ -n "${git_signing_key}" ]]; then
+    printf '\tsigningKey = key::%s\n' "${git_signing_key}"
+    printf '\n[commit]\n'
+    printf '\tgpgSign = true\n'
+    printf '\n[tag]\n'
+    printf '\tgpgSign = true\n'
+  fi
+} > "${GITCONFIG_LOCAL}"
+
+# ── Update allowed_signers (additive — never overwrite other users' keys) ────
+# On a shared machine, multiple users' keys accumulate in this file so
+# `git log --show-signature` can verify commits from any of them.
+if [[ -n "${git_signing_key}" ]]; then
+  mkdir -p "$(dirname "${ALLOWED_SIGNERS_FILE}")"
+  # Build the entry: "<email> <full-key>"
+  new_entry="${git_email} ${git_signing_key}"
+  # Append only if this exact entry isn't already present
+  if ! grep -qxF "${new_entry}" "${ALLOWED_SIGNERS_FILE}" 2>/dev/null; then
+    printf '%s\n' "${new_entry}" >> "${ALLOWED_SIGNERS_FILE}"
+    ok "Added to allowed_signers: ${ALLOWED_SIGNERS_FILE}"
+  else
+    info "allowed_signers already contains this key — no change."
+  fi
+  # Show the full file so the user can see all trusted signers
+  printf '\n%s── Trusted signers ──%s\n' "${C_DIM}" "${C_RESET}"
+  cat "${ALLOWED_SIGNERS_FILE}"
+fi
+
+ok "Wrote ${GITCONFIG_LOCAL}"
+printf '\n%s── Contents ──%s\n' "${C_DIM}" "${C_RESET}"
+cat "${GITCONFIG_LOCAL}"

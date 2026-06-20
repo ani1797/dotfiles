@@ -1,0 +1,34 @@
+# ~/.zshrc — managed by chezmoi
+# Interactive zsh configuration. Tool fragments live in conf.d/.
+
+# ── History ──────────────────────────────────────────────────────────────────────
+HISTSIZE=50000
+SAVEHIST=50000
+HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
+mkdir -p "${HISTFILE:h}" 2>/dev/null
+setopt hist_ignore_all_dups   # no duplicate entries
+setopt hist_reduce_blanks     # remove extra blanks
+setopt hist_ignore_space      # skip commands prefixed with space
+setopt share_history          # share history across all sessions
+setopt inc_append_history     # write immediately, not on exit
+
+# ── Drop-in fragments ─────────────────────────────────────────────────────────
+# Sourced in lexicographic order:
+#   00-09  early init: env, PATH, completion bootstrap
+#   10-19  tool integrations: language managers, CLI completions
+#   11     AUR helper (Arch-only)
+#   15     container tooling
+#   20     auth / secrets
+#   30     interactive conveniences
+#   40     shell enhancements: plugins, keybinds
+#   50-89  prompt
+#   90-99  finalizers (direnv last, wraps all tool inits)
+_zsh_confd="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/conf.d"
+if [[ -d "${_zsh_confd}" ]]; then
+  setopt local_options null_glob
+  for _f in "${_zsh_confd}"/*.zsh; do
+    [[ -r "${_f}" ]] && source "${_f}"
+  done
+  unset _f
+fi
+unset _zsh_confd

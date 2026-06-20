@@ -1,0 +1,8 @@
+# ~/.config/git/allowed_signers
+# SSH signing key trust list — used by `git log --show-signature`.
+#
+# Format: <email> <key-type> <key>
+# Populated by: bootstrap.sh → configure-git (reads SSH signing keys from GitHub)
+#
+# This file is updated automatically. Do not edit by hand.
+# Run `configure-git` to regenerate ~/.gitconfig.local and re-populate this file.

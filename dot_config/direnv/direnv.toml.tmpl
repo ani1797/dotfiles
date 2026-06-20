@@ -1,0 +1,16 @@
+# direnv.toml — managed by chezmoi
+# See: https://direnv.net/man/direnv.toml.1.html
+
+[global]
+warn_timeout = "10s"
+hide_env_diff = false
+strict_env = false
+load_dotenv = false
+
+[whitelist]
+prefix = [
+  "/home/{{ .chezmoi.username }}/Projects",
+  "/home/{{ .chezmoi.username }}/src",
+  "/workspace",
+  "/tmp",
+]

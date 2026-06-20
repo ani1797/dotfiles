@@ -1,0 +1,288 @@
+# Managed by chezmoi — do not edit directly.
+
+[core]
+	editor = nvim
+	excludesFile = ~/.config/git/ignore
+	attributesFile = ~/.config/git/attributes
+	pager = delta
+	# Don't octal-escape non-ASCII filenames in output.
+	quotePath = false
+	# Repos are authoritative — convert CRLF on commit, leave working tree alone.
+	autocrlf = input
+	# Flag whitespace problems in diff/apply.
+	whitespace = trailing-space,space-before-tab
+	# Built-in fsmonitor (git >= 2.37) — big speedup in large worktrees.
+	fsmonitor = true
+	untrackedCache = true
+
+[init]
+	defaultBranch = main
+
+[commit]
+	template = ~/.config/git/message
+	verbose = true
+	# gpgSign is enabled in ~/.gitconfig.local once user.signingKey is set.
+
+[tag]
+	# gpgSign mirrors commit.gpgSign — set in ~/.gitconfig.local.
+
+[gpg]
+	# Prefer SSH signing (works out of the box with 1Password / ssh-agent).
+	format = ssh
+
+[gpg "ssh"]
+	# Trust list of allowed signers for `git log --show-signature`.
+	allowedSignersFile = ~/.config/git/allowed_signers
+
+[pull]
+	rebase = true
+	autoStash = true
+
+[push]
+	default = current
+	followTags = true
+	autoSetupRemote = true
+
+[fetch]
+	prune = true
+	pruneTags = true
+	# Refuse to import objects that fail integrity checks.
+	fsckObjects = true
+	# Parallelism — let git decide based on cores.
+	parallel = 0
+
+[transfer]
+	fsckObjects = true
+
+[receive]
+	fsckObjects = true
+
+[rebase]
+	autoStash = true
+	autoSquash = true
+	# Update dependent branches when their base is rebased.
+	updateRefs = true
+
+[merge]
+	conflictStyle = zdiff3
+
+[diff]
+	algorithm = histogram
+	renames = copies
+	mnemonicPrefix = true
+	colorMoved = default
+	colorMovedWS = allow-indentation-change
+
+[rerere]
+	enabled = true
+	autoUpdate = true
+
+[status]
+	submoduleSummary = true
+	showUntrackedFiles = all
+	branch = true
+
+[submodule]
+	recurse = true
+
+[log]
+	abbrevCommit = true
+	date = iso
+	follow = true
+
+[branch]
+	# Most-recently-used branches first in `git branch`.
+	sort = -committerdate
+
+[column]
+	ui = auto
+
+[help]
+	# Prompt before running auto-corrected commands (git >= 2.30).
+	autoCorrect = prompt
+
+[advice]
+	detachedHead = false
+	skippedCherryPicks = false
+
+# ── Security ────────────────────────────────────────────────────────────────
+# Allowlist of network protocols. `file://` is blocked by default upstream
+# since CVE-2022-39253; keep it that way and require explicit opt-in for
+# everything outside the standard set.
+[protocol]
+	allow = never
+
+[protocol "https"]
+	allow = always
+
+[protocol "ssh"]
+	allow = always
+
+[protocol "git"]
+	allow = user
+
+[protocol "http"]
+	allow = user
+
+# ── Color ───────────────────────────────────────────────────────────────────
+[color]
+	ui = auto
+	branch = auto
+	diff = auto
+	status = auto
+	interactive = auto
+
+[color "branch"]
+	current = yellow reverse
+	local = yellow
+	remote = green
+
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+
+[color "status"]
+	added = green
+	changed = yellow
+	untracked = red
+
+# ── delta (gated) ───────────────────────────────────────────────────────────
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+	side-by-side = true
+	line-numbers = true
+	hyperlinks = true
+	# Catppuccin Mocha theme
+	syntax-theme = Catppuccin Mocha
+	minus-style = "syntax #3d2b3d"
+	minus-emph-style = "syntax #7d3354"
+	plus-style = "syntax #1e2d27"
+	plus-emph-style = "syntax #265a3a"
+	line-numbers-minus-style = "#f38ba8"
+	line-numbers-plus-style = "#a6e3a1"
+	line-numbers-zero-style = "#6c7086"
+	hunk-header-decoration-style = "blue box"
+	hunk-header-style = "file line-number syntax"
+	file-style = "bold yellow ul"
+	file-decoration-style = "none"
+
+# ── GitHub credentials via gh CLI (gated) ───────────────────────────────────
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+
+# ── Safe directories ────────────────────────────────────────────────────────
+# Only the standard devcontainer mount points. Avoid blanket "*" which would
+# disable the dubious-ownership check entirely.
+[safe]
+	directory = /workspace
+
+# ── URL rewrites ────────────────────────────────────────────────────────────
+# Prefer SSH over HTTPS for pushes to GitHub (reads still work over HTTPS).
+[url "git@github.com:"]
+	pushInsteadOf = https://github.com/
+
+# ── Aliases ─────────────────────────────────────────────────────────────────
+[alias]
+	# Short status
+	s = status -sb
+
+	# Add interactively (patch hunks)
+	a = add -p
+
+	# Commit
+	c = commit -m
+	ca = commit --amend
+	cam = commit -am
+	cane = commit --amend --no-edit
+
+	# Branches
+	co = checkout
+	cob = checkout -b
+	sw = switch
+	swc = switch -c
+	br = branch -v
+	bra = branch -av
+	brd = branch -d
+	brD = branch -D
+
+	# Logs
+	l = log --oneline --decorate --graph
+	ll = log --oneline --decorate --graph --all
+	ls = log --stat --abbrev-commit
+	last = log -1 HEAD --stat
+	# History scoped to the configured identity
+	today = "!git log --since='1 day ago' --oneline --author=\"$(git config user.email)\""
+	week  = "!git log --since='1 week ago' --oneline --author=\"$(git config user.email)\""
+	mine  = "!git log --oneline --author=\"$(git config user.email)\""
+
+	# Diffs
+	d = diff
+	ds = diff --staged
+	dw = diff --word-diff
+
+	# Remotes
+	remotes = remote -v
+
+	# Pulls/pushes
+	up = pull --rebase --autostash
+	p = push
+	# --force-with-lease is the safe force-push; pair with --force-if-includes
+	# so we never clobber refs we haven't seen.
+	pf = push --force-with-lease --force-if-includes
+
+	# Undo
+	undo = reset HEAD~1 --mixed
+	undohard = reset HEAD~1 --hard
+	unstage = reset HEAD --
+
+	# Stash
+	save = stash push -m
+	stashes = stash list
+	pop = stash pop
+
+	# Show
+	files = show --name-only
+	summary = show --stat
+
+	# Search
+	find = log --all --oneline --grep
+	who = log --all --oneline --author
+	contributors = shortlog -sn --no-merges
+
+	# Ignored files
+	ignored = ls-files --others -i --exclude-standard
+
+	# Delete branches already merged into the current HEAD
+	cleanup = "!git for-each-ref --format='%(refname:short)' --merged HEAD refs/heads/ \
+	            | grep -Ev '^(main|master|develop|trunk)$' \
+	            | xargs -r -n1 git branch -d"
+
+	# Show all aliases
+	aliases = config --get-regexp ^alias\\.
+
+# ── Conditional identity includes ───────────────────────────────────────────
+# Keep work and personal commits signed with the right email/key by dropping
+# a tiny gitconfig into each tree root. See ~/.gitconfig.local for the
+# fallback identity.
+[includeIf "gitdir:~/Projects/work/"]
+	path = ~/.config/git/work.inc
+
+[includeIf "gitdir:~/Projects/personal/"]
+	path = ~/.config/git/personal.inc
+
+# ── Machine-specific overrides (not tracked) ────────────────────────────────
+# Loaded last so it wins over anything above. Put user.name / user.email /
+# user.signingKey / commit.gpgSign / tag.gpgSign here.
+[include]
+	path = ~/.gitconfig.local

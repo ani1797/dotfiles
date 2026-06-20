@@ -1,0 +1,6 @@
+{
+  "dotfiles": {
+    "repository": "ani1797/dotfiles",
+    "installCommand": "install.sh"
+  }
+}

@@ -9,15 +9,21 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io). Compatible wit
 
 ## Quick start
 
-### New machine
+### New machine (headless)
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/ani1797/dotfiles/main/install.sh)
+```
+
+### New machine (desktop — includes Hyprland, Kitty, etc.)
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/ani1797/dotfiles/main/install.sh) --desktop
 ```
 
 ### After cloning
 ```bash
 git clone https://github.com/ani1797/dotfiles ~/Projects/dotfiles
-bash ~/Projects/dotfiles/install.sh
+bash ~/Projects/dotfiles/install.sh            # headless
+bash ~/Projects/dotfiles/install.sh --desktop   # desktop
 ```
 
 ### GitHub Codespaces
@@ -31,6 +37,12 @@ dotfiles/
 ├── .chezmoi.toml.tmpl        # chezmoi config — prompts for name/email/hostname/monitor
 ├── .chezmoiignore            # skips desktop configs in Codespaces / headless
 ├── install.sh                # bootstrap — works standalone and in Codespaces
+├── scripts/
+│   ├── lib.sh                # shared logging helpers
+│   ├── bootstrap-arch.sh     # Arch Linux package install
+│   ├── bootstrap-fedora.sh   # Fedora / Silverblue package install
+│   ├── bootstrap-debian.sh   # Debian / Ubuntu package install
+│   └── bootstrap-tools.sh    # cross-platform tools (uv, fnm, bun, starship, etc.)
 ├── dot_zshrc                 # ~/.zshrc — sources conf.d fragments
 └── dot_config/
     ├── git/                  # git config, aliases, SSH signing, delta pager

@@ -1,6 +1,12 @@
 # .chezmoiignore — files chezmoi skips depending on context
 # https://www.chezmoi.io/reference/special-files/chezmoiignore/
 
+# ── Repo-only files (never applied to home) ───────────────────────────────────
+scripts
+install.sh
+README.md
+.github
+
 # ── Codespaces: skip all desktop/GUI configs ──────────────────────────────────
 {{ if .codespaces }}
 dot_config/hypr

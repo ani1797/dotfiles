@@ -1,5 +1,5 @@
 {{- $codespaces := env "CODESPACES" | not | not -}}
-{{- $isDesktop := and (not $codespaces) (eq .chezmoi.os "linux") -}}
+{{- $isDesktop := eq (env "DOTFILES_DESKTOP") "true" -}}
 
 {{- $name := promptStringOnce . "name" "Full name" -}}
 {{- $email := promptStringOnce . "email" "Email address" -}}
@@ -9,9 +9,9 @@
 {{- $resolution := "" -}}
 {{- $scale := "" -}}
 {{- if $isDesktop -}}
-{{-   $monitor := promptStringOnce . "monitor" "Primary monitor name (e.g. DP-1, eDP-1)" -}}
-{{-   $resolution := promptStringOnce . "resolution" "Monitor resolution@refresh (e.g. 2560x1440@144)" -}}
-{{-   $scale := promptStringOnce . "scale" "Monitor scale (e.g. 1, 1.5, 2)" -}}
+{{-   $monitor = promptStringOnce . "monitor" "Primary monitor name (e.g. DP-1, eDP-1)" -}}
+{{-   $resolution = promptStringOnce . "resolution" "Monitor resolution@refresh (e.g. 2560x1440@144)" -}}
+{{-   $scale = promptStringOnce . "scale" "Monitor scale (e.g. 1, 1.5, 2)" -}}
 {{- end -}}
 
 [data]

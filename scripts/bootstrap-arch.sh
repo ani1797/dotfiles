@@ -11,7 +11,7 @@ HEADLESS_PKGS=(
   zsh neovim tmux git curl unzip
   chezmoi direnv starship
   git-delta zoxide eza bat fzf
-  github-cli
+  github-cli kitty-terminfo
   zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search
 )
 

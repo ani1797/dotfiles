@@ -20,13 +20,13 @@ sudo pacman -S --noconfirm --needed "${HEADLESS_PKGS[@]}"
 
 # ── paru (AUR helper) ────────────────────────────────────────────────────────
 if ! command -v paru &>/dev/null; then
-  info "Building paru from AUR…"
+  info "Building paru from AUR (may take several minutes)…"
   sudo pacman -S --noconfirm --needed base-devel
   PARU_BUILD="$(mktemp -d)"
   git clone https://aur.archlinux.org/paru.git "${PARU_BUILD}"
-  (cd "${PARU_BUILD}" && makepkg -si --noconfirm)
+  (cd "${PARU_BUILD}" && makepkg -si --noconfirm) \
+    || warn "paru build failed (may need more RAM). Install manually: https://github.com/Morganamilo/paru"
   rm -rf "${PARU_BUILD}"
-  success "paru installed."
 fi
 
 # ── Desktop (Hyprland + supporting tools) ─────────────────────────────────────

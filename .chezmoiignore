@@ -9,19 +9,19 @@ README.md
 
 # ── Codespaces: skip all desktop/GUI configs ──────────────────────────────────
 {{ if .codespaces }}
-dot_config/hypr
-dot_config/kitty
-dot_config/mako
-dot_config/quickshell
-dot_config/systemd
-dot_config/containers
+.config/hypr
+.config/kitty
+.config/mako
+.config/quickshell
+.config/systemd
+.config/containers
 {{ end }}
 
 # ── Non-desktop Linux / Codespaces: skip desktop configs ─────────────────────
 {{ if not .isDesktop }}
-dot_config/hypr
-dot_config/kitty
-dot_config/mako
-dot_config/quickshell
-dot_config/systemd
+.config/hypr
+.config/kitty
+.config/mako
+.config/quickshell
+.config/systemd
 {{ end }}

@@ -1,0 +1,43 @@
+# npm global configuration
+# Managed by chezmoi — do not edit directly
+
+# Prefer offline cache when available, fall back to network
+prefer-offline=true
+
+# Save exact versions instead of semver ranges
+save-exact=true
+
+# Automatically resolve peer dependency conflicts
+legacy-peer-deps=false
+
+# Use lockfile by default
+package-lock=true
+
+# Suppress update notifier
+update-notifier=false
+
+# Suppress npm fund messages
+fund=false
+
+# Suppress npm audit on install
+audit=false
+
+# Default to permissive engine checks (avoids breakage across machines)
+engine-strict=false
+
+# Increase network timeout for slow connections
+fetch-timeout=60000
+fetch-retries=3
+fetch-retry-mintimeout=10000
+
+# Progress bar
+progress=true
+
+# Increase max concurrent sockets for parallel downloads (default: 15)
+maxsockets=50
+
+# Prefer deduplication to reduce node_modules size and install time
+prefer-dedupe=true
+
+# Reduce log output overhead
+loglevel=warn

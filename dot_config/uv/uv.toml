@@ -1,0 +1,4 @@
+# uv global configuration
+# Managed by chezmoi — do not edit directly
+
+prerelease = "allow"

@@ -1,0 +1,6 @@
+# Cargo global configuration
+# Managed by chezmoi — do not edit directly
+
+[net]
+# Use system git for fetches (respects SSH config, proxies, credential helpers)
+git-fetch-with-cli = true

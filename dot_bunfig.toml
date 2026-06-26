@@ -1,0 +1,10 @@
+# Bun global configuration
+# Managed by chezmoi — do not edit directly
+
+[install]
+# Save exact versions (consistent with npm save-exact)
+exact = true
+
+[install.lockfile]
+# Always save lockfile
+save = true

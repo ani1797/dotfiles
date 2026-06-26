@@ -1,0 +1,37 @@
+#!/bin/bash
+# Installs desktop packages: Hyprland compositor and supporting tools.
+# Only runs on Linux desktop installs (DOTFILES_DESKTOP=true).
+{{ if or (ne .chezmoi.os "linux") (not .isDesktop) -}}
+exit 0
+{{ else -}}
+{{ template "install-helper" . }}
+
+info "Installing desktop packages…"
+
+DESKTOP_PKGS=(
+  hyprland hyprlock hypridle hyprpaper xdg-desktop-portal-hyprland
+  kitty mako wofi
+  grim slurp swappy
+  brightnessctl wl-clipboard cliphist
+  network-manager-applet blueman
+  polkit-gnome
+)
+
+{{ if or (eq .chezmoi.osRelease.id "arch") (eq .chezmoi.osRelease.id "cachyos") (eq .chezmoi.osRelease.id "endeavouros") (eq .chezmoi.osRelease.id "manjaro") (eq .chezmoi.osRelease.id "garuda") -}}
+DESKTOP_PKGS+=(ttf-jetbrains-mono-nerd qt6-declarative qt6-wayland)
+pkg_install "${DESKTOP_PKGS[@]}"
+{{ else if eq .chezmoi.osRelease.id "fedora" -}}
+DESKTOP_PKGS+=(jetbrains-mono-fonts-all)
+pkg_install "${DESKTOP_PKGS[@]}"
+{{ else -}}
+warn "Desktop packages (Hyprland, Kitty, etc.) are not in default Debian/Ubuntu repos."
+warn "Install them from source or distro-specific PPAs."
+{{ end -}}
+
+# Enable ssh-agent socket for desktop sessions
+systemctl --user enable --now ssh-agent.socket 2>/dev/null \
+  && success "ssh-agent.socket enabled." \
+  || warn "Could not enable ssh-agent.socket."
+
+success "Desktop packages installed."
+{{ end -}}

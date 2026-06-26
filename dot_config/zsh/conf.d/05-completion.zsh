@@ -5,6 +5,10 @@
 
 # ── fpath: static completion dirs ────────────────────────────────────────────────
 typeset -U fpath
+# Homebrew completions (macOS)
+if command -v brew &>/dev/null; then
+  fpath=("$(brew --prefix)/share/zsh/site-functions" $fpath)
+fi
 # System completions (zsh-completions, tool packages install here)
 [[ -d /usr/share/zsh/site-functions ]]       && fpath=(/usr/share/zsh/site-functions $fpath)
 [[ -d /usr/local/share/zsh/site-functions ]] && fpath=(/usr/local/share/zsh/site-functions $fpath)

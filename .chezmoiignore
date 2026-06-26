@@ -2,26 +2,30 @@
 # https://www.chezmoi.io/reference/special-files/chezmoiignore/
 
 # ── Repo-only files (never applied to home) ───────────────────────────────────
-scripts
 install.sh
 README.md
 .github
 
-# ── Codespaces: skip all desktop/GUI configs ──────────────────────────────────
-{{ if .codespaces }}
+# ── Non-Linux: skip Linux-specific configs ────────────────────────────────────
+{{ if ne .chezmoi.os "linux" }}
 .config/hypr
-.config/kitty
 .config/mako
 .config/quickshell
 .config/systemd
 .config/containers
 {{ end }}
 
-# ── Non-desktop Linux / Codespaces: skip desktop configs ─────────────────────
+# ── Non-desktop: skip desktop configs ─────────────────────────────────────────
 {{ if not .isDesktop }}
 .config/hypr
 .config/kitty
 .config/mako
 .config/quickshell
 .config/systemd
+{{ end }}
+
+# ── Codespaces: skip GUI and container configs ────────────────────────────────
+{{ if .codespaces }}
+.config/kitty
+.config/containers
 {{ end }}

@@ -1,0 +1,15 @@
+#!/bin/bash
+# Installs bun — fast JavaScript runtime and package manager.
+{{ template "install-helper" . }}
+
+command -v bun &>/dev/null && exit 0
+
+info "Installing bun…"
+
+{{ if eq .chezmoi.os "darwin" -}}
+pkg_install bun
+{{ else -}}
+curl -fsSL https://bun.sh/install | bash -s -- --no-profile 2>/dev/null
+{{ end -}}
+
+success "bun installed."

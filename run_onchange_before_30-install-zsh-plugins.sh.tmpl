@@ -1,0 +1,21 @@
+#!/bin/bash
+# Installs zsh plugins: autosuggestions, syntax-highlighting, history-substring-search.
+{{ template "install-helper" . }}
+
+info "Installing zsh plugins…"
+
+{{ if eq .chezmoi.os "darwin" -}}
+pkg_install zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search
+{{ else if eq .chezmoi.os "linux" -}}
+{{   if or (eq .chezmoi.osRelease.id "arch") (eq .chezmoi.osRelease.id "cachyos") (eq .chezmoi.osRelease.id "endeavouros") (eq .chezmoi.osRelease.id "manjaro") (eq .chezmoi.osRelease.id "garuda") -}}
+pkg_install zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search
+{{   else if eq .chezmoi.osRelease.id "fedora" -}}
+pkg_install zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null \
+  || warn "Some zsh plugins may not be available in repos."
+{{   else -}}
+pkg_install zsh-autosuggestions zsh-syntax-highlighting 2>/dev/null \
+  || warn "Some zsh plugins may not be available in repos."
+{{   end -}}
+{{ end -}}
+
+success "zsh plugins installed."

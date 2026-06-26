@@ -1,0 +1,16 @@
+#!/bin/bash
+# Installs bat — a cat clone with syntax highlighting.
+{{ template "install-helper" . }}
+
+(command -v bat &>/dev/null || command -v batcat &>/dev/null) && exit 0
+
+info "Installing bat…"
+pkg_install bat
+
+# Debian/Ubuntu may install the binary as batcat
+if command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
+  ln -sf "$(command -v batcat)" "${BIN_DIR}/bat"
+  info "Created symlink: bat → batcat"
+fi
+
+success "bat installed."

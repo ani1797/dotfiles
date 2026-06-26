@@ -16,8 +16,15 @@ _source_first() {
   return 1
 }
 
+# Resolve Homebrew prefix once (macOS)
+_brew_prefix="${HOMEBREW_PREFIX:-}"
+if [[ -z "${_brew_prefix}" ]] && command -v brew &>/dev/null; then
+  _brew_prefix="$(brew --prefix)"
+fi
+
 # ── 1. zsh-autosuggestions ───────────────────────────────────────────────────────
 if _source_first \
+    "${_brew_prefix}/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
     /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh \
     /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; then
   # Catppuccin Mocha surface2 colour for the ghost text
@@ -32,6 +39,8 @@ fi
 # ── 2. Syntax highlighting ────────────────────────────────────────────────────────
 # Prefer fast-syntax-highlighting (Arch AUR), fall back to standard
 _source_first \
+  "${_brew_prefix}/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" \
+  "${_brew_prefix}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" \
   /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh \
   /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
   /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -39,6 +48,7 @@ _source_first \
 # ── 3. History substring search ────────────────────────────────────────────────────
 # Must be sourced AFTER syntax highlighting to avoid keybind conflicts
 if _source_first \
+    "${_brew_prefix}/share/zsh-history-substring-search/zsh-history-substring-search.zsh" \
     /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh \
     /usr/share/zsh-history-substring-search/zsh-history-substring-search.zsh; then
   # ↑/↓ arrows search history by prefix of what is already typed
@@ -53,6 +63,7 @@ if _source_first \
 fi
 
 unset -f _source_first
+unset _brew_prefix
 
 # ── General keybinds ──────────────────────────────────────────────────────────────
 bindkey -e   # emacs key bindings (default; Ctrl+A/E, Ctrl+R, etc.)

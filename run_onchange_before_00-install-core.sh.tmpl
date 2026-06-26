@@ -1,0 +1,16 @@
+#!/bin/bash
+# Installs core system packages: zsh, git, curl, unzip.
+# These are required by all other dotfiles scripts and tool installs.
+{{ template "install-helper" . }}
+
+info "Installing core packages…"
+
+{{ if eq .chezmoi.os "linux" -}}
+{{   if or (eq .chezmoi.osRelease.id "debian") (eq .chezmoi.osRelease.id "ubuntu") (eq .chezmoi.osRelease.id "linuxmint") (eq .chezmoi.osRelease.id "pop") -}}
+sudo apt-get update -qq
+{{   end -}}
+{{ end -}}
+
+pkg_install zsh git curl unzip
+
+success "Core packages installed."

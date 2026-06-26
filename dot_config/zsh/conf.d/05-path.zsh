@@ -9,6 +9,13 @@ _path_prepend() {
   esac
 }
 
+# Homebrew (macOS — must be first so brew-installed tools take priority)
+if [[ -d /opt/homebrew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
 _path_prepend "${HOME}/.local/bin"
 _path_prepend "${HOME}/.cargo/bin"
 _path_prepend "${HOME}/go/bin"

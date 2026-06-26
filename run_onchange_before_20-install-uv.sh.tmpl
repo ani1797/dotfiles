@@ -1,0 +1,15 @@
+#!/bin/bash
+# Installs uv — fast Python package manager.
+{{ template "install-helper" . }}
+
+command -v uv &>/dev/null && exit 0
+
+info "Installing uv…"
+
+{{ if eq .chezmoi.os "darwin" -}}
+pkg_install uv
+{{ else -}}
+curl -LsSf https://astral.sh/uv/install.sh | sh
+{{ end -}}
+
+success "uv installed."

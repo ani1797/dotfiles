@@ -1,0 +1,10 @@
+#!/bin/bash
+# Installs direnv — per-directory environment variables.
+{{ template "install-helper" . }}
+
+command -v direnv &>/dev/null && exit 0
+
+info "Installing direnv…"
+pkg_install direnv
+
+success "direnv installed."

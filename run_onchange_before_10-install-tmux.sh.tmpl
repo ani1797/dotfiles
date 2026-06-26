@@ -1,0 +1,10 @@
+#!/bin/bash
+# Installs tmux — terminal multiplexer.
+{{ template "install-helper" . }}
+
+command -v tmux &>/dev/null && exit 0
+
+info "Installing tmux…"
+pkg_install tmux
+
+success "tmux installed."

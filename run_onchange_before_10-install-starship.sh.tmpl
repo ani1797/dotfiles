@@ -1,0 +1,22 @@
+#!/bin/bash
+# Installs starship — cross-shell prompt.
+{{ template "install-helper" . }}
+
+command -v starship &>/dev/null && exit 0
+
+info "Installing starship…"
+
+{{ if eq .chezmoi.os "darwin" -}}
+pkg_install starship
+{{ else if eq .chezmoi.os "linux" -}}
+{{   if or (eq .chezmoi.osRelease.id "arch") (eq .chezmoi.osRelease.id "cachyos") (eq .chezmoi.osRelease.id "endeavouros") (eq .chezmoi.osRelease.id "manjaro") (eq .chezmoi.osRelease.id "garuda") -}}
+pkg_install starship
+{{   else -}}
+if ! pkg_install starship 2>/dev/null; then
+  info "Not in repos — using official installer…"
+  curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir "${BIN_DIR}"
+fi
+{{   end -}}
+{{ end -}}
+
+success "starship installed."

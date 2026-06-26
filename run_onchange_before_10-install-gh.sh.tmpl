@@ -1,0 +1,34 @@
+#!/bin/bash
+# Installs the GitHub CLI (gh).
+{{ template "install-helper" . }}
+
+command -v gh &>/dev/null && exit 0
+
+info "Installing GitHub CLI…"
+
+{{ if eq .chezmoi.os "darwin" -}}
+pkg_install gh
+{{ else if eq .chezmoi.os "linux" -}}
+{{   if or (eq .chezmoi.osRelease.id "arch") (eq .chezmoi.osRelease.id "cachyos") (eq .chezmoi.osRelease.id "endeavouros") (eq .chezmoi.osRelease.id "manjaro") (eq .chezmoi.osRelease.id "garuda") -}}
+pkg_install github-cli
+{{   else if eq .chezmoi.osRelease.id "fedora" -}}
+sudo dnf config-manager addrepo \
+  --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo 2>/dev/null \
+  || sudo dnf config-manager --add-repo \
+    https://cli.github.com/packages/rpm/gh-cli.repo 2>/dev/null \
+  || true
+pkg_install gh
+{{   else -}}
+# Debian/Ubuntu — add GitHub CLI repository
+sudo apt-get install -y -qq curl gpg
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+  | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+  | sudo tee /etc/apt/sources.list.d/github-cli-stable.list >/dev/null
+sudo apt-get update -qq
+pkg_install gh
+{{   end -}}
+{{ end -}}
+
+success "GitHub CLI installed."

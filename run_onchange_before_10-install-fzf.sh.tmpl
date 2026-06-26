@@ -1,0 +1,10 @@
+#!/bin/bash
+# Installs fzf — a general-purpose fuzzy finder.
+{{ template "install-helper" . }}
+
+command -v fzf &>/dev/null && exit 0
+
+info "Installing fzf…"
+pkg_install fzf
+
+success "fzf installed."

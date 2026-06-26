@@ -1,0 +1,22 @@
+#!/bin/bash
+# Installs zoxide — a smarter cd command.
+{{ template "install-helper" . }}
+
+command -v zoxide &>/dev/null && exit 0
+
+info "Installing zoxide…"
+
+{{ if eq .chezmoi.os "darwin" -}}
+pkg_install zoxide
+{{ else if eq .chezmoi.os "linux" -}}
+{{   if or (eq .chezmoi.osRelease.id "arch") (eq .chezmoi.osRelease.id "cachyos") (eq .chezmoi.osRelease.id "endeavouros") (eq .chezmoi.osRelease.id "manjaro") (eq .chezmoi.osRelease.id "garuda") -}}
+pkg_install zoxide
+{{   else -}}
+if ! pkg_install zoxide 2>/dev/null; then
+  info "Not in repos — using official installer…"
+  curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+fi
+{{   end -}}
+{{ end -}}
+
+success "zoxide installed."

@@ -1,0 +1,10 @@
+#!/bin/bash
+# Installs neovim — hyperextensible Vim-based text editor.
+{{ template "install-helper" . }}
+
+command -v nvim &>/dev/null && exit 0
+
+info "Installing neovim…"
+pkg_install neovim
+
+success "neovim installed."

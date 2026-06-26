@@ -1,0 +1,15 @@
+#!/bin/bash
+# Installs fnm — fast Node.js version manager.
+{{ template "install-helper" . }}
+
+command -v fnm &>/dev/null && exit 0
+
+info "Installing fnm…"
+
+{{ if eq .chezmoi.os "darwin" -}}
+pkg_install fnm
+{{ else -}}
+curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "${BIN_DIR}" --skip-shell
+{{ end -}}
+
+success "fnm installed."

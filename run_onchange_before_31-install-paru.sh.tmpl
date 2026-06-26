@@ -1,0 +1,22 @@
+#!/bin/bash
+# Installs paru — AUR helper for Arch Linux.
+{{ if ne .chezmoi.os "linux" -}}
+exit 0
+{{ else if not (or (eq .chezmoi.osRelease.id "arch") (eq .chezmoi.osRelease.id "cachyos") (eq .chezmoi.osRelease.id "endeavouros") (eq .chezmoi.osRelease.id "manjaro") (eq .chezmoi.osRelease.id "garuda")) -}}
+exit 0
+{{ else -}}
+{{ template "install-helper" . }}
+
+command -v paru &>/dev/null && exit 0
+
+info "Building paru from AUR (this may take several minutes)…"
+sudo pacman -S --noconfirm --needed base-devel
+
+PARU_BUILD="$(mktemp -d)"
+git clone https://aur.archlinux.org/paru.git "${PARU_BUILD}"
+(cd "${PARU_BUILD}" && makepkg -si --noconfirm) \
+  || warn "paru build failed. Install manually: https://github.com/Morganamilo/paru"
+rm -rf "${PARU_BUILD}"
+
+success "paru installed."
+{{ end -}}

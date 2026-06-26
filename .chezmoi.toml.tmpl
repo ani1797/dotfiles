@@ -8,7 +8,7 @@
 {{- $monitor := "" -}}
 {{- $resolution := "" -}}
 {{- $scale := "" -}}
-{{- if $isDesktop -}}
+{{- if and $isDesktop (eq .chezmoi.os "linux") -}}
 {{-   $monitor = promptStringOnce . "monitor" "Primary monitor name (e.g. DP-1, eDP-1)" -}}
 {{-   $resolution = promptStringOnce . "resolution" "Monitor resolution@refresh (e.g. 2560x1440@144)" -}}
 {{-   $scale = promptStringOnce . "scale" "Monitor scale (e.g. 1, 1.5, 2)" -}}

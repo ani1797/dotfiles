@@ -39,3 +39,11 @@ explicit = true
 name = "testpypi"
 url = "https://test.pypi.org/simple"
 explicit = true
+{{ if env "PRODIGY_KEY" }}
+# ── Prodigy (Explosion AI annotation tool — requires license) ────────────────
+
+[[index]]
+name = "prodigy"
+url = "https://{{ env "PRODIGY_KEY" }}@download.prodi.gy"
+explicit = true
+{{ end }}

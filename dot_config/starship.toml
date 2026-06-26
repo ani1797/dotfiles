@@ -6,31 +6,32 @@
 command_timeout = 500
 
 # ── Prompt layout ──────────────────────────────────────────────────────────────
-# Powerline style: os → user@host → directory → git → languages → time → duration
-# Languages only appear when the current directory contains relevant project files.
+# Floating-pill style: rounded identity and directory pills, inline coloured
+# text for contextual modules (git, languages, docker), right-aligned time
+# pill. Two-line layout keeps the input cursor on a clean line.
 format = """
-[](red)\
+[](red)\
 $os\
 $username\
 $hostname\
-[](bg:peach fg:red)\
+[](fg:red) \
+[](peach)\
 $directory\
-[](bg:yellow fg:peach)\
+[](fg:peach)\
 $git_branch\
 $git_status\
-[](fg:yellow bg:green)\
 $c\
 $rust\
 $golang\
 $nodejs\
 $bun\
 $python\
-[](fg:green bg:sapphire)\
 $docker_context\
-[](fg:sapphire bg:lavender)\
-$time\
-[ ](fg:lavender)\
+$fill\
 $cmd_duration\
+[](lavender)\
+$time\
+[](fg:lavender)\
 $line_break\
 $character"""
 
@@ -44,23 +45,23 @@ style = "bg:red fg:crust"
 [os.symbols]
 Unknown   = "󰣇"
 CachyOS   = "󰣇"
-Windows   = ""
+Windows   = ""
 Ubuntu    = "󰕈"
-SUSE      = ""
+SUSE      = ""
 Raspbian  = "󰐿"
 Mint      = "󰣭"
 Macos     = "󰀵"
-Manjaro   = ""
+Manjaro   = ""
 Linux     = "󰌽"
 Gentoo    = "󰣨"
 Fedora    = "󰣛"
-Alpine    = ""
-Amazon    = ""
-Android   = ""
-AOSC      = ""
+Alpine    = ""
+Amazon    = ""
+Android   = ""
+AOSC      = ""
 Arch      = "󰣇"
 Artix     = "󰣇"
-CentOS    = ""
+CentOS    = ""
 Debian    = "󰣚"
 Redhat    = "󱄛"
 RedHatEnterprise = "󱄛"
@@ -85,20 +86,20 @@ truncation_symbol   = "…/"
 
 [directory.substitutions]
 "Documents" = "󰈙 "
-"Downloads" = " "
+"Downloads" = " "
 "Music"     = "󰝚 "
-"Pictures"  = " "
-"Developer" = "󰲋 "
+"Pictures"  = " "
+"Developer" = "󰲫 "
 
 # ── Git ────────────────────────────────────────────────────────────────────────
 [git_branch]
-symbol = ""
-style  = "bg:yellow"
-format = '[[ $symbol $branch ](fg:crust bg:yellow)]($style)'
+symbol = ""
+style  = "bold fg:yellow"
+format = '[ $symbol $branch]($style)'
 
 [git_status]
-style  = "bg:yellow"
-format = '[[($all_status$ahead_behind )](fg:crust bg:yellow)]($style)'
+style  = "fg:yellow"
+format = '[ $all_status$ahead_behind]($style)'
 
 # ── Language modules ───────────────────────────────────────────────────────────
 # All modules use detect_files / detect_extensions / detect_folders so they
@@ -106,42 +107,42 @@ format = '[[($all_status$ahead_behind )](fg:crust bg:yellow)]($style)'
 # version_format shows major.minor only (v20.11 rather than v20.11.0).
 
 [nodejs]
-symbol         = ""
-style          = "bg:green"
-format         = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+symbol         = ""
+style          = "fg:green"
+format         = '[ $symbol $version]($style)'
 version_format = "v${major}.${minor}"
 detect_files   = ["package.json", ".nvmrc", ".node-version"]
 detect_folders = ["node_modules"]
 detect_extensions = ["js", "ts", "mjs", "cjs"]
 
 [bun]
-symbol         = ""
-style          = "bg:green"
-format         = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+symbol         = ""
+style          = "fg:green"
+format         = '[ $symbol $version]($style)'
 version_format = "v${major}.${minor}"
 detect_files   = ["bun.lockb", "bunfig.toml"]
 
 [rust]
-symbol         = ""
-style          = "bg:green"
-format         = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+symbol         = ""
+style          = "fg:green"
+format         = '[ $symbol $version]($style)'
 version_format = "v${major}.${minor}"
 detect_files      = ["Cargo.toml", "Cargo.lock"]
 detect_extensions = ["rs"]
 
 [golang]
-symbol         = ""
-style          = "bg:green"
-format         = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+symbol         = ""
+style          = "fg:green"
+format         = '[ $symbol $version]($style)'
 version_format = "v${major}.${minor}"
 detect_files      = ["go.mod", "go.sum", ".go-version"]
 detect_extensions = ["go"]
 detect_folders    = ["vendor"]
 
 [python]
-symbol         = ""
-style          = "bg:green"
-format         = '[[ $symbol( $version)(\(#$virtualenv\)) ](fg:crust bg:green)]($style)'
+symbol         = ""
+style          = "fg:green"
+format         = '[ $symbol $version(\($virtualenv\))]($style)'
 version_format = "v${major}.${minor}"
 detect_files      = ["pyproject.toml", "requirements.txt", "setup.py", "setup.cfg",
                      "Pipfile", ".python-version", "uv.toml"]
@@ -149,9 +150,9 @@ detect_extensions = ["py"]
 detect_folders    = [".venv", "venv", "__pycache__"]
 
 [c]
-symbol         = " "
-style          = "bg:green"
-format         = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+symbol         = " "
+style          = "fg:green"
+format         = '[ $symbol $version]($style)'
 version_format = "v${major}.${minor}"
 detect_files      = ["CMakeLists.txt", "Makefile", "meson.build"]
 detect_extensions = ["c", "h", "cpp", "hpp", "cc", "cxx"]
@@ -175,9 +176,9 @@ disabled = true
 # only_with_files: only show when a compose file is present in the directory.
 # Avoids calling docker/podman on every prompt.
 [docker_context]
-symbol         = ""
-style          = "bg:sapphire"
-format         = '[[ $symbol( $context) ](fg:crust bg:sapphire)]($style)'
+symbol         = ""
+style          = "fg:sapphire"
+format         = '[ $symbol $context]($style)'
 only_with_files = true
 detect_files   = ["docker-compose.yml", "docker-compose.yaml",
                   "compose.yml", "compose.yaml", "Dockerfile"]
@@ -185,6 +186,10 @@ detect_files   = ["docker-compose.yml", "docker-compose.yaml",
 # ── conda (disabled — re-enable if you use conda environments) ────────────────
 [conda]
 disabled = true
+
+# ── Fill ──────────────────────────────────────────────────────────────────────
+[fill]
+symbol = " "
 
 # ── Time ──────────────────────────────────────────────────────────────────────
 [time]
@@ -196,15 +201,15 @@ format       = '[[  $time ](fg:crust bg:lavender)]($style)'
 # ── Command duration ───────────────────────────────────────────────────────────
 [cmd_duration]
 show_milliseconds  = true
-format             = " in $duration "
-style              = "bg:lavender"
+format             = '[ 󱫌 $duration](fg:mauve)'
+style              = "fg:mauve"
 disabled           = false
 show_notifications = true
 min_time_to_notify = 45000
 
 # ── Prompt character ───────────────────────────────────────────────────────────
 [line_break]
-disabled = true
+disabled = false
 
 [character]
 disabled                   = false

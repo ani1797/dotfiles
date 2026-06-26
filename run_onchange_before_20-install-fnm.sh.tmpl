@@ -8,8 +8,12 @@ info "Installing fnm…"
 
 {{ if eq .chezmoi.os "darwin" -}}
 pkg_install fnm
-{{ else -}}
+{{ else if eq .chezmoi.os "linux" -}}
+{{   if or (eq .chezmoi.osRelease.id "arch") (eq .chezmoi.osRelease.id "cachyos") (eq .chezmoi.osRelease.id "endeavouros") (eq .chezmoi.osRelease.id "manjaro") (eq .chezmoi.osRelease.id "garuda") -}}
+pkg_install fnm
+{{   else -}}
 curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "${BIN_DIR}" --skip-shell
+{{   end -}}
 {{ end -}}
 
 success "fnm installed."

@@ -8,8 +8,12 @@ info "Installing bun…"
 
 {{ if eq .chezmoi.os "darwin" -}}
 pkg_install bun
-{{ else -}}
-curl -fsSL https://bun.sh/install | bash -s -- --no-profile 2>/dev/null
+{{ else if eq .chezmoi.os "linux" -}}
+{{   if or (eq .chezmoi.osRelease.id "arch") (eq .chezmoi.osRelease.id "cachyos") (eq .chezmoi.osRelease.id "endeavouros") (eq .chezmoi.osRelease.id "manjaro") (eq .chezmoi.osRelease.id "garuda") -}}
+pkg_install bun
+{{   else -}}
+BUN_INSTALL="${HOME}/.bun" curl -fsSL https://bun.sh/install | bash
+{{   end -}}
 {{ end -}}
 
 success "bun installed."
